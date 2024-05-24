@@ -1,0 +1,32 @@
+*{
+    font-family: "29LT bukra";
+    transition: all ease-in-out 0.3s !important;
+    scroll-behavior: smooth !important;
+}
+
+body {
+    position: relative;
+    background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.png") no-repeat;
+    background-size: 100vw auto;
+    background-attachment: fixed;
+    background-position: 0 200px;
+}
+
+#Form{
+    background-color: rgba(255, 255, 255, 0.435);
+}
+
+.row{
+    grid-template-columns: .5fr 1.75fr 1fr 1.75fr .5fr 1.2fr .75fr .25fr;
+}
+
+.qrcode::before {
+    content: "";
+    position: absolute;
+    background-color: white;
+    border-radius: .25em;
+    z-index: -10;
+    transform: rotate(45deg);
+    width: 40px; height: 40px;
+    top: -10px; left: 40%; 
+}
