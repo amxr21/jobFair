@@ -19,7 +19,7 @@ const CheckId = ({value}) => {
             console.log(checkIdDiv.current,checkIdDiv.current.classList);
         }
         try{
-            const response = await axios.get("http://localhost:2000/applicants/"+checkIdDiv.current.children[1].value)
+            const response = await axios.get("https://jobfair-1.onrender.com/applicants/"+checkIdDiv.current.children[1].value)
             console.log(inputValue);
             if(response && response.data.applicantDetails){
                 setInputValue(true);

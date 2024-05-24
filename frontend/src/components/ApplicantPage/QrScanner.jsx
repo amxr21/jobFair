@@ -4,6 +4,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 
 import { IdContext } from "../../Context/IdContext";
 
+const linkUrl = 'https://jobfair-1.onrender.com';
 
 const QrScanner = () => {
 
@@ -34,7 +35,7 @@ const QrScanner = () => {
                 try {
 
                     // here is the request to apply for the company
-                    await axios.get(`http://localhost:2000/companies/${result}`)
+                    await axios.get(`${linkUrl}/companies/${result}`)
                     .then((response)=>{
                         if(response) {
                             console.log(response.data);
@@ -45,7 +46,7 @@ const QrScanner = () => {
                     })
 
 
-                    axios.get(`http://localhost:2000/applicants/${document.getElementById('applicantId').value}`)
+                    axios.get(`${linkUrl}applicants/${document.getElementById('applicantId').value}`)
                     .then((response) => {
                         setApplicant(response.data);
                     })
@@ -71,7 +72,7 @@ const QrScanner = () => {
                 console.log(applicant._id);
                 try{
                     if(applicant?._id && company){
-                        const patchRes =  await axios.patch(`http://localhost:2000/applicant/apply/${applicant?._id}`, {user_id: [company.email.split("@")[0]]});
+                        const patchRes =  await axios.patch(`${linkUrl}/applicant/apply/${applicant?._id}`, {user_id: [company.email.split("@")[0]]});
                         console.log(patchRes);
                     }
                 } catch(error){

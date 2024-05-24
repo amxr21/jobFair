@@ -3,7 +3,7 @@ import QRCode from 'qrcode.react';
 
 const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
     return (
-        <div ref={confirmMessageRef} className="opacity-0 flex flex-row gap-x-16 items-center justify-center bg-white rounded-2xl shadow-2xl px-16 py-12 my-4 h-0 overflow-hidden">
+        <div ref={confirmMessageRef} className="confirmMessageRef opacity-0 flex flex-row gap-x-16 items-center justify-center bg-white rounded-2xl shadow-2xl px-16 py-12 my-4 h-0 overflow-hidden">
             <div className="qr-code w-4/12 flex flex-col items-center">
                 <div className="qr-code w-48 flex flex-col items-center mb-6">
                     {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
