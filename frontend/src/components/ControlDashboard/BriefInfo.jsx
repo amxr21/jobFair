@@ -4,6 +4,10 @@ import axios from 'axios';
 
 import QRCode from 'qrcode.react';
 
+const link = "https://jobfair-1.onrender.com"
+
+
+
 const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc, emailRec}) => {
     const [nextStep, setNextStep] = useState(null);
     const interviewButton = useRef();
@@ -31,7 +35,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     // }
     
     const email = (type) => {
-        const res = axios.post("http://localhost:2000/email", {
+        const res = axios.post(`${link}/email`, {
                 uniId:id,
                 ticket: ticketId,
                 fullName: shortName,

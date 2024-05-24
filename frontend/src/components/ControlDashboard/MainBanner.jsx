@@ -6,6 +6,10 @@ import { useAuthContext } from "../../Hooks/useAuthContext";
 
 import { CircularProgress } from "@mui/material"
 
+const link = "https://jobfair-1.onrender.com"
+
+
+
 const MainBanner = () => {
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const { user } = useAuthContext(); // Access the authenticated user context
@@ -63,7 +67,7 @@ const MainBanner = () => {
     useEffect(() => {
         const fetchApplicants = async () => {
             try {
-                const response = await axios.get("http://localhost:2000/applicants", {
+                const response = await axios.get(`${link}/applicants`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
                 });
 

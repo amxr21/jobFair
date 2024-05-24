@@ -5,6 +5,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 
 import { CheckId, QrScanner, IdContext } from "./index"
 
+const linkUrl = 'https://jobfair-1.onrender.com'
 
 const QuickApplyForm = () => {
     const [applicant, setApplicant] = useState({id: "", name: "Ammar"});
@@ -18,7 +19,7 @@ const QuickApplyForm = () => {
 
     
     useEffect(() => {
-        axios.get(`http://localhost:2000/applicants/${document.getElementById("applicantId").value}`)
+        axios.get(`${linkUrl}/applicants/${document.getElementById("applicantId").value}`)
         .then((response) => {
             setApplicant(response.data);
         })

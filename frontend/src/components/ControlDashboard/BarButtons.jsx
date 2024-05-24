@@ -5,7 +5,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { useAuthContext } from "../../Hooks/useAuthContext"
 
 
-const link = "http://localhost:2000/applicants/"
+const link = "https://jobfair-1.onrender.com"
 
 const BarButtons = () => {
     const [scannerResult, setScannerResult] = useState(null);
@@ -34,7 +34,7 @@ const BarButtons = () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
-                    const patchResponse = await axios.patch(link+result.slice(1, 25), {
+                    const patchResponse = await axios.patch(link+"/"+result.slice(1, 25), {
                         user_id:
                         [user?.email]
                     }, {
@@ -94,7 +94,7 @@ const BarButtons = () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
-                    const patchResponse = await axios.patch("http://localhost:2000/applicants/confirm/"+result, {
+                    const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result, {
                         attended: true
                     }, {
                         headers: {

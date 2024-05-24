@@ -9,6 +9,7 @@ import CardInfo from "./CardInfo";
 import CardInfo2 from "./CardInfo2";;
 import CardInfoFile from "./CardInfoFile";
 
+const link = "https://jobfair-1.onrender.com"
 
 
 const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode }) => {
@@ -64,7 +65,7 @@ const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, ma
     const downloadCV = () => {
         axios({
           method: "GET",
-          url: `http://localhost:2000/cv/${file.id}`,
+          url: `${link}/cv/${file.id}`,
           responseType: "blob"
         })
           .then(response => {
