@@ -79,9 +79,9 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
 
     return (
-        <div className="brief-info text-left w-full px-8">
+        <div className="brief-info text-left w-full md:px-8">
 
-            <div className="qr-code w-48 flex flex-col items-center mt-2 mb-4">
+            <div className="qr-code md:w-48 flex flex-col items-center mt-2 mb-4">
                 {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
                 {ticketQrCodeSrc && <QRCode value={ticketQrCodeSrc} />}
                 {!ticketQrCodeSrc && <h2>Loading the QR code...</h2>}

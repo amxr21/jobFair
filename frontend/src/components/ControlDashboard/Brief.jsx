@@ -1,6 +1,6 @@
 const Brief = ({children}) => {
     return (
-        <div className="brief w-4/12 flex flex-col items-center">
+        <div className="brief md:w-4/12 flex flex-col items-center">
             {children}
         </div>
     )
