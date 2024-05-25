@@ -167,9 +167,9 @@ const aaa2 = () => {
                         : (<div id="reader"></div>)
                     }
                 </div>
-            <div className="buttons disabled text-gray-300">
-                <button ref={openCamera} onClick={aaa} className="h-fit border border-gray-300 py-1.5 px-2 mx-2 rounded-md">Camera off</button>
-                <button ref={confirmAttendanceButton} onClick={aaa2} className="h-fit border border-gray-300 py-1.5 px-2 mx-2 rounded-md">Confirm attendant</button>
+            <div className="buttons disabled text-gray-300 flex gap-x-2">
+                <button ref={openCamera} onClick={aaa} className="h-fit border border-gray-300 py-1.5 px-2 md:mx-2 rounded-md">Camera off</button>
+                <button ref={confirmAttendanceButton} onClick={aaa2} className="h-fit border border-gray-300 py-1.5 px-2 md:mx-2 rounded-md">Confirm attendant</button>
                 {/* <button className="border border-gray-300 py-1.5 px-2 mx-2 rounded-md">Reject</button>
                 <button className="border border-gray-300 py-1.5 px-2 mx-2 rounded-md">Approve</button> */}
             </div>
