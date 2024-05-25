@@ -8,7 +8,9 @@ const userRoutes = require("./routers/userRoutes")
 const dotenv = require("dotenv");
 dotenv.config();
 
-app.use(cors())
+app.use(cors({
+    origin: "https://job-fair-cd5j.onrender.com/"
+}))
 app.use(express.json());
 
 app.use((req, res, next)=>{
