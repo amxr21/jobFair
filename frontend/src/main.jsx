@@ -6,7 +6,12 @@ import { AuthContextProvidor } from './Context/UserAuthContext.jsx'
 
 // React 17, the one compatible with render hosting
 const app = document.getElementById("root");
-ReactDOM.render(<App/>, app)
+ReactDOM.render(
+      <AuthContextProvidor>
+        <App/>
+      </AuthContextProvidor>
+      ,app
+    )
 
 
 // React 18
