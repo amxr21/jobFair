@@ -158,7 +158,7 @@ const aaa2 = () => {
 
     return (
         <>
-            <div className="flex items-center w-fit max-w-[35em] gap-x-6">
+            <div className="flex md:flex-row flex-col items-center my-2 md:my-0 w-fit max-w-[35em] gap-x-6">
                 <div>
                     <h1>QR Code scanner</h1>
                     {
@@ -167,7 +167,7 @@ const aaa2 = () => {
                         : (<div id="reader"></div>)
                     }
                 </div>
-            <div className="buttons disabled text-gray-300 flex gap-x-2">
+            <div className="buttons disabled text-gray-300 flex gap-x-2 mt-4">
                 <button ref={openCamera} onClick={aaa} className="h-fit border border-gray-300 py-1.5 px-2 md:mx-2 rounded-md">Camera off</button>
                 <button ref={confirmAttendanceButton} onClick={aaa2} className="h-fit border border-gray-300 py-1.5 px-2 md:mx-2 rounded-md">Confirm attendant</button>
                 {/* <button className="border border-gray-300 py-1.5 px-2 mx-2 rounded-md">Reject</button>
