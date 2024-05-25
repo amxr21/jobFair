@@ -88,16 +88,16 @@ const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, ma
     return (
         <>
             <div className="row grid w-full py-3 px-2 items-center mb-2">
-                <h2>{number}</h2>
-                <h2>{name}</h2>
-                <h2>{uniId}</h2>
-                <div>
+                <h2 className="md:mx-0 mx-3">{number}</h2>
+                <h2 className="md:mx-0 mr-2">{name}</h2>
+                <h2 className="md:mx-0 mr-2">{uniId}</h2>
+                <div className="">
                     <span>{studyLevel} of</span>
                     <span> {major}</span>
                 </div>
-                <h2>{gpa}</h2>
-                <h2>{nationality}</h2>
-                <h2>{age}</h2>
+                <h2 className="md:mx-0 mr-2">{gpa}</h2>
+                <h2 className="md:mx-0 mr-2">{nationality}</h2>
+                <h2 className="md:mx-0 mr-2">{age}</h2>
                 <div className="relative">
                     <button ref={expandApplicantBtn} onClick={expandApplicant}>...</button>
                     <div ref={expandApplicantDiv} className={`parent bg-white shadow-2xl rounded-xl px-8 py-10 w-[56em] max-w-[196em] h-fit fixed top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>

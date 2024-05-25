@@ -106,8 +106,8 @@ const MainBanner = () => {
 
     return (
         <div id="Hero" className="w-full mx-auto pt-2 pb-12">
-            <div className="flex justify-between items-center px-2 mb-8">
-                <h2 className="text-center text-4xl font-bold">Applicants list</h2>
+            <div className="flex md:flex-row flex-col justify-between items-center px-2 mb-8">
+                <h2 className="text-center text-4xl font-bold md:my-0 mb-7">Applicants list</h2>
                 <AccessButtons />
             </div>
 
@@ -129,7 +129,7 @@ const MainBanner = () => {
 
 
 
-                <div className="bg-white h-fit rounded-lg px-4 py-6 shadow-2xl"onClick={filter}>
+                <div className="bg-white h-fit rounded-lg md:px-4 py-6 shadow-2xl overflow-x-scroll text-xs md:text-lg"onClick={filter}>
                     <TableHeader/>
                     <div className="table w-full py-2">
                         {finalList.length != 0 ?  finalList.map((applicant) => {

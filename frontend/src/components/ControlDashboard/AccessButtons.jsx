@@ -58,16 +58,16 @@ const AccessButtons = () => {
 
 
     return (
-        <div className="access-buttons flex gap-4">
-                {user && (<div className="flex items-center"> <span className="mx-2">{user.email}</span>
+        <div className="access-buttons flex md:flex-row flex-col gap-4 md:w-fit w-full">
+                {user && (<div className="flex items-center justify-between"> <span className="mx-2">{user.email}</span>
                     <button onClick={handleLogout} className="px-3 py-1 border border-2 rounded-md" type="submit">Log out</button>
                 </div>)}
                 <div className="relative">
                     {
                         user?.user_id &&
                         <>
-                            <button onClick={downloadQRCode} className="ml-2 px-3 py-1 border border-2 rounded-md">Download Qr code</button>
-                            <button onClick={showQRCode} className="ml-2 px-3 py-1 border border-2 rounded-md">Show Qr code</button>
+                            <button onClick={downloadQRCode} className="h-full md:ml-2 px-3 py-1 border border-2 rounded-md">Download Qr code</button>
+                            <button onClick={showQRCode} className="h-full md:ml-2 px-3 py-1 border border-2 rounded-md">Show Qr code</button>
                         </>
                     }
 
@@ -94,10 +94,10 @@ const AccessButtons = () => {
                 {!user && (
                 <>
                     <Link to="/login">
-                        <button className="px-3 py-1 border border-2 rounded-md">Log in</button>
+                        <button className="px-3 py-1 border md:w-fit w-full bg-white opacity-80 border-2 rounded-md">Log in</button>
                     </Link>
                     <Link to="/signup">
-                        <button className="px-3 py-1 border border-2 rounded-md">Sign up</button>
+                        <button className="px-3 py-1 border md:w-fit w-full bg-white opacity-80 border-2 rounded-md">Sign up</button>
                     </Link>
                 </>
 
