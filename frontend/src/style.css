@@ -1,7 +1,12 @@
+@font-face {
+    font-family: ;
+    src: url("../src/assets/fonts/29LT\ BUKRA\ REGULAR.TTF");
+}
+
 *{
-    font-family: "29LT bukra";
     transition: all ease-in-out 0.3s !important;
     scroll-behavior: smooth !important;
+    font-family: "29LT\ BUKRA\ REGULAR.TTF" !important;
 }
 
 body {
