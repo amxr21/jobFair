@@ -20,16 +20,6 @@ function App() {
 
 
 
-  useEffect(() => {
-    fetch(link)
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message));
-  }, []);
-
-
-
-
-
   return (
 
     <div className="App px-12 py-20 md:px-40 md:py-10">
