@@ -62,12 +62,12 @@ const AccessButtons = () => {
                 {user && (<div className="flex items-center justify-between"> <span className="mx-2">{user.email}</span>
                     <button onClick={handleLogout} className="px-3 py-1 border border-2 rounded-md" type="submit">Log out</button>
                 </div>)}
-                <div className="relative">
+                <div className="relative flex gap-x-2">
                     {
                         user?.user_id &&
                         <>
-                            <button onClick={downloadQRCode} className="h-full md:ml-2 px-3 py-1 border border-2 rounded-md">Download Qr code</button>
-                            <button onClick={showQRCode} className="h-full md:ml-2 px-3 py-1 border border-2 rounded-md">Show Qr code</button>
+                            <button onClick={downloadQRCode} className="h-full md:w-fit w-full md:ml-2 px-3 py-1 border border-2 rounded-md">Download Qr code</button>
+                            <button onClick={showQRCode} className="h-full md:w-fit w-full md:ml-2 px-3 py-1 border border-2 rounded-md">Show Qr code</button>
                         </>
                     }
 
