@@ -12,12 +12,27 @@ import { ApplicationForm } from "./components/ApplicationForm";
 
 import ApplicantPage from "./pages/ApplicantPage";
 
+const link = "https://jobfair-1.onrender.com"
+
+
 function App() {
   const { user } = useAuthContext();
 
+
+
+  useEffect(() => {
+    fetch(link)
+      .then((res) => res.json())
+      .then((data) => setMessage(data.message));
+  }, []);
+
+
+
+
+
   return (
 
-    <div className="px-12 py-20 md:px-40 md:py-10">
+    <div className="App px-12 py-20 md:px-40 md:py-10">
       <NavBar/>
       <BrowserRouter>
         <Routes>
