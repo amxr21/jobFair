@@ -4,6 +4,8 @@ import axios from "axios";
 import { AccessButtons, Row, TableHeader, ControlBar } from "./index";
 import { useAuthContext } from "../../Hooks/useAuthContext";
 
+import { AuthContextProvidor } from "../../Context/UserAuthContext";
+
 import { CircularProgress } from "@mui/material"
 
 const link = "https://jobfair-1.onrender.com"
@@ -104,68 +106,73 @@ const MainBanner = () => {
     // console.log(applicants); // Logging to debug and verify the applicants' list
 
     return (
-        <div id="Hero" className="w-full mx-auto pt-2 pb-12">
-            <div className="flex justify-between items-center px-2 mb-8">
-                <h2 className="text-center text-4xl font-bold">Applicants list</h2>
-                <AccessButtons />
-            </div>
-
-
-
-                <ControlBar
-                    numberOfApplicants={sortedApplicants(filterCriteriaa).length}
-                    attendancePercentageNum={
-                    applicants.length != 0
-                    ?
-                    Math.floor((applicants.filter((applicant) => {return applicant.attended == true}).length / applicants.length) *100) + ("%")
-                    :
-                    <CircularProgress size={20}/>
-                }
-                />
-
-
-
-
-
-
-                <div className="bg-white h-fit rounded-lg px-4 py-6 shadow-2xl"onClick={filter}>
-                    <TableHeader/>
-                    <div className="table w-full py-2">
-                        {finalList.length != 0 ?  finalList.map((applicant) => {
-                            counter += 1;
-
-                            return (
-                                <Row
-                                    key={applicant._id}
-                                    ticketId={applicant._id}
-                                    number={counter}
-                                    name={applicant.applicantDetails.fullName}
-                                    uniId={applicant.applicantDetails.uniId}
-                                    email={applicant.applicantDetails.email}
-                                    phoneNumber={applicant.applicantDetails.phoneNumber}
-                                    studyLevel={applicant.applicantDetails.studyLevel}
-                                    major={applicant.applicantDetails.major}
-                                    gpa={applicant.applicantDetails.cgpa}
-                                    nationality={applicant.applicantDetails.nationality}
-                                    experience={applicant.applicantDetails.experience}
-                                    attended={applicant.attended ? "Confirmed" : "No"}
-                                    age={2024 - parseInt(String(applicant.applicantDetails.birthdate).slice(0, 4))}
-                                    languages={String(applicant.applicantDetails.languages)}
-                                    portfolio={applicant.applicantDetails.portfolio}
-                                    file={applicant.cv}
-                                    qrCode={applicant._id}
-                                />
-                            );
-                        }) 
-                        :
-                        <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <CircularProgress size={20}/>
-                            <p className="text-sm">Loading applicants...</p>
-                        </div>
-                         }
-                    </div>
+        <AuthContextProvidor>
+            <div id="Hero" className="w-full mx-auto pt-2 pb-12">
+                <div className="flex justify-between items-center px-2 mb-8">
+                    <h2 className="text-center text-4xl font-bold">Applicants list</h2>
+                    <AccessButtons />
                 </div>
-        </div>
+
+
+
+                    <ControlBar
+                        numberOfApplicants={sortedApplicants(filterCriteriaa).length}
+                        attendancePercentageNum={
+                        applicants.length != 0
+                        ?
+                        Math.floor((applicants.filter((applicant) => {return applicant.attended == true}).length / applicants.length) *100) + ("%")
+                        :
+                        <CircularProgress size={20}/>
+                    }
+                    />
+
+
+
+
+
+
+                    <div className="bg-white h-fit rounded-lg px-4 py-6 shadow-2xl"onClick={filter}>
+                        <TableHeader/>
+                        <div className="table w-full py-2">
+                            {finalList.length != 0 ?  finalList.map((applicant) => {
+                                counter += 1;
+
+                                return (
+                                    <Row
+                                        key={applicant._id}
+                                        ticketId={applicant._id}
+                                        number={counter}
+                                        name={applicant.applicantDetails.fullName}
+                                        uniId={applicant.applicantDetails.uniId}
+                                        email={applicant.applicantDetails.email}
+                                        phoneNumber={applicant.applicantDetails.phoneNumber}
+                                        studyLevel={applicant.applicantDetails.studyLevel}
+                                        major={applicant.applicantDetails.major}
+                                        gpa={applicant.applicantDetails.cgpa}
+                                        nationality={applicant.applicantDetails.nationality}
+                                        experience={applicant.applicantDetails.experience}
+                                        attended={applicant.attended ? "Confirmed" : "No"}
+                                        age={2024 - parseInt(String(applicant.applicantDetails.birthdate).slice(0, 4))}
+                                        languages={String(applicant.applicantDetails.languages)}
+                                        portfolio={applicant.applicantDetails.portfolio}
+                                        file={applicant.cv}
+                                        qrCode={applicant._id}
+                                    />
+                                );
+                            }) 
+                            :
+                            <div className="flex items-center w-48 justify-between mx-auto mt-4">
+                                <CircularProgress size={20}/>
+                                <p className="text-sm">Loading applicants...</p>
+                            </div>
+                            }
+                        </div>
+                    </div>
+            </div>
+        </AuthContextProvidor>
+
+
+
     );
 };
 
