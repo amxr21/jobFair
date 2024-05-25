@@ -9,14 +9,14 @@ const TableHeader = () => {
     
     return (
         <>
-            <div className="row grid w-full py-3 px-2 items-center font-bold">
-                <h2 className="flex items-center">#</h2>
-                <h2 className="flex items-center">Full name {icon} </h2>
-                <h2 className="flex items-center">University ID {icon} </h2>
-                <h2 className="flex items-center">Major {icon} </h2>
-                <h2 className="flex items-center">GPA {icon}</h2>
-                <h2 className="flex items-center">Nationality {icon} </h2>
-                <h2 className="flex items-center">age {icon} </h2>
+            <div className="row grid w-[55em] md:w-full py-3 px-2 items-center font-bold">
+                <h2 className="flex items-center md:mx-0 mx-2">#</h2>
+                <h2 className="flex items-center md:mx-0 mx-2">Full name {icon} </h2>
+                <h2 className="flex items-center md:mx-0 mx-2">University ID {icon} </h2>
+                <h2 className="flex items-center md:mx-0 mx-2">Major {icon} </h2>
+                <h2 className="flex items-center md:mx-0 mx-2">GPA {icon}</h2>
+                <h2 className="flex items-center md:mx-0 mx-2">Nationality {icon} </h2>
+                <h2 className="flex items-center md:mx-0 mx-2">age {icon} </h2>
             </div>
             <hr></hr>
         </>
