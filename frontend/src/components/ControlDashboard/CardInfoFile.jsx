@@ -1,6 +1,6 @@
+import axios from "axios"
+
 const link = "https://jobfair-1.onrender.com"
-
-
 
 const CardInfoFile = ({file}) => {
     const downloadCV = () => {
@@ -11,7 +11,7 @@ const CardInfoFile = ({file}) => {
         })
         .then(response => {
             const url = window.URL.createObjectURL(new Blob([response.data], {type: "application/pdf"}));
-            const link = document.createElement('a'); 
+            const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', file?.originalname);
             document.body.appendChild(link);
