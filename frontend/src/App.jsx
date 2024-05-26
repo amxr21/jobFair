@@ -24,12 +24,12 @@ function App() {
 
     <div className="App px-12 py-20 md:px-40 md:py-10">
       <NavBar/>
-      <BrowserRouter basename="/">
+      <BrowserRouter basename="/applicationForm">
         <Routes>
+          <Route path="/applicationForm" element={<ApplicationForm />} />
           <Route path="/" element={<Home />} />
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
           <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
-          <Route path="/applicationForm" element={<ApplicationForm />} />
           <Route path="/applicant" element={<ApplicantPage />} />
         </Routes>
       </BrowserRouter>
