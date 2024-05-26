@@ -24,7 +24,7 @@ function App() {
 
     <div className="App px-12 py-20 md:px-40 md:py-10">
       <NavBar/>
-      <BrowserRouter basename="/applicationForm">
+      <BrowserRouter>
         <Routes>
           <Route path="/applicationForm" element={<ApplicationForm />} />
           <Route path="/" element={<Home />} />
