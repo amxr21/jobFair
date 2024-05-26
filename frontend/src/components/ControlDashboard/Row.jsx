@@ -62,27 +62,6 @@ const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, ma
 
 
 
-    const downloadCV = () => {
-        axios({
-          method: "GET",
-          url: `${link}/cv/${file.id}`,
-          responseType: "blob"
-        })
-          .then(response => {
-            const url = window.URL.createObjectURL(new Blob([response.data], {type: "application/pdf"}));
-            const link = document.createElement('a'); 
-            link.href = url;
-            link.setAttribute('download', file.originalname);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-          })
-          .catch(error => {
-            console.error("Error downloading file:", error);
-          });
-      }
-      
-
 
 
     return (

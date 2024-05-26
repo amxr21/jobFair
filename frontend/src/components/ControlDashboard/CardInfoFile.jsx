@@ -1,4 +1,31 @@
+const link = "https://jobfair-1.onrender.com"
+
+
+
 const CardInfoFile = ({file}) => {
+    const downloadCV = () => {
+        axios({
+            method: "GET",
+            url: `${link}/cv/${file?.id}`,
+            responseType: "blob"
+        })
+        .then(response => {
+            const url = window.URL.createObjectURL(new Blob([response.data], {type: "application/pdf"}));
+            const link = document.createElement('a'); 
+            link.href = url;
+            link.setAttribute('download', file?.originalname);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(error => {
+            console.error("Error downloading file:", error);
+        });
+    }
+
+
+
+
     return (
         <div className="w-1/3 px-1">
             <h6 className="text-sm">{"CV:"}</h6>
