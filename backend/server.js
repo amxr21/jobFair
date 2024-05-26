@@ -27,8 +27,8 @@ app.use((req, res, next)=>{
 const connection = mongoose.connection;
 
 connection.once("open", ()=> {
-    app.use("/user", userRoutes);
     app.use("/",routers);
+    app.use("/user", userRoutes);
 })
 
 
