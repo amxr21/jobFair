@@ -129,7 +129,7 @@ const MainBanner = () => {
 
 
 
-                <div className="bg-white h-fit rounded-lg md:px-4 py-6 shadow-2xl overflow-x-scroll text-xs md:text-lg"onClick={filter}>
+                <div className="bg-white h-fit rounded-lg md:px-4 py-6 shadow-2xl overflow-x-scroll md:overflow-hidden text-xs md:text-lg"onClick={filter}>
                     <TableHeader/>
                     <div className="table w-full py-2">
                         {finalList.length != 0 ?  finalList.map((applicant) => {
