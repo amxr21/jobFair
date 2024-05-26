@@ -87,7 +87,7 @@ const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, ma
 
     return (
         <>
-            <div className="row grid w-[55em] py-3 px-2 items-center mb-2">
+            <div className="row grid md:w-full w-[55em] py-3 px-2 items-center mb-2">
                 <h2 className="md:mx-0 mx-3">{number}</h2>
                 <h2 className="md:mx-0 mr-2">{name}</h2>
                 <h2 className="md:mx-0 mr-2">{uniId}</h2>
