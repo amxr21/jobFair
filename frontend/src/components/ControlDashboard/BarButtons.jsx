@@ -34,7 +34,7 @@ const BarButtons = () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
-                    const patchResponse = await axios.patch(link+"/"+result.slice(1, 25), {
+                    const patchResponse = await axios.patch(link+"/applicants/"+result.slice(1, 25), {
                         user_id:
                         [user?.email]
                     }, {
