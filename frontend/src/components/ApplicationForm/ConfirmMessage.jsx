@@ -17,7 +17,7 @@ const ConfirmMessageDiv = ({confirmMessageRef, qrCodeSrc}) => {
             </div>
             <div className="confirmation-message w-8/12">
                 <h2 className="text-4xl font-bold mb-1">Confirmed !</h2>
-                <p>Check your email to have your ticket. Check your email to have your ticket. Check your email to have your ticket. Check your email to have your ticket. </p>
+                <p>Congtratulations in applying for your first company!!. Check your email to have your ticket.</p>
                 <br /><br />
                 <h5 className="text-2xl font-semibold" >Best of Luck !!</h5>
             </div>
