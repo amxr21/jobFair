@@ -130,8 +130,10 @@ const Form = () => {
     
         const confirmRegistration = async (e) => {
             e.preventDefault();
-            form.current.style.opacity = "0";
-            form.current.style.height = "fit-content";
+            // form.current.style.opacity = "0";
+            form.current.classList.replace("opacity-100", "opacity-0");
+            // form.current.style.height = "fit-content";
+            form.current.classList.replace("h-fit", "h-0");
             setTimeout(()=>{form.current.style.display = "none";},500)
             // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
             // document.getElementById("Form").classList.replace("h-0", "h-fit");

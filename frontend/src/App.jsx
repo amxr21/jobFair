@@ -22,7 +22,7 @@ function App() {
 
   return (
 
-    <div className="App px-12 py-20 md:px-40 md:py-10">
+    <div className="App px-10 py-20 md:px-40 md:py-10">
       <NavBar/>
       <BrowserRouter>
         <Routes>
