@@ -66,33 +66,35 @@ const Form = () => {
                 if(Object.values(formData).length == 17){
                         // setFormDataReq(formDataToSend);
                         console.log("Application submitted successfully");
-    
+
                         setFull(true);
-    
+
                         e.preventDefault();
-                        form.current.style.opacity = "0";
-                        form.current.style.height = "fit-content";
-                        setTimeout(()=>{form.current.style.display = "hidden";},500)
+                        form.current.classList.replace("opacity-100", "opacity-0");
+                        // form.current.style.opacity = "0";
+                        form.current.classList.replace("md:h-fit", "h-0");
+                        form.current.classList.replace("h-[36em]", "h-0");
+                        // form.current.style.height = "fit-content";
+                        setTimeout(()=>{form.current.style.display = "none";},500)
                         // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
                         // document.getElementById("Form").classList.replace("h-0", "h-fit");
-        
+
                         // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
-                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
+                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
                         document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
-    
-    
-    
-                        form.current.style.opacity = "0";
-                        form.current.style.height = "fit-content";
+
+
+
+
                         setTimeout(()=>{form.current.style.display = "hidden";},500);
-                        document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
-                        document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
-    
-    
+                        // document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-100");
+                        // document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
+
+
                         let confirmationResponse;
                         if(!user?.token){
                             confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend);
-    
+
                         }
                         else{
                             confirmationResponse = await axios.post(`${link}/applicants`, formDataToSend,
@@ -134,18 +136,21 @@ const Form = () => {
             form.current.classList.replace("opacity-100", "opacity-0");
             // form.current.style.height = "fit-content";
             form.current.classList.replace("h-fit", "h-0");
+            form.current.classList.replace("h-fit", "h-0");
             
-            form.current.classList.replace("py-10", "py-0");
+            form.current.classList.replace("py-10", "py-2");
 
-            setTimeout(()=>{form.current.style.display = "none";},500)
+            setTimeout(()=>{form.current.style.display = "none";}, 500)
             // document.getElementById("Form").classList.replace("opacity-0", "opacity-100")
             // document.getElementById("Form").classList.replace("h-0", "h-fit");
     
             // document.querySelector(".confirmMessageRef").current.classList.replace("hidden", "block")
-            document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1")
-            document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit")
-    
-    
+            document.querySelector(".confirmMessageRef").classList.replace("opacity-0", "opacity-1");
+            document.querySelector(".confirmMessageRef").classList.replace("h-0", "h-fit");
+            document.querySelector(".confirmMessageRef").classList.add("md:h-fit");
+            document.querySelector(".confirmMessageRef").classList.replace("py-0", "py-12");
+
+
             // const confirmationResponse = await axios.post("http://localhost:2000/applicants/qr", formDataReq);
             // setQRCodeSrc(confirmationResponse.data);
             // console.log(confirmationResponse);
@@ -158,9 +163,10 @@ const Form = () => {
     
     
     
+    
         return (
             <FormContext.Provider value={{formData, updateFormData}}>
-                <form id="Form" ref={form} className="h-[36em] md:h-0 shadow-xl rounded-xl bg-white px-8 py-10 opacity-0 md:overflow-hidden overflow-y-scroll">
+                <form id="Form" ref={form} className="h-0 md:h-0 shadow-xl rounded-xl bg-white px-8 py-10 opacity-0 md:overflow-hidden overflow-y-scroll">
                     {children}
                     {!full &&
                         <div className="border border-red-500 my-3 py-2 px-3 bg-red-200 rounded-md">
