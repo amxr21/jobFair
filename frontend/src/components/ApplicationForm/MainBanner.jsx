@@ -20,7 +20,7 @@ const MainBanner = () => {
 
 
     return (
-        <div id="Hero" className="md:w-8/12 md:mx-auto my-20 md:my-12 py-12 h-fit overflow-hidden">
+        <div id="Hero" className="md:w-8/12 md:mx-auto my-4 md:my-12 py-8 md:py-12 h-fit overflow-hidden">
             <div className="md:text-2xl md:text-left mb-4">
                 <h2 className="md:text-6xl leading-[1.2em] text-7xl font-bold mb-4 md:mb-2">Hala Wallah</h2>
                 <p className="text-2xl">Start filling your first Job Resume !!</p>

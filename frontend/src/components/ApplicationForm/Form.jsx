@@ -158,10 +158,9 @@ const Form = () => {
     
     
     
-    
         return (
             <FormContext.Provider value={{formData, updateFormData}}>
-                <form id="Form" ref={form} className="h-0 shadow-xl rounded-xl bg-white px-8 py-10 opacity-0 overflow-hidden">
+                <form id="Form" ref={form} className="h-[36em] md:h-0 shadow-xl rounded-xl bg-white px-8 py-10 opacity-0 md:overflow-hidden overflow-y-scroll">
                     {children}
                     {!full &&
                         <div className="border border-red-500 my-3 py-2 px-3 bg-red-200 rounded-md">
