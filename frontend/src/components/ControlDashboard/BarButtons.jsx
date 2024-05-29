@@ -96,11 +96,13 @@ const BarButtons = () => {
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
                     const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result.slice(1, 25), {
                         attended: true
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${user.token}`
-                        }
-                    })
+                    }
+                    // , {
+                    //     headers: {
+                    //         Authorization: `Bearer ${user.token}`
+                    //     }
+                    // }
+                )
 
                     console.log(patchResponse);
 
