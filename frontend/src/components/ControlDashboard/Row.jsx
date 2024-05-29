@@ -79,7 +79,7 @@ const Row = ({ number, name, ticketId, uniId, email, phoneNumber, studyLevel, ma
                 <h2 className="md:mx-0 mr-2">{age}</h2>
                 <div className="relative">
                     <button ref={expandApplicantBtn} onClick={expandApplicant}>...</button>
-                    <div ref={expandApplicantDiv} className={`parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[56em] md:max-w-[196em] h-[50em] overflow-y-scroll md:h-fit fixed top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
+                    <div ref={expandApplicantDiv} className={`parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[56em] md:max-w-[196em] h-[50em] overflow-y-scroll md:overflow-hidden md:h-fit fixed top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
                         <div className="card-info flex flex-col md:flex-row gap-x-4 md:h-11/12">
                             <Brief>
                                 <BriefInfo
