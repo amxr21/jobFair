@@ -95,7 +95,7 @@ const addApplicant =  async (req, res) => {
 
                 `${req.body.email}`,
 
-                "🥲 <ammar211080@gmail.com>",
+                `CASTO Office 🏢🚨 <${process.env.USER_EMAIL}>`,
             )
         
     });
@@ -340,9 +340,9 @@ const confirmAttendant = async (req, res) => {
 
 
         let updateData = {};
-        if(req.body.hasOwnProperty("attended")){
+        // if(req.body.hasOwnProperty("attended")){
             updateData.$addToSet = { attended: true }
-        };
+        // };
 
 
 
