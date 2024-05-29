@@ -87,7 +87,7 @@ const BarButtons = () => {
                 setIsCameraOn2(false)
                 let length = result.length;
 
-                if(result[0] == '\"') setScannerResult(result.slice(1, length-2))
+                if(result[0] == '"') setScannerResult(result.slice(1, length-2))
                 setScannerResult(result)
                 console.log(result);
                 // const aaa = async () => {
