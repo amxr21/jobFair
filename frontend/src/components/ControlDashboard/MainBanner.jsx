@@ -44,8 +44,8 @@ const MainBanner = () => {
                 return sortedArray.sort((a, b) => a.applicantDetails.nationality.toLowerCase().localeCompare(b.applicantDetails.nationality.toLowerCase())); 
             case "age":
                 return sortedArray.sort((a, b) => {
-                    console.log(2024 - a.applicantDetails.birthdate.split("-")[0] );
-                    return 2024 - a.applicantDetails.birthdate.split("-")[0] - 2024 - b.applicantDetails.birthdate.split("-")[0]
+                    console.log((2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0]));
+                    return (2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0])
 
                 });
 
