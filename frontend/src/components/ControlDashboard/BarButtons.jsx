@@ -94,7 +94,7 @@ const BarButtons = () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
-                    const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result.slice(1, 25), {
+                    const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result, {
                         attended: true
                     }
                     // , {
