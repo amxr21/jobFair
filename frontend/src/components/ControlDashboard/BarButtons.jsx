@@ -85,16 +85,16 @@ const BarButtons = () => {
                 scanner.clear();
 
                 setIsCameraOn2(false)
-                let length = result.length;
+                // let length = result.length;
 
-                if(result[0] == '"') setScannerResult(result.slice(1, length-2))
-                setScannerResult(result)
-                console.log(result);
+                // if(result[0] == '"') setScannerResult(result.slice(1, length-2))
+                setScannerResult(result.slice(1, 25))
+                // console.log(result);
                 // const aaa = async () => {
                 try {
 
                     // console.log("---------------------------\n\n\n\n\n\n",result,"---------------------------\n\n\n\n\n\n");
-                    const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result, {
+                    const patchResponse = await axios.patch(`${link}/applicants/confirm/`+result.slice(1, 25), {
                         attended: true
                     }, {
                         headers: {
