@@ -6,12 +6,12 @@ export const applicantsReducer = (state, action) => {
     switch(action.type) {
         case "SET_APPLICANTS":
             return {
-                applicants: action.payload;
-            }
+                applicants: action.payload
+            };
         case "ADD_APPLICANT":
             return {
-                applicants: [action.payload, ...state.applicants];
-            }
+                applicants: [action.payload, ...state.applicants]
+            };
 
         default:
             return state;
