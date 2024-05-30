@@ -105,7 +105,7 @@ const BarButtons = () => {
                 )
 
                     confirmAttendanceButton.current.textContent = "Confirmed";
-                    setTimeout(()=>{confirmAttendanceButton.current.textContent = "Confirm attendance";}, 3500)
+                    setTimeout(()=>{confirmAttendanceButton.current.textContent = "Confirm attendance";}, 5000)
 
 
                     console.log(patchResponse);
@@ -131,13 +131,13 @@ const BarButtons = () => {
 
 const aaa2 = () => {
     setIsCameraOn2(prev => {
-        // if(!prev){
-        //     confirmAttendanceButton.current.textContent = "Confirmed";
-        // }
-        // else{
-        //     confirmAttendanceButton.current.textContent = "Confirm attendant";
-        //     scanner?.clear();
-        // }
+        if(!prev){
+            confirmAttendanceButton.current.textContent = "Camera is ON";
+        }
+        else{
+            confirmAttendanceButton.current.textContent = "Confirm attendant";
+            scanner?.clear();
+        }
 
         return !prev;
     })
