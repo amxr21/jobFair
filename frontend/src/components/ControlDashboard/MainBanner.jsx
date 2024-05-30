@@ -90,20 +90,29 @@ const MainBanner = () => {
                     }
                     else{
                         // Filter applicants to only include those associated with the logged-in user
-                        setApplicants(
-                            response.data.filter((applicant) =>
-    
-                            //SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
-                            applicant.user_id.includes(user.email)
-                            //SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
-    
+                        dispatch({type: "SET_APPLICANTS", payload:
+                                response.data.filter((applicant) =>
+                                applicant.user_id.includes(user.email)
                             )
-                        );
+                        })
+
+                        // // // // setApplicants(
+                        // // // //     response.data.filter((applicant) =>
+    
+                        // // // //     //SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
+                        // // // //     applicant.user_id.includes(user.email)
+                        // // // //     //SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
+    
+                        // // // //     )
+                        // // // // );
 
                     }
                 } else {
                     // If no user is logged in, display all applicants
-                    setApplicants(response.data);
+                    // // setApplicants(response.data);
+
+                    dispatch({type: "SET_APPLICANTS", payload: response.data})
+
                 }
             } catch (err) {
                 console.log("Error fetching data:", err);
