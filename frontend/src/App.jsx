@@ -12,6 +12,9 @@ import { ApplicationForm } from "./components/ApplicationForm";
 
 import ApplicantPage from "./pages/ApplicantPage";
 
+import { ApplicantsContextProvider } from "./Context/ApplicantsContext";
+
+
 const link = "https://jobfair-1.onrender.com"
 
 
@@ -21,19 +24,22 @@ function App() {
 
 
   return (
+    <ApplicantsContextProvider>
 
-    <div className="App px-10 py-20 md:px-40 md:py-10">
-      <NavBar/>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/applicationForm" element={<ApplicationForm />} />
-          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
-          <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
-          <Route path="/applicant" element={<ApplicantPage />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+      <div className="App px-10 py-20 md:px-40 md:py-10">
+        <NavBar/>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/applicationForm" element={<ApplicationForm />} />
+            <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+            <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
+            <Route path="/applicant" element={<ApplicantPage />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
+
+    </ApplicantsContextProvider>
   )
 }
 

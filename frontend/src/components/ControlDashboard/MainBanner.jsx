@@ -7,6 +7,9 @@ import { useAuthContext } from "../../Hooks/useAuthContext";
 
 import { CircularProgress } from "@mui/material"
 
+import { useApplicantsContext } from "../../Hooks/useApplicantsContext";
+
+
 const link = "https://jobfair-1.onrender.com"
 
 
@@ -16,6 +19,8 @@ const MainBanner = () => {
     const { user } = useAuthContext(); // Access the authenticated user context
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
+
+    const { dispatch } = useApplicantsContext();
 
 
     const filter = (e) => {
@@ -75,7 +80,13 @@ const MainBanner = () => {
                 if (user) {
                     if(user.email == "casto@sharjah.ac.ae"){
                         // Filter applicants to only include those associated with the logged-in user
-                        setApplicants(response.data);
+                        // setApplicants(response.data);
+
+
+                        dispatch({type: "SET_APPLICANTS", payload: response.data})
+
+
+
                     }
                     else{
                         // Filter applicants to only include those associated with the logged-in user
