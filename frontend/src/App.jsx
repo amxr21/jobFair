@@ -24,8 +24,6 @@ function App() {
 
 
   return (
-    <ApplicantsContextProvider>
-
       <div className="App px-10 py-20 md:px-40 md:py-10">
         <NavBar/>
         <BrowserRouter>
@@ -38,8 +36,6 @@ function App() {
           </Routes>
         </BrowserRouter>
       </div>
-
-    </ApplicantsContextProvider>
   )
 }
 
