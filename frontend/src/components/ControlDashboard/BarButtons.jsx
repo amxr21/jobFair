@@ -76,7 +76,7 @@ const BarButtons = () => {
 
     useEffect(() => {
         if(isCameraOn2){
-            scanner = new Html5QrcodeScanner("reader", {
+            scanner = new Html5QrcodeScanner("reader2", {
                 qrbox: { width : 150, height: 150 },
                 fps: 10,
             })
