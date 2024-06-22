@@ -14,7 +14,7 @@ body {
     background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.jpg") no-repeat;
     background-size: 100% auto;
     background-attachment: fixed;
-    background-position: center bottom;
+    background-position: left bottom;
 }
 
 @media (max-width: 1000px) {
