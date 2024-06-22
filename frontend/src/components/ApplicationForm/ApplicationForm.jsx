@@ -11,7 +11,7 @@ const ApplicationForm = () => {
       a
       ?
       JSON.parse(a)?.email &&
-        <div className="text-center">You are now logged in as {"\t"}
+        <div className="text-left">You are now logged in as {"\t"}
           <span className="font-bold underline uppercase">
           {
             
@@ -21,7 +21,7 @@ const ApplicationForm = () => {
         </div>
       :
       <>
-        <div className="text-center">You are now logged in as {"\t"}
+        <div className="text-left">You are now logged in as {"\t"}
           <span className="font-bold underline uppercase">
           guest
           </span>

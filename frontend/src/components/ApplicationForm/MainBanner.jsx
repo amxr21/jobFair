@@ -22,13 +22,13 @@ const MainBanner = () => {
 
 
     return (
-        <div id="Hero" className="md:w-8/12 md:mx-auto my-4 md:my-12 py-8 md:py-12 h-fit overflow-hidden">
+        <div id="Hero" className="bg- md:w-full md:mx-0 my-4 md:my-12 py-8 md:py-12 h-fit overflow-hidden">
             <div className="md:text-2xl md:text-left mb-4">
-                <h2 className="md:text-6xl leading-[1.2em] text-7xl font-bold mb-4 md:mb-2">Welcome to your first Job Fair!</h2>
-                <p className="text-2xl">Connect with top employers, discover exciting career opportunities, and take the next step in your professional journey</p>
+                <h2 className="md:text-5xl leading-[1.2em] text-4xl font-bold mb-4 md:mb-2 uppercase">Welcome to your first Job Fair!</h2>
+                <p className="md:text-3xl text-md text-justify">Connect with top employers, discover exciting career opportunities, and take the next step in your professional journey</p>
             </div>
-            <div className="start-button flex md:mt-0 mt-12">
-                <button ref={startButton} onClick={startForm} className="w-full py-4 px-3 border border-black rounded-xl text-3xl">Lets Start</button>
+            <div className="start-button flex md:mt-10 mt-8">
+                <button ref={startButton} onClick={startForm} className="w-full w-1/2 md:w-4/12 md:py-4 py-2 px-1 md:px-3 border border-black rounded-lg text-lg md:text-2xl">Lets Start</button>
             </div>
         </div>
     )
