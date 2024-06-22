@@ -11,7 +11,7 @@
 
 body {
     position: relative;
-    background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.png") no-repeat;
+    background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.jpg") no-repeat;
     background-size: 100% 60vh;
     background-attachment: fixed;
     background-position: center bottom;
