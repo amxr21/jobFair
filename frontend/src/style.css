@@ -4,7 +4,8 @@
 }
 
 *{
-    font-family: "29LT bukra";
+    /* font-family: "29LT bukra"; */
+    font-family: 'Inter';
     transition: all ease-in-out 0.3s !important;
     scroll-behavior: smooth !important;
 }

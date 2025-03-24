@@ -11,8 +11,9 @@ import { useAuthContext } from "./Hooks/useAuthContext";
 import { ApplicationForm } from "./components/ApplicationForm";
 
 import ApplicantPage from "./pages/ApplicantPage";
+import Intro from "./pages/Intro";
 
-const link = "https://jobfair-1.onrender.com"
+const link = "https://jobfair-91pd.onrender.com"
 
 
 function App() {
@@ -22,7 +23,8 @@ function App() {
 
   return (
 
-    <div className="App px-10 py-20 md:px-40 md:py-10">
+    <div className="App relative px-10 py-20 md:px-40 md:py-10">
+      {/* <Intro /> */}
       <NavBar/>
       <BrowserRouter>
         <Routes>
