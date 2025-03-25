@@ -12,7 +12,7 @@ dotenv.config();
 app.use((req, res, next) => {
     res.setHeader(
       "Access-Control-Allow-Origin",
-      "https://jobfair-1.onrender.com"
+      "https://job-fair-cd5j.onrender.com/"
     );
     res.setHeader(
       "Access-Control-Allow-Methods",
@@ -46,8 +46,9 @@ app.use((req, res, next)=>{
 const connection = mongoose.connection;
 
 connection.once("open", ()=> {
-    app.use("/",routers);
-    app.use("/user", userRoutes);
+  console.log('DB Connected successfully');
+  app.use("/",routers);
+  app.use("/user", userRoutes);
 })
 
 
