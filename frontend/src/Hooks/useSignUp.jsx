@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
 import QRCode from "qrcode.react";
+const link = "https://jobfairform-backend.onrender.com"
 
 export const useSignUp = () => {
     const [ error, setError ] = useState(null);
@@ -8,13 +9,13 @@ export const useSignUp = () => {
     const { dispatch } = useAuthContext();
     const [ QRCodeSrc, setQRCodeSrc ] = useState("");
 
-    const signup = async (email, password) => {
+    const signup = async (email, password, fields, representitives, companyName) => {
         setIsLoading(true)
         setError(null);
         const response = await fetch(`${link}/user/signup`, {
             method: "POST",
             headers: { "Content-Type" : "application/json" },
-            body: JSON.stringify({email, password})
+            body: JSON.stringify({email, password, fields, representitives, companyName})
         })
 
         const json = await response.json();
