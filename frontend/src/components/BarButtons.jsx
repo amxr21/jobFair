@@ -172,7 +172,7 @@ const aaa2 = () => {
                 <div className="  disabled text-black flex gap-2">
                     <button ref={openCamera} onClick={aaa} className="h-fit border border-gray-400 px-3 py-2 rounded-lg">Register an Applicant</button>
                     {
-                        user?.companyName == "CASTO Office" &&
+                        user?.email == "casto@sharjah.ac.ae" &&
                         <button ref={confirmAttendanceButton} onClick={aaa2} className="h-fit border border-gray-400 px-3 py-2  rounded-md">Confirm attendant</button>
                     }
                     

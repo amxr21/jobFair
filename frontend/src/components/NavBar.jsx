@@ -22,7 +22,7 @@ const NavBar = () => {
                     <div className="flex flex-col gap-y-4">
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
                         {
-                            user?.companyName == "CASTO Office" && 
+                            user?.email == "casto@sharjah.ac.ae" && 
                             <div className="flex flex-col gap-y-4">
                                 <PageLink link='managers' title={'Managers'} icon={'managers'} />
                                 <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />

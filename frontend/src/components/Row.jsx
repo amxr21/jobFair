@@ -102,7 +102,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     } 
 
 
-    if(companyName == 'CASTO Office'){ number -= 1; return '';}
+    if(email == 'casto@sharjah.ac.ae'){ number -= 1; return '';}
     else{
         return userType != 'manager'
         ?
