@@ -130,7 +130,7 @@ const MainBanner = ({link}) => {
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
                 <div className="grow rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list ${user?.companyName != 'CASTO Office' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full pt-2 pb-4`}>
+                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full pt-2 pb-4`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
                             counter += 1;
 
@@ -180,7 +180,7 @@ const MainBanner = ({link}) => {
 
 
                 {
-                    user?.companyName != 'CASTO Office' &&
+                    user?.email != 'casto@sharjah.ac.ae' &&
                     <>
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
                         <div className="grow rounded-lg text-xs md:text-lg" onClick={filter}>
