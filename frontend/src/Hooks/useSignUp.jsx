@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
 import QRCode from "qrcode.react";
-const link = "https://jobfairform-backend.onrender.com"
+const link = "https://jobfair-7zaa.onrender.com"
 
 export const useSignUp = () => {
     const [ error, setError ] = useState(null);
