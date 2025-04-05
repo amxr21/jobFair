@@ -13,39 +13,61 @@ export const Login = () => {
   };
 
   return (
-    <div className="md:h-[60vh] flex flex-col md:flex-row gap-x-10">
-      <h2 className="text-3xl font-bold mb-6 bg-white rounded-lg px-8 py-6 shadow-2xl md:h-80">Log in</h2>
-      <form onSubmit={handleSubmit} className="bg-white md:w-1/2 md:h-80 h-fit rounded-lg px-8 py-6 shadow-2xl">
-        {/* Input fields for email and password */}
-        <div className="w-full py-2">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            className="w-full p-2 border rounded-md mb-1"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            className="w-full p-2 mt-2 border rounded-md mb-4"
-          />
-          <button disabled={isLoading} type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">
-            Log In
-          </button>
-          {error && <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">{error}</div>}
+    <div className="absolute flex flex-col items-center justify-center opacity-95 w-screen h-screen bg-[#F3F6FF] gap-16 rounded-xl col-span-10">
+      
+      <div className="text-8xl font-bold -mt-16">Hello again ;)</div>
+      
+      <div className="w-8/12 flex gap-x-16">
+      
+        <div className="col-span-8 bg-white p-10 flex flex-col gap-y-5 rounded-xl w-7/12 h-[20rem]">
+          <h2 className="text-3xl font-bold">Log in</h2>
+          <form onSubmit={handleSubmit} className="bg-white">
+          {/* Input fields for email and password */}
+          <div className="w-full py-2">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              className="w-full p-2 border rounded-md mb-1"
+            />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              className="w-full p-2 mt-2 border rounded-md mb-4"
+            />
+            <button disabled={isLoading} type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">
+              Log In
+            </button>
+            {error && <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">{error}</div>}
+          </div>
+        </form>
         </div>
-      </form>
-      <div className="hidden md:block md:w-1/2 md:my-0 px-8">
-          <h2 className="font-bold text-3xl mb-6">Welcome to Log in page</h2>
-          <p className="text-md text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda hic minus laboriosam blanditiis cum, exercitationem repellat sed magnam eos omnis</p>
+
+        <div className="col-span-4 w-5/12">
+          <h2 className="font-bold text-3xl mb-6">Welcome to the Job Fair Portal</h2>
+          <p className="text-md text-justify">
+            Please sign in to access all features and participate in the event.
+          </p>
           <div className="my-10 text-sm">
-            <span>Don't have an accont? </span>
-            <span><a href="/signup" className="underline">Sign up</a> from here</span>
+            <span>Don't have an account? </span>
+            <span>
+              <a href="/signup" className="underline">
+                Sign up here
+              </a>
+            </span>
           </div>
         </div>
+
+
+      </div>
+
+
+
+
+
     </div>
 
   );
