@@ -34,12 +34,25 @@ const StatisticsElement = ({data, type}) => {
     const [ header, setHeader ] = useState(sample[0].header)
     const [ subheader, setSubheader ] = useState(sample[0].subheader)
 
-    let managersNumber = 0
+    // let managersNumber = 0
 
-    data['managers'].forEach((manager) => {
-        managersNumber += manager.representitives?.split(',').length
-    })
+    // data['managers'].forEach((manager) => {
+    //     managersNumber += manager.representitives?.split(',').length
+    // })
     
+
+    const managersNumber = data['managers'].reduce((acc, manager) => {
+        return acc + (typeof manager.representitives === 'string'
+          ? manager.representitives.split(',').length
+          : 0);
+      }, 0);
+      
+
+
+
+
+
+
     let fieldsNumber = 0
     let unique = new Set([])
     data['managers'].forEach((company) => {
