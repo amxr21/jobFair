@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
 import axios from "axios";
 
-const link = "https://jobfairform-backend.onrender.com"
+const link = "https://jobfair-7zaa.onrender.com"
 
 
 export const useLogin = () => {

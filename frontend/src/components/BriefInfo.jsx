@@ -4,7 +4,7 @@ import axios from 'axios';
 
 import QRCode from 'qrcode.react';
 
-const link = "https://jobfairform-backend.onrender.com"
+const link = "https://jobfair-7zaa.onrender.com"
 
 
 
