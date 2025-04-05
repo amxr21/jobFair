@@ -6,17 +6,23 @@
 *{
     /* font-family: "29LT bukra"; */
     font-family: 'Inter';
-    transition: all ease-in-out 0.3s !important;
     scroll-behavior: smooth !important;
 }
 
-body {
+
+.expandDetails{
+    transition: all ease-in-out 0.3s !important;
+}
+
+
+
+/* body {
     position: relative;
     background: rgba(255, 255, 255, 0.5) url("./assets/images/bg.jpg") no-repeat;
     background-size: 100% auto;
     background-attachment: fixed;
     background-position: left bottom;
-}
+} */
 
 @media (max-width: 1000px) {
     body {
@@ -29,7 +35,12 @@ body {
 }
 
 .row{
-    grid-template-columns: .5fr 1.75fr 1fr 1.75fr .5fr 1.2fr .75fr .25fr;
+    column-gap: 1rem;
+    grid-template-columns: 0.25fr 1fr .75fr .5fr .5fr 1fr 0.5fr 0.15fr ;
+}
+.row-manager{
+    column-gap: 1em;
+    grid-template-columns: .2fr 1fr 1fr 1fr 1fr .7fr .5fr ;
 }
 
 .qrcode::before {
@@ -39,6 +50,23 @@ body {
     border-radius: .25em;
     z-index: -10;
     transform: rotate(45deg);
-    width: 40px; height: 40px;
-    top: -10px; left: 40%; 
+    width: 32px; height: 32px;
+    top: 38%; right: -10%; 
+}
+.list {
+    overflow-y: auto; /* Show scrollbar only when necessary */ 
+}
+
+/* Hide scrollbar when not needed */
+.list::-webkit-scrollbar {
+    width: 10px; /* Adjust width */
+}
+
+.list::-webkit-scrollbar-thumb {
+    background-color: #d4d8e6; /* Change scrollbar thumb color */
+    border-radius: 4px;
+}
+
+.list::-webkit-scrollbar-track {
+    background: rgb(236, 236, 236); /* Hide track */
 }
