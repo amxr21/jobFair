@@ -150,7 +150,7 @@ const Statistics = ({link}) => {
 
     return (
         <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
-            {user?.companyName != "CASTO Office" && <TopBar user={user} />}
+            {user?.email != "casto@sharjah.ac.ae" && <TopBar user={user} />}
             <div id="Statistics" className="bg-[#F3F6FF] min-h-[76vh] h-full overflow-y-auto grow rounded-xl px-6 py-4 col-span-10 w-full mx-auto">
                 <div className="flex md:flex-row flex-col justify-between items-center ">
                     {/* <h2 className="text-center text-3xl font-bold md:my-0 mb-7">Applicants list</h2> */}
