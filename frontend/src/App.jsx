@@ -19,6 +19,28 @@ const link = "https://jobfairform-backend.onrender.com"
 function App() {
   const { user } = useAuthContext();
 
+
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    try {
+      const parsed = JSON.parse(user);
+      if (parsed && !parsed.companyName) {
+        // Legacy structure, clear it
+        localStorage.removeItem("user");
+      }
+    } catch (err) {
+      localStorage.removeItem("user");
+    }
+  }, []);
+  
+
+
+
+
+
+  
+
   const [list, setList] = useState([])
 
   return (
