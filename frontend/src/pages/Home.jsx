@@ -1,9 +1,9 @@
 import { MainBanner } from "../components/ControlDashboard/index";
 
-export const Home = () => {
+export const Home = ({link}) => {
     return (
         <>
-            <MainBanner/>
+            <MainBanner link={link}/>
         </>
     )
 };
