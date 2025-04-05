@@ -26,22 +26,23 @@ export const useLogin = () => {
         let companyName = "";
 
 
-
-
-        await axios.get(`${link}/companies`)
-        .then((response) => {
-            const companies = response.data
-
-            const selected = companies.find(compnay => compnay.email == email)
-
-
-            if(selected){
-                fields = selected['fields']
-                representitives = selected['representitives']
-                companyName = selected['companyName']
-
-            }  
-        })
+        
+        
+        try {
+            console.log("Logging in with:", { email, password, fields, representitives, companyName });
+            const response = await axios.get(`${link}/companies`);
+            const companies = response.data;
+            
+            const selected = companies.find(company => company.email?.trim() === email?.trim());
+          
+            if (selected) {
+              fields = selected.fields;
+              representitives = selected.representitives;
+              companyName = selected.companyName;
+            }
+          } catch (err) {
+            console.error("Error fetching companies:", err);
+          }
 
 
 
