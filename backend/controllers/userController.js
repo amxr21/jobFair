@@ -14,7 +14,7 @@ const createToken = (_id) => {
 
 
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, fields, representitives, companyName } = req.body;
     try{
         //modify the path later
         const user = await User.login(email, password);
@@ -22,7 +22,7 @@ const loginUser = async (req, res) => {
         const token = createToken(user._id);
         
         
-        res.status(200).json({user_id, email, token})
+        res.status(200).json({user_id, email, token, fields, representitives, companyName})
 
     } catch(error){
         if(req.password){
@@ -36,15 +36,15 @@ const loginUser = async (req, res) => {
 
 
 const signupUser = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, fields, representitives, companyName } = req.body;
     try{
         //modify the path later
-        const user = await User.signup(email, password);
+        const user = await User.signup(email, password, fields, representitives, companyName);
         const user_id = user._id;
         const token = createToken(user._id);
         
         
-        res.status(200).json({user_id,email, token})
+        res.status(200).json({user_id, email, token, fields, representitives, companyName})
 
     } catch(error){
         console.log("ERROR....");

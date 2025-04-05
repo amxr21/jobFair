@@ -12,7 +12,7 @@ dotenv.config();
 app.use((req, res, next) => {
     res.setHeader(
       "Access-Control-Allow-Origin",
-      "https://job-fair-cd5j.onrender.com/"
+      "https://job-fair-cd5j.onrender.com/" // change this later
     );
     res.setHeader(
       "Access-Control-Allow-Methods",
