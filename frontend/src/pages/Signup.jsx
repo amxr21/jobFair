@@ -4,52 +4,99 @@ import { useSignUp } from "../Hooks/useSignUp";
 export const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { signup, error, isLoading } = useSignUp();
+  const [fields, setFields] = useState("");
+  const [representitives, setRepresentitives] = useState("");
+  const [companyName, setCompanyName] = useState("");
 
-  // ... (add other fields as needed for registration)
+  const { signup, error, isLoading } = useSignUp();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await signup(email, password);
-
+    await signup(email, password, fields, representitives, companyName);
   };
 
   return (
-    <div className="md:h-[60vh] flex flex-col md:flex-row gap-x-10">
-        <h2 className="text-3xl font-bold mb-6 bg-white rounded-lg px-8 py-6 shadow-2xl md:h-80">Sign up</h2>
-        <form onSubmit={handleSubmit} className="bg-white md:w-1/2 md:h-80 h-fit rounded-lg px-8 py-6 shadow-2xl">
-            {/* Input fields for registration */}
-            <div className="w-full py-2">
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                className="w-full p-2 border rounded-md mb-1"
-            />
-            <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                className="w-full p-2 mt-2 border rounded-md mb-4"
-            />
-            <button disabled={isLoading} className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4">
-                Sign up
-            </button>
-            {error && <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">{error}</div>}
+    <div className="absolute flex flex-col items-center justify-center opacity-95 w-screen h-screen bg-[#F3F6FF] gap-16 rounded-xl col-span-10">
+
+      <div className="text-8xl font-bold -mt-5">Hello :)</div>
+
+      <div className="w-8/12 flex gap-x-16">
+
+        <div className="col-span-8 bg-white p-10 flex flex-col gap-y-5 rounded-xl w-7/12 overflow-y-auto">
+          <h2 className="text-3xl font-bold">Sign Up</h2>
+          <form onSubmit={handleSubmit} className="bg-white">
+            <div className="w-full py-2 flex flex-col gap-y-3">
+              <input
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Company Name"
+                className="w-full p-3 border rounded-md"
+              />
+
+              <div className="flex gap-x-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  className="w-full p-3 border rounded-md"
+                />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="w-full p-3 border rounded-md"
+                />
+
+              </div>
+              <input
+                type="text"
+                value={fields}
+                onChange={(e) => setFields(e.target.value)}
+                placeholder="Fields"
+                className="w-full p-3 border rounded-md"
+              />
+              <input
+                type="text"
+                value={representitives}
+                onChange={(e) => setRepresentitives(e.target.value)}
+                placeholder="Representatives"
+                className="w-full p-3 border rounded-md"
+              />
+              <button
+                disabled={isLoading}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+              >
+                Sign Up
+              </button>
+              {error && (
+                <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">
+                  {error}
+                </div>
+              )}
             </div>
-        </form>
-        <div className="hidden md:block md:w-1/2 md:my-0 px-8">
-         <h2 className="font-bold text-3xl mb-6">Welcome to Sign Up page</h2>
-         <p className="text-md text-justify">Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda hic minus laboriosam blanditiis cum, exercitationem repellat sed magnam eos omnis</p>
-        <div className="my-10 text-sm">
-          <span>Have an accont already? </span>
-          <span><a href="/login" className="underline">Log in</a> from here</span>
+          </form>
         </div>
+
+        <div className="col-span-4 w-5/12">
+          <h2 className="font-bold text-3xl mb-6">Welcome to the Job Fair Portal</h2>
+          <p className="text-md text-justify">
+            Register your company to access full features and connect with potential candidates.
+          </p>
+          <div className="my-10 text-sm">
+            <span>Already have an account? </span>
+            <span>
+              <a href="/login" className="underline">
+                Log in here
+              </a>
+            </span>
+          </div>
         </div>
+
+      </div>
 
     </div>
   );
 };
-
