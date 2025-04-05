@@ -11,7 +11,7 @@ import Statistics from "./pages/Statistics";
 import { useAuthContext } from "./Hooks/useAuthContext";
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const link = "https://jobfairform-backend.onrender.com"
 
