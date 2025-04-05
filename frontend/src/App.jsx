@@ -11,35 +11,15 @@ import Statistics from "./pages/Statistics";
 import { useAuthContext } from "./Hooks/useAuthContext";
 
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const link = "https://jobfairform-backend.onrender.com"
 
 
 function App() {
+
+  
   const { user } = useAuthContext();
-
-
-
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    try {
-      const parsed = JSON.parse(user);
-      if (parsed && !parsed.companyName) {
-        // Legacy structure, clear it
-        localStorage.removeItem("user");
-      }
-    } catch (err) {
-      localStorage.removeItem("user");
-    }
-  }, []);
-  
-
-
-
-
-
-  
 
   const [list, setList] = useState([])
 
