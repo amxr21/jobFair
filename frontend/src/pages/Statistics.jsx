@@ -74,7 +74,7 @@ const Statistics = ({link}) => {
             const counts = {}
             
             data['managers'].forEach((company) => {
-                company.fields.split(',').map((field) => field.trim().replace(/[^\w\s/-]/g, '').toLowerCase())
+                company.fields?.split(',').map((field) => field.trim().replace(/[^\w\s/-]/g, '').toLowerCase())
                 .forEach((field) => {
                     if(Object.keys(counts).includes(field)){
                         // console.log(counts);
@@ -101,7 +101,7 @@ const Statistics = ({link}) => {
         setMostField(...Object.entries(countSectors()).filter((da) => da[1] == Math.max(...Object.values(countSectors()))))
 
         const reps = []
-        data['managers'].map((da) => da.representitives.split(',')).forEach((d) => {reps.push(...d)})
+        data['managers'].map((da) => da.representitives?.split(',')).forEach((d) => {reps.push(...d)})
         // console.log(reps.map((rep) => rep.trim()));
 
 

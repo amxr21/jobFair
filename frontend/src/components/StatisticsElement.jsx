@@ -37,14 +37,14 @@ const StatisticsElement = ({data, type}) => {
     let managersNumber = 0
 
     data['managers'].forEach((manager) => {
-        managersNumber += manager.representitives.split(',').length
+        managersNumber += manager.representitives?.split(',').length
     })
     
     let fieldsNumber = 0
     let unique = new Set([])
     data['managers'].forEach((company) => {
         if(company.fields != 'Office and Students Fairs'){
-            const fieldsArray = company.fields.split(',').map(field => field.toLowerCase().trim());
+            const fieldsArray = company.fields?.split(',').map(field => field.toLowerCase().trim());
         
             console.log(unique);
             fieldsArray.forEach(field => {
