@@ -55,12 +55,12 @@ const StatisticsElement = ({data, type}) => {
 
     let fieldsNumber = 0
     let unique = new Set([])
-    data['managers'].forEach((company) => {
+    data['managers']?.forEach((company) => {
         if(company.fields != 'Office and Students Fairs'){
             const fieldsArray = company.fields?.split(',').map(field => field.toLowerCase().trim());
         
             console.log(unique);
-            fieldsArray.forEach(field => {
+            fieldsArray?.forEach(field => {
                 if (field !== 'Office and Students Fairs') {
                     const normalized = field.replace(/\s+/g, '');
                     unique.add(normalized);
