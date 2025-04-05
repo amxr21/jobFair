@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
+import axios from "axios";
 
-const link = "https://jobfair-1.onrender.com"
+const link = "https://jobfairform-backend.onrender.com"
 
 
 export const useLogin = () => {
@@ -9,13 +10,51 @@ export const useLogin = () => {
     const [ isLoading, setIsLoading ] = useState(null)
     const { dispatch } = useAuthContext();
 
+    const [selected, setSelected] = useState(null)
+
+    const [fields, setFields] = useState('')
+    const [representitives, setRepresentitives] = useState('')
+    const [companyName, setCompanyName] = useState('')
+
     const login = async (email, password) => {
         setIsLoading(true);
         setError(null);
+        
+        let selected = null;
+        let fields = "";
+        let representitives = "";
+        let companyName = "";
+
+
+
+
+        await axios.get(`${link}/companies`)
+        .then((response) => {
+            const companies = response.data
+
+            const selected = companies.find(compnay => compnay.email == email)
+
+
+            if(selected){
+                fields = selected['fields']
+                representitives = selected['representitives']
+                companyName = selected['companyName']
+
+            }  
+        })
+
+
+
+
+        setIsLoading(true);
+        setError(null);
+
+
+        
         const response = await fetch(`${link}/user/login`, {
             method: "POST",
             headers: { "Content-Type" : "application/json" },
-            body: JSON.stringify({email, password})
+            body: JSON.stringify({email, password, fields, representitives, companyName})
         })
 
         const json = await response.json();
