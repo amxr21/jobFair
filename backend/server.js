@@ -31,7 +31,7 @@ dotenv.config();
 //   });
 
 const corsOptions = {
-  origin: 'http://localhost:3000', // or '*' if open access is OK
+  origin: '*', // or '*' if open access is OK
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
 };
