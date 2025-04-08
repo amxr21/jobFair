@@ -6,23 +6,27 @@ const link = "https://jobfairform-backend.onrender.com"
 const CardInfoFile = ({file}) => {
     const downloadCV = () => {
         axios({
-            method: "GET",
-            url: `${link}/cv/${file?.id}`,
-            responseType: "blob"
+          method: "GET",
+          url: `${link}/cv/${file?.id}`,
+          responseType: "blob", // ✅ very important!
         })
-        .then(response => {
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', file?.originalname);
-            document.body.appendChild(link);
-            link.click();
-            // document.body.removeChild(link);
+        .then((response) => {
+          const blob = new Blob([response.data], { type: response.data.type || 'application/octet-stream' });
+          const url = window.URL.createObjectURL(blob);
+      
+          const linkElement = document.createElement("a");
+          linkElement.href = url;
+          linkElement.setAttribute("download", file?.originalname || "downloaded_file"); // ✅ fallback filename
+          document.body.appendChild(linkElement);
+          linkElement.click();
+          linkElement.remove();
+          window.URL.revokeObjectURL(url); // ✅ cleanup
         })
-        .catch(error => {
-            console.error("Error downloading file:", error);
+        .catch((error) => {
+          console.error("Download failed:", error);
         });
-    }
+      };
+      
 
 
 
