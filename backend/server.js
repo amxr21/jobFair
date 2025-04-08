@@ -31,7 +31,7 @@ dotenv.config();
 //   });
 
 const corsOptions = {
-  origin: '*', // or '*' if open access is OK
+  origin: "https://job-fair-cd5j.onrender.com", // or '*' if open access is OK
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
 };
