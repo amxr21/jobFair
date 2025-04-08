@@ -29,7 +29,6 @@ export const useLogin = () => {
         
         
         try {
-            console.log("Logging in with:", { email, password, fields, representitives, companyName });
             const response = await axios.get(`${link}/companies`);
             const companies = response.data;
             
