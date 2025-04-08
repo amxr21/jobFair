@@ -36,7 +36,7 @@ const CardInfoFile = ({file}) => {
     return (
         <div className="w-1/3 px-1">
             <h6 className="text-sm">{"CV:"}</h6>
-            <button onClick={() => downloadCV(file)} className="bg-red-500 flex items-center h-auto max-h-fit text-md font-bold w-full cursor-pointer">
+            <button onClick={() => downloadCV(file)} className="flex items-center h-auto max-h-fit text-md font-bold w-full cursor-pointer">
                 {file?.originalname}
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fillRule="currentColor" className="ml-2 bi bi-download" viewBox="0 0 16 16">
                     <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
