@@ -5,6 +5,8 @@ const link = "https://jobfairform-backend.onrender.com"
 
 const CardInfoFile = ({file}) => {
     const downloadCV = () => {
+        console.log(`${link}/cv/${file?.id}`);
+        
         axios({
           method: "GET",
           url: `${link}/cv/${file?.id}`,
