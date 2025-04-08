@@ -7,6 +7,7 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 const Grid = require("gridfs-stream");
 
 
+const { ObjectId } = mongoose.Types;
 
 const requireAuth = require("../middlewares/requireAuth")
 
@@ -42,36 +43,77 @@ const upload = multer({ storage });
 
 
 
-
-
-
 const downloadCV = async (req, res) => {
     try {
-        gfs.files.findOne(
-            { _id: req.params.id },
-            (err, file) => {
-            if (!file || file.length == 0) {
-                return res.status(404).json({
-                    err: 'No file exists'
-                });
-            }
-            
-            console.log(req.params.id);
-            const readstream = gfs.createReadStream(file.filename);
-            res.set('Content-Type', file.contentType);
-            res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
-    
-            readstream.pipe(res);
-        })
-        res.json({message: "CV downloaded:" + req.params.id})
-
-
+      const id = req.params.id;
+  
+      // ✅ Validate ObjectId
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: 'Invalid file ID format' });
+      }
+  
+      const fileId = new ObjectId(id);
+      const db = mongoose.connection.db;
+      const bucket = new mongoose.mongo.GridFSBucket(db, {
+        bucketName: 'applicants_details',
+      });
+  
+      const file = await db.collection('applicants_details.files').findOne({ _id: fileId });
+  
+      if (!file) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+  
+      res.set('Content-Type', file.contentType);
+      res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
+  
+      const downloadStream = bucket.openDownloadStream(file._id);
+  
+      downloadStream.on('error', (err) => {
+        console.error('Stream error:', err);
+        return res.status(500).json({ message: 'Error streaming file' });
+      });
+  
+      downloadStream.pipe(res);
+  
     } catch (error) {
-        console.error('Error fetching CV:', error);
-        res.status(500).json({ message: 'Internal server error' });
+      console.error('Download error:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
+  };
 
-}
+
+
+
+
+// const downloadCV = async (req, res) => {
+//     try {
+        
+//         gfs.files.findOne(
+//             { _id: req.params.id },
+//             (err, file) => {
+//             if (!file || file.length == 0) {
+//                 return res.status(404).json({
+//                     err: 'No file exists'
+//                 });
+//             }
+            
+//             console.log(req.params.id);
+//             const readstream = gfs.createReadStream(file.filename);
+//             res.set('Content-Type', file.contentType);
+//             res.set('Content-Disposition', `attachment; filename="${file.filename}"`);
+    
+//             readstream.pipe(res);
+//             // res.json({message: "CV downloaded:" + req.params.id})
+//         })
+
+
+//     } catch (error) {
+//         console.error('Error fetching CV:', error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+
+// }
 
 
 // route to get the company
