@@ -45,7 +45,7 @@ const upload = multer({ storage });
 
 const downloadCV = async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = await req.params.id;
   
       // ✅ Validate ObjectId
       if (!ObjectId.isValid(id)) {
