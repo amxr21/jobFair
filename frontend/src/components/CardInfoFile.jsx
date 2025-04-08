@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const link = "https://jobfairform-backend.onrender.com"
+const link = "https://jobfair-7zaa.onrender.com"
 // const link = "http://localhost:2000"
 
 const CardInfoFile = ({file}) => {
