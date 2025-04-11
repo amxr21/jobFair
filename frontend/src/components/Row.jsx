@@ -110,6 +110,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 <h2 className="flex">{number}</h2>
                 <h2 className="flex">{name}</h2>
                 <h2 className="flex">{uniId}</h2>
+                <h2 className="flex">{nationality}</h2>
                 <h2 className="flex">{age}</h2>
                 <h2 className="flex">{gpa}</h2>
                 <div className=" ">

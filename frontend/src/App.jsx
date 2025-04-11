@@ -13,7 +13,8 @@ import { useAuthContext } from "./Hooks/useAuthContext";
 
 import { useState } from "react";
 
-const link = "https://jobfair-7zaa.onrender.com"
+// const link = "https://jobfair-7zaa.onrender.com"
+const link = "http://localhost:2000"
 
 
 function App() {
@@ -25,7 +26,7 @@ function App() {
 
   return (
 
-    <div className="App grid grid-cols-12 relative gap-x-12 px-10 py-20 h-[100vh] px-10 md:py-8">
+    <div className="App grid grid-cols-12 relative gap-x-12 p-10 h-[100vh]">
       {/* <Intro /> */}
       <BrowserRouter>
       <NavBar/>

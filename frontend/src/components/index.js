@@ -26,3 +26,7 @@ export {default as PieChartElement} from "./PieChartElement";
 export {default as BarChartElement} from "./BarChartElement";
 export {default as ChartTitle} from "./ChartTitle";
 export {default as TopStatistic} from "./TopStatistic";
+export {default as LoginText} from "./LoginText";
+export {default as NoAccount} from "./NoAccount";
+export {default as SignupText} from "./SignupText";
+export {default as SignupFunc} from "./SignupFunc";

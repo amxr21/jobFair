@@ -1,7 +1,7 @@
 import axios from "axios"
 
-const link = "https://jobfair-7zaa.onrender.com"
-// const link = "http://localhost:2000"
+// const link = "https://jobfair-7zaa.onrender.com"
+const link = "http://localhost:2000"
 
 const CardInfoFile = ({file}) => {
     const downloadCV = () => {
