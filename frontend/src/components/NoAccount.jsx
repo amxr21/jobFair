@@ -1,11 +1,13 @@
+import { Link } from "react-router-dom"
+
 const NoAccount = () => {
     return (
         <div className="my-10 text-sm">
             <span>Don't have an account? </span>
             <span>
-                <a href="/signup" className="underline">
-                Sign up here
-                </a>
+                <Link to={"/signup"}>
+                    Sign up here
+                </Link>
             </span>
         </div>
     )
