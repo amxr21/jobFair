@@ -12,6 +12,7 @@ const TableHeader = ({userType}) => {
                 <h2 className="flex items-center">#</h2>
                 <h2 className="flex items-center">Name {icon} </h2>
                 <h2 className="flex items-center">University ID {icon} </h2>
+                <h2 className="flex items-center">Nationality {icon} </h2>
                 <h2 className="flex items-center">Age {icon} </h2>
                 <h2 className="flex items-center">CGPA {icon}</h2>
                 <h2 className="flex items-center">Major {icon} </h2>

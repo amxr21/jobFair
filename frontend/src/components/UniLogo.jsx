@@ -1,9 +1,9 @@
 import UniLogoImage from "../assets/images/uni-logo.png";
 
 
-const UniLogo = () => {
+const UniLogo = ({height = 20}) => {
     return (
-        <div className="unilogo h-16 md:h-20">
+        <div className={`unilogo md:h-${height} h-16`}>
             <a href="">
                 <img className="h-full" src={UniLogoImage} alt="" />
             </a>

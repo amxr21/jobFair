@@ -28,7 +28,7 @@ const MainBanner = ({link}) => {
 
 
     const filter = (e) => {
-        if(['Name', 'University ID', 'Major', 'Age', 'CGPA', 'Status'].includes(e.target.parentElement.innerText)){
+        if(['Name', 'University ID', 'Major', 'Age', 'CGPA', 'Status' , 'Nationality'].includes(e.target.parentElement.innerText)){
             setFilterCriteria(e.target.parentElement.innerText);
         }
     }
@@ -47,6 +47,8 @@ const MainBanner = ({link}) => {
                 return sortedArray.sort((a, b) => a.applicantDetails.major.localeCompare(b.applicantDetails.major));
             case "Name":
                 return sortedArray.sort((a, b) => a.applicantDetails.fullName.toLowerCase().localeCompare(b.applicantDetails.fullName.toLowerCase())); 
+            case "Nationality":
+                return sortedArray.sort((a, b) => a.applicantDetails.nationality.toLowerCase().localeCompare(b.applicantDetails.nationality.toLowerCase())); 
             case "Age":
                 return sortedArray.sort((a, b) => {
                     // console.log((2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0]));
@@ -142,15 +144,15 @@ const MainBanner = ({link}) => {
                                     number={counter}
                                     name={applicant.applicantDetails.fullName}
                                     uniId={applicant.applicantDetails.uniId}
+                                    nationality={applicant.applicantDetails.nationality}
                                     email={applicant.applicantDetails.email}
                                     phoneNumber={applicant.applicantDetails.phoneNumber}
                                     studyLevel={applicant.applicantDetails.studyLevel}
                                     major={applicant.applicantDetails.major}
                                     gpa={applicant.applicantDetails.cgpa}
-                                    nationality={applicant.applicantDetails.nationality}
                                     experience={applicant.applicantDetails.experience}
                                     attended={applicant.attended ? "Confirmed" : "No"}
-                                    age={2024 - parseInt(String(applicant.applicantDetails.birthdate).slice(0, 4))}
+                                    age={2024 - parseInt(String(applicant.applicantDetails.birthdate)?.slice(0, 4))}
                                     languages={String(applicant.applicantDetails.languages)}
                                     portfolio={applicant.applicantDetails.portfolio}
                                     file={applicant.cv}
@@ -204,7 +206,7 @@ const MainBanner = ({link}) => {
                                             nationality={applicant.applicantDetails.nationality}
                                             experience={applicant.applicantDetails.experience}
                                             attended={applicant.attended ? "Confirmed" : "No"}
-                                            age={2024 - parseInt(String(applicant.applicantDetails.birthdate).slice(0, 4))}
+                                            age={2024 - parseInt(String(applicant.applicantDetails.birthdate)?.slice(0, 4))}
                                             languages={String(applicant.applicantDetails.languages)}
                                             portfolio={applicant.applicantDetails.portfolio}
                                             file={applicant.cv}

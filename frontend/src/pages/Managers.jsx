@@ -42,11 +42,11 @@ const Managers = ({link}) => {
         
             switch (filterCriteria) {
                 case "Company Name": 
-                    return sortedArray.sort((a, b) => a.companyName.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.companyName.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
+                    return sortedArray.sort((a, b) => a.companyName?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.companyName.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
                 case "Company Email":
                         return sortedArray.sort((a, b) =>a.email.localeCompare(b.email)); 
                 case "Representatives":
-                        return sortedArray.sort((a, b) => a.representitives.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.representitives.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
+                        return sortedArray.sort((a, b) => a.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.representitives.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
                 case "Fields of interest":
                     return sortedArray.sort((a, b) => a.fields.localeCompare(b.fields));
                 case "Applicants":

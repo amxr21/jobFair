@@ -31,7 +31,8 @@ dotenv.config();
 //   });
 
 const corsOptions = {
-  origin: "https://job-fair-cd5j.onrender.com", // or '*' if open access is OK
+  // origin: "https://job-fair-cd5j.onrender.com", // or '*' if open access is OK
+  origin: "http://localhost:3000", // or '*' if open access is OK
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
 };
@@ -61,5 +62,5 @@ connection.once("open", ()=> {
 
 
 app.listen(process.env.PORT, ()=>{
-    console.log("Server works fine");
+    console.log("Server works fine on PORT:", process.env.PORT);
 })
