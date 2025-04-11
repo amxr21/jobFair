@@ -1,16 +1,26 @@
 import { Link } from "react-router-dom"
 
-const NoAccount = () => {
-    return (
-        <div className="my-10 text-sm">
-            <span>Don't have an account? </span>
-            <span>
-                <Link to={"/signup"}>
-                    Sign up here
-                </Link>
-            </span>
-        </div>
-    )
+const NoAccount = ({process}) => {
+
+    return process == 'login'
+    ?
+    <div className="my-10 text-sm">
+        <span>Don't have an account? </span>
+        <span>
+            <Link to={"/signup"}>
+                Sign Up here
+            </Link>
+        </span>
+    </div>
+    :
+    <div className="my-10 text-sm">
+        <span>You have an account? </span>
+        <span>
+            <Link to={"/login"}>
+                Login here
+            </Link>
+        </span>
+    </div>
 }
 
 

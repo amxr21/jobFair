@@ -48,7 +48,7 @@ const LoginFunc = () => {
                         {error && <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">{error}</div>}
                     </form>
 
-                    <NoAccount />
+                    <NoAccount process={'signup'} />
                 </div>
 
 
