@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSignUp } from "../Hooks/useSignUp";
-import { OfficeLogo, UniLogo } from "../components";
+import { NoAccount, OfficeLogo, UniLogo } from "../components";
 
 const SignupFunc = () => {
   const [email, setEmail] = useState("");
@@ -75,6 +75,9 @@ const SignupFunc = () => {
             </div>
           )}
         </form>
+        
+        <NoAccount process={'login'} />
+
       </div>
     </div>
   );
