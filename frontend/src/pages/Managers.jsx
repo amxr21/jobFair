@@ -24,7 +24,7 @@ const Managers = ({link}) => {
 
 
     const filter = (e) => {
-        if(['Company Name', 'Company Email', 'Representatives', 'Fields of interest', 'Applicants', 'Status'].includes(e.target.parentElement.innerText)){
+        if(['Company Name', 'Company Email', 'Representatives', 'Fields of interest', 'Applicants', 'City', 'Sector', 'Status'].includes(e.target.parentElement.innerText)){
             console.log('====================================');
             console.log(e.target.parentElement.innerText);
             console.log('====================================');
@@ -47,6 +47,10 @@ const Managers = ({link}) => {
                         return sortedArray.sort((a, b) =>a.email.localeCompare(b.email)); 
                 case "Representatives":
                         return sortedArray.sort((a, b) => a.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.representitives.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
+                case "Sector":
+                        return sortedArray.sort((a, b) => a.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.sector.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
+                case "City":
+                        return sortedArray.sort((a, b) => a.city?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.city.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
                 case "Fields of interest":
                     return sortedArray.sort((a, b) => a.fields.localeCompare(b.fields));
                 case "Applicants":
@@ -185,7 +189,7 @@ const Managers = ({link}) => {
 
 
 
-                <div className="grow py-6 h-40 overflow-hidden text-xs md:text-lg" onClick={filter}>
+                <div className="grow h-40 overflow-hidden text-xs md:text-lg" onClick={filter}>
                     <TableHeader userType={'manager'}/>
                     <div className="list h-96 pr-3 overflow-y-auto w-full pt-2 pb-8">
                         {finalList.length != 0 ?  finalList.map((company) => {
@@ -220,6 +224,9 @@ const Managers = ({link}) => {
                                     companyRepresentitives={company.representitives}
                                     companyFields={company.fields}
                                     companyStatus={'registered'}
+                                    companySector={company.sector}
+                                    companyCity={company.city}
+                                    numberOfPositions={company.noOfPositions}
 
                                     numebrOfApplicants={company.numberOfApplicants}
 

@@ -15,7 +15,11 @@ const applicantsLink = "http://localhost:2000/applicants"
 import { ExpandIcon } from "./Icons";
  
 
-const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants}) => {
+
+
+
+
+const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions}) => {
     const expandApplicantDiv = useRef();
     const expandApplicantBtn = useRef();
     const [isVisible, setIsVisible] = useState(false);
@@ -106,13 +110,13 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     else{
         return userType != 'manager'
         ?
-            <div className="row grid py-4 px-7 bg-white rounded-xl gap-x-4 items-center mb-2">
+            <div className="row grid py-4 px-7 min-h-24 bg-white rounded-xl items-center mb-2">
                 <h2 className="flex">{number}</h2>
                 <h2 className="flex">{name}</h2>
                 <h2 className="flex">{uniId}</h2>
                 <h2 className="flex">{nationality}</h2>
-                <h2 className="flex">{age}</h2>
-                <h2 className="flex">{gpa}</h2>
+                {/* <h2 className="flex">{age}</h2> */}
+                <h2 className="flex">{parseFloat(gpa)?.toFixed(2)}</h2>
                 <div className=" ">
                     <span>{studyLevel} of</span>
                     <span> {major}</span>
@@ -232,12 +236,16 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 </div>
             </div>
         :
-            <div className="row-manager grid py-4 px-7 bg-white rounded-xl gap-x-4 items-center mb-2">
+            <div className="row-manager grid py-4 px-7 min-h-24 bg-white rounded-xl gap-x-4 items-center mb-2">
                 <h2 className="flex">{number}</h2>
                 <h2 className="flex">{companyName}</h2>
-                <h2 className="flex">{companyEmail}</h2>
+                <h2 className="max-w-xs break-words whitespace-normal overflow-hidden text-wrap">
+                    <a href={`mailto:${companyEmail}`}>{companyEmail}</a>
+                </h2>
                 <h2 className="flex">{companyRepresentitives}</h2>
-                <h2 className="flex">{companyFields}</h2>
+                <h2 className="flex">{companyCity}</h2>
+                <h2 className="flex">{companySector}</h2>
+                {/* <h2 className="flex">{companyFields?.toLowerCase()}</h2> */}
                 <h2 className="flex">{numebrOfApplicants}</h2>
                 <h2 className={`flex text-[1rem] px-2 py-1 rounded-xl font-semibold ${companyStatus ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{companyStatus ? 'Confirmed' : 'Registered'}</h2>
     
