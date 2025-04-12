@@ -18,19 +18,30 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    fields: {
+        type: String,
+        required: true,
+    },
     representitives: {
         type: String,
         required: true,
     },
-    fields: {
+    sector: {
+        type: String,
+        required: true,
+    },
+    city: {
+        type: String,
+        required: true,
+    },
+    noOfPositions: {
         type: String,
         required: true,
     },
 })
 
-userSchema.statics.signup = async function(email, password, fields, representitives, companyName ) {
-    
-    if(!email || !password || !representitives || !fields || !companyName){
+userSchema.statics.signup = async function(email, password, fields, representitives, companyName, sector, city, noOfPositions ) {
+    if(!email || !password || !representitives || !fields || !companyName ){
         throw Error("All fields must be filled");
     }
     if(!validator.isEmail(email)){
@@ -47,8 +58,7 @@ userSchema.statics.signup = async function(email, password, fields, representiti
     }
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
-
-    const user = await this.create({email, password: hash, fields, representitives, companyName})
+    const user = await this.create({email, password: hash, fields, representitives, companyName, sector, city, noOfPositions})
 
     return user;
 }
