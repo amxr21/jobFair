@@ -79,11 +79,17 @@ const MainBanner = ({link}) => {
                 const response = await axios.get(`${link}/applicants`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
                 });
-
+                let allIds = []
                 if (user) {
                     if(user.email == "casto@sharjah.ac.ae"){
                         // Filter applicants to only include those associated with the logged-in user
-                        setApplicants(response.data);
+                        setApplicants(response.data.filter((applicant) => {
+                            if(!allIds.includes(applicant.applicantDetails.uniId)) {
+                                allIds.push(applicant.applicantDetails.uniId)
+                                return true
+                            }
+                            return false
+                        }));
                     }
                     else{
                         // Filter applicants to only include those associated with the logged-in user
@@ -132,7 +138,7 @@ const MainBanner = ({link}) => {
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
                 <div className="grow rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full pt-2 pb-4`}>
+                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
                             counter += 1;
 
