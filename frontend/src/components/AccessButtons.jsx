@@ -100,10 +100,12 @@ const AccessButtons = () => {
                     <div className="flex flex-row gap-x-1">
                         {user && 
                         (
-                            <a href="/" className="flex grow items-center justify-center p-3 gap-x-5 border border-2 rounded-xl" onClick={handleLogout}>
+                            // <div className="flex grow items-center justify-center p-3 gap-x-5 border border-2 rounded-xl" onClick={handleLogout}>
+                            <Link to={'/Signup'} className="flex grow items-center justify-center p-3 gap-x-5 border border-2 rounded-xl" onClick={handleLogout}>
                                 <LogOutIcon />
                                 <div onClick={handleLogout} className="" type="submit">Log out</div>
-                            </a>
+                            </Link>
+                            // </div>
                         )
                         }
                         
