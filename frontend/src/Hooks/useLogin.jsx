@@ -4,7 +4,8 @@ import axios from "axios";
 
 
 // const link = "https://jobfair-7zaa.onrender.com"
-const link = "http://localhost:2000"
+// const link = "http://localhost:2000"
+const link = "https://jobfair-production.up.railway.app"
 
 export const useLogin = () => {
     const [ error, setError ] = useState(null);
