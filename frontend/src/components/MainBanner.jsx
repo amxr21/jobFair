@@ -124,7 +124,7 @@ const MainBanner = ({link}) => {
     // console.log(applicants); // Logging to debug and verify the applicants' list
 
     return (
-        <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
+        <div id="Main" className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
             <TopBar user={user} />
             <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-auto rounded-xl p-8 col-span-10 w-full mx-auto">
                 
@@ -136,7 +136,7 @@ const MainBanner = ({link}) => {
 
 
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
-                <div className="grow rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
+                <div className="grow h-40 rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
                     <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
@@ -164,6 +164,9 @@ const MainBanner = ({link}) => {
                                     file={applicant.cv}
                                     qrCode={applicant._id}
                                     status={applicant?.attended}
+                                    city={applicant.applicantDetails.city}
+                                    skills={{tech: applicant.applicantDetails.technicalSkills, nontech: applicant.applicantDetails.nonTechnicalSkills}}
+                                    expectedToGraduate={applicant.applicantDetails?.ExpectedToGraduate}
                                 />
                             );
 

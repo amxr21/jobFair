@@ -1,7 +1,7 @@
 const CardInfo2 = ({infoHeader, infoText}) => {
     if(infoText == "") infoText = "Nothing yet..."
     return (
-        <div className="md:w-1/3 w-fit px-1 overflow-hidden">
+        <div className="grow w-3/12 overflow-hidden">
             <h6 className="text-sm">{infoHeader}</h6>
             {
             infoText?.slice(0,4) == "http"
