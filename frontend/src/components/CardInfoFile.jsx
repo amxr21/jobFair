@@ -1,7 +1,8 @@
 import axios from "axios"
 
 // const link = "https://jobfair-7zaa.onrender.com"
-const link = "http://localhost:2000"
+// const link = "http://localhost:2000"
+const link = "https://jobfair-production.up.railway.app"
 
 const CardInfoFile = ({file}) => {
     const downloadCV = () => {
@@ -34,15 +35,19 @@ const CardInfoFile = ({file}) => {
 
 
     return (
-        <div className="w-1/3 px-1">
-            <h6 className="text-sm">{"CV:"}</h6>
-            <button onClick={() => downloadCV(file)} className="flex items-center h-auto max-h-fit text-md font-bold w-full cursor-pointer">
-                {file?.originalname}
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fillRule="currentColor" className="ml-2 bi bi-download" viewBox="0 0 16 16">
-                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
-                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
-                </svg>
-            </button>
+        <div className="w-5/12">
+            <h6 className="text-lg">{"CV:"}</h6>
+            
+            <div className="flex h-7 overflow-hidden justify-between">
+              <h2 className={`${file ? 'text-black' : 'text-gray-300 cursor-not-allowed'} font-semibold`}>{file ? file.originalname : "No Uploaded file" }</h2>
+              <button onClick={() => downloadCV(file)} className={`flex h-auto w-fit max-h-fit text-lg font-bold w-full ${file ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`${file ? 'text-black' : 'text-gray-300'} size-6`}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+
+              </button>
+
+            </div>
         </div>
 
     )

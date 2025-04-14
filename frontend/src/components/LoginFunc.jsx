@@ -18,14 +18,14 @@ const LoginFunc = () => {
 
 
     return (
-        <div className="login-window relative w-[48rem] flex flex-col items-center gap-y-24 bg-white rounded-3xl px-16 py-12 box-border max-h-full flex overflow-y-hidden">
+        <div className="login-window relative w-full md:w-[48rem] flex flex-col items-center gap-y-10 md:gap-y-24 bg-white rounded-3xl px-8 md:px-16 py-4 md:py-12 md:box-border max-h-full flex md:overflow-y-hidden">
 
-            <div className="flex gap-x-10 items-center">
-            <UniLogo height={16} />
-            <OfficeLogo height={14}/>
+            <div className="flex flex-col md:flex-row gap-5 md:gap-10 items-center">
+                <UniLogo height={16} />
+                <OfficeLogo height={14}/>
             </div>
-            <div className="flex flex-col items-center gap-y-8 w-full">
-                <h2 className="text-5xl font-light">Log in</h2>
+            <div className="flex flex-col items-center gap-y-4 md:gap-y-8 w-full">
+                <h2 className="text-3xl md:text-5xl font-light">Log in</h2>
                 <form onSubmit={handleSubmit} className="w-full flex flex-col items-center">
                     {/* Input fields for email and password */}
                     <input

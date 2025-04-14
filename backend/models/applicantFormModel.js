@@ -18,6 +18,9 @@ const applicantModel = new applicantSchema ({
         type: Array,
         // required: true,
     },
+    flags: {
+        type: Array,
+    },
     attended: {
         type: Boolean
     }
