@@ -4,7 +4,8 @@ import QRCode from "qrcode.react";
 
 
 // const link = "https://jobfair-7zaa.onrender.com"
-const link = "http://localhost:2000"
+// const link = "http://localhost:2000"
+const link = "https://jobfair-production.up.railway.app/"
 
 const capitalize = (str) => {
     if(!str) return ""
