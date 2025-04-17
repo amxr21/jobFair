@@ -163,7 +163,7 @@ const aaa2 = () => {
 
     return (
         <>
-            <div className="flex md:flex-row flex-col items-center w-fit max-w-[40em] gap-x-6">
+            <div className="flex md:flex-row flex-col text-sm xl:text-base items-center w-fit max-w-[40em] gap-x-6">
                 {
                     scannerResult && !isCameraOn
                     ? <div>Success: <span>{scannerResult}</span> </div>

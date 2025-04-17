@@ -243,7 +243,7 @@ const Managers = ({link}) => {
                         </div>
                         :
                         <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <p className="text-sm">You are alone mf</p>
+                            <p className="text-sm">No listed Companies</p>
                         </div>
 
                             }

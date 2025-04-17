@@ -124,12 +124,12 @@ const MainBanner = ({link}) => {
     // console.log(applicants); // Logging to debug and verify the applicants' list
 
     return (
-        <div id="Main" className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
+        <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto scroll-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
             <TopBar user={user} />
-            <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-auto rounded-xl p-8 col-span-10 w-full mx-auto">
+            <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-auto rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto">
                 
                 <div className="flex md:flex-row flex-col justify-between items-center pl-2 border-b border-b-gray-400 pb-5 mb-3">
-                    <h2 className="text-center text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
+                    <h2 className="text-center text-2xl xl:text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
                     {user && <BarButtons link={link} />}
                 </div>
 
@@ -181,7 +181,7 @@ const MainBanner = ({link}) => {
                         </div>
                         :
                         <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <p className="text-sm">You are alone mf</p>
+                            <p className="text-sm">Np Applicants</p>
                         </div>
 
 
@@ -235,7 +235,7 @@ const MainBanner = ({link}) => {
                                 </div>
                                 :
                                 <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                                    <p className="text-sm">You are alone mf</p>
+                                    <p className="text-sm">No Applicants</p>
                                 </div>
 
 

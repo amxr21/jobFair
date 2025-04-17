@@ -27,7 +27,7 @@ function App() {
 
   return (
 
-    <div className="App grid grid-cols-12 relative gap-x-12 p-10 h-[100vh]">
+    <div className="App grid grid-cols-12 relative gap-x-8 xl:gap-x-12 p-0 md:p-8 h-[100vh] overflow-hidden">
       {/* <Intro /> */}
       <BrowserRouter>
       <NavBar/>

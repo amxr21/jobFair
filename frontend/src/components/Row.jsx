@@ -76,7 +76,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     else{
         return userType != 'manager'
         ?
-            <div className="row grid py-4 px-7 min-h-24 bg-white rounded-xl items-center mb-2">
+            <div className="row grid py-4 px-7 min-h-24 bg-white rounded-xl items-center mb-2 text-sm xl:text-base">
                 <h2 className="flex">{number}
                     
                 </h2>
@@ -89,7 +89,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                     <span>{studyLevel} of</span>
                     <span> {major}</span>
                 </div>
-                <h2 className={`flex text-[1rem] px-2 py-1 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
+                <h2 className={`flex text-sm xl:text-[1rem] px-2 py-1 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
     
                
                
@@ -167,7 +167,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                                     />
                                     <CardInfo
                                         infoHeader={"Not-technical Skills"}
-                                        infoText={skills?.tech}
+                                        infoText={skills?.nontech}
                                     />
                                 </CardRow>
 
@@ -223,7 +223,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 </div>
             </div>
         :
-            <div className="row-manager grid py-4 px-7 min-h-24 bg-white rounded-xl gap-x-4 items-center mb-2">
+            <div className="row-manager grid py-4 px-7 min-h-24 bg-white rounded-xl gap-x-4 items-center mb-2 text-sm xl:text-base">
                 <h2 className="flex">{number}</h2>
                 <h2 className="flex">{companyName}</h2>
                 <h2 className="max-w-xs break-words whitespace-normal overflow-hidden text-wrap">
@@ -234,7 +234,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 <h2 className="flex">{companySector}</h2>
                 {/* <h2 className="flex">{companyFields?.toLowerCase()}</h2> */}
                 <h2 className="flex">{numebrOfApplicants}</h2>
-                <h2 className={`flex text-[1rem] px-2 py-1 rounded-xl font-semibold ${companyStatus ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{companyStatus ? 'Confirmed' : 'Registered'}</h2>
+                <h2 className={`flex  text-sm xl:text-[1rem] px-2 py-1 rounded-xl font-semibold ${companyStatus ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{companyStatus ? 'Confirmed' : 'Registered'}</h2>
     
                
                
