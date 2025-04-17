@@ -39,24 +39,42 @@ const sendEmail = async (subject, message, send_to, sent_from) => {
 
 
 const testFunc =  async (req, res) => {
-    res.json("Make it works dump");
+    res.json("Make it work");
 }
 
 const getAllApplicants = async (req, res) => {
     try{
-        const filteredUserIds = await ApplicantModel.find({})
+        const filteredUserIds = await ApplicantModel?.find({})
 
-        const a = filteredUserIds.map((aa) => aa?.user_id)[0][0];
+        const a = filteredUserIds?.map((aa) => aa?.user_id)[0][0];
         console.log(a);
 
 
-        const allApplicants = (await ApplicantModel.find({}))
-        // .filter((app)=> {
-        //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
-        //     return app.user_id[0], a.equals(app.user_id[0])
-        // })
-        // console.log(req.user._id, );
-        res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
+        if(filteredUserIds.length > 0){
+            const a = filteredUserIds.map((aa) => aa?.user_id)[0][0];
+            console.log(a);
+        
+
+            const allApplicants = (await ApplicantModel.find({}))
+            // .filter((app)=> {
+            //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
+            //     return app.user_id[0], a.equals(app.user_id[0])
+            // })
+            // console.log(req.user._id, );
+            res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
+        }
+        else{
+            res.status(200).json([])
+        }
+        
+        // const allApplicants = (await ApplicantModel.find({}))
+        // if(addApplicant.length == 0) res.status(200).json([])
+        // // .filter((app)=> {
+        // //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
+        // //     return app.user_id[0], a.equals(app.user_id[0])
+        // // })
+        // // console.log(req.user._id, );
+        // res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
 
     } catch(error) {
         res.status(500).json({error: error.message})

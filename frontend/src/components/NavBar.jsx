@@ -12,7 +12,7 @@ const NavBar = () => {
 
 
     return (
-        <nav className="col-span-2 flex flex-col py-4 justify-between gap-y-16 h-full overflow-hidden ">
+        <nav className="col-span-0 md:col-span-2 hidden md:flex flex-col py-4 justify-between gap-y-16 h-full overflow-hidden ">
 
             <OfficeLogo />
 
