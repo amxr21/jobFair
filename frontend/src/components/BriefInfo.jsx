@@ -105,7 +105,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                     <h2 className="text-2xl font-bold font-uppercase">
                         {shortName}
                     </h2>
-                    <h6 className="text-sm font-regular font-uppercase mb-2">{graduationYear != 'undefined' ? `Expected to graduate by ${graduationYear}` : "Graduated"}</h6>
+                    <h6 className="text-sm font-regular font-uppercase mb-2">{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</h6>
                 </div>
                 <CardInfo infoHeader={'Attended'} infoText={status ? `Confirmed` : `Registered`} />
             </div>
