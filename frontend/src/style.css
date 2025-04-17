@@ -1,11 +1,68 @@
 @font-face {
-    font-family: "29LT bukra";
-    src: url("./assets/fonts/29LTBUKRAREGULAR.TTF");
-}
+    font-family: '29LTBukra';
+    src: url('./assets/fonts/29LTBUKRAREGULAR.TTF') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-THIN.TTF') format('truetype');
+    font-weight: 100;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-EXTRALIGHT.TTF') format('truetype');
+    font-weight: 200;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-LIGHT.TTF') format('truetype');
+    font-weight: 300;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-REGULAR.TTF') format('truetype');
+    font-weight: 400;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-MEDIUM.TTF') format('truetype');
+    font-weight: 500;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-SEMIBOLD.TTF') format('truetype');
+    font-weight: 600;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-BOLD.TTF') format('truetype');
+    font-weight: 700;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-EXTRABOLD.TTF') format('truetype');
+    font-weight: 800;
+  }
+  
+  @font-face {
+    font-family: 'Inter';
+    src: url('./assets/fonts/INTER-BLACK.TTF') format('truetype');
+    font-weight: 900;
+  }
+  
 
 *{
-    /* font-family: "29LT bukra"; */
     font-family: 'Inter';
+    /* font-family: "29LT bukra"; */
     scroll-behavior: smooth !important;
 }
 
