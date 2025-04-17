@@ -112,9 +112,9 @@ const AccessButtons = () => {
                         {
                             user?.user_id &&
                             <>
-                                <button onClick={showQRCode} onDoubleClick={downloadQRCode} className="text-sm h-full p-3 border border-2 rounded-xl">
+                                {/* <button onClick={showQRCode} onDoubleClick={downloadQRCode} className="text-sm h-full p-3 border border-2 rounded-xl">
                                     <QrCodeIcon /> 
-                                </button>
+                                </button> */}
                                 {/* <button onClick={downloadQRCode} className="text-sm h-full p-3 border border-2 rounded-xl">
                                     <QrCodeIcon /> 
                                 </button> */}

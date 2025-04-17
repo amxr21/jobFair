@@ -105,7 +105,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                     
                     
                     
-                    <div ref={expandApplicantDiv} className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-14 w-80 md:w-[58em] md:max-w-[196em] h-[50rem] overflow-y-scroll md:overflow-hidden md:h-fit fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
+                    <div ref={expandApplicantDiv} className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-14 w-80 md:w-[58em] md:max-w-[196em] h-[50rem] overflow-y-scroll md:overflow-y-auto md:h-fit md:max-h-[42rem] fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
                         <div className="card-info flex flex-col md:flex-row gap-x-4 md:h-11/12">
                             <Brief>
                                 <BriefInfo
@@ -156,7 +156,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                                     />
                                     <CardInfo
                                         infoHeader={"CGPA"}
-                                        infoText={parseFloat(gpa).toFixed(2)}
+                                        infoText={gpa ? parseFloat(gpa).toFixed(2) : ''}
                                     />
                                 </CardRow>
                                 
@@ -198,7 +198,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     
                                 <CardRow>
                                     <CardInfo
-                                        infoHeader={"Portfolio"}
+                                        infoHeader={"LinkedIn"}
                                         infoText={portfolio}
                                     />
     
