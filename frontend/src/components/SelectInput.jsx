@@ -1,9 +1,14 @@
 const SelectInput = ({ Id, Name, options = [], value, handleChange }) => {
     return (
       <div className="w-full">
-        <label htmlFor={Id} className="text-sm text-gray-600 ml-1">
-          {Name}
-        </label>
+        {
+          ['Sector', 'City', 'Number of Positions'].includes(Name) 
+          ? '' 
+          : <label htmlFor={Id} className="text-sm text-gray-600 ml-1">
+              {Name}
+            </label>
+        }
+        
         <select
           id={Id}
           value={value}

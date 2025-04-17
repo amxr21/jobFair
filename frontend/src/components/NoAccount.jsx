@@ -4,7 +4,7 @@ const NoAccount = ({process}) => {
 
     return process == 'signup'
     ?
-    <div className="my-5 text-sm">
+    <div className="my-3 text-sm">
         <span>Don't have an account? </span>
         <span>
             <Link to={"/signup"}>
@@ -13,7 +13,7 @@ const NoAccount = ({process}) => {
         </span>
     </div>
     :
-    <div className="my-5 text-sm">
+    <div className="my-3 text-sm">
         <span>You have an account? </span>
         <span>
             <Link to={"/login"}>
