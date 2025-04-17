@@ -18,7 +18,7 @@ const NavBar = () => {
 
             <div className="links flex flex-col justify-between w-full grow ">
                 <div className="flex flex-col gap-y-8">
-                    <ApplicationFormButton />
+                    {user?.companyName == "CASTO Office" && <ApplicationFormButton />}
                     <div className="flex flex-col gap-y-4">
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
                         {

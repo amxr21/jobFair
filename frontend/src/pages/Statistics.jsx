@@ -19,9 +19,29 @@ const Statistics = ({ link }) => {
   const { user } = useAuthContext();
   const titles = useRef(['students', 'companies', 'seekers', 'fields']).current;
 
+
+  let allIds = []
+  
+  
+
+
+  let a = data['applicants'].filter((applicant) => {
+    if(!allIds.includes(applicant.applicantDetails.uniId)) {
+        allIds.push(applicant.applicantDetails.uniId)
+        return true
+    }
+    return false
+    });
+
+
+
+
+
+
+
   const pieData = [
-    { id: 0, value: data.applicants?.filter((app) => app.attended).length || 0, label: 'Confirmed' },
-    { id: 1, value: data.applicants?.filter((app) => !app.attended).length || 0, label: 'Unconfirmed' },
+    { id: 0, value: a?.filter((app) => app.attended).length || 0, label: 'Confirmed' },
+    { id: 1, value: a?.filter((app) => !app.attended).length || 0, label: 'Unconfirmed' },
   ];
 
   const pieData2 = [
