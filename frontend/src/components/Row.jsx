@@ -89,7 +89,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                     <span>{studyLevel} of</span>
                     <span> {major}</span>
                 </div>
-                <h2 className={`flex text-sm xl:text-[1rem] px-2 py-1 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
+                <h2 className={`flex text-center justify-center text-sm xl:text-[1rem] px-2 py-2 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
     
                
                

@@ -20,7 +20,7 @@ const SignupFunc = () => {
   };
 
   return (
-    <div className="w-[48rem] flex flex-col items-center gap-y-10 bg-white rounded-3xl px-16 py-12 box-border">
+    <div className="w-[48rem] flex flex-col items-center gap-y-10 bg-white overflow-y-auto rounded-3xl px-16 py-12 box-border">
       <div className="flex gap-x-10 items-center">
         <UniLogo height={16} />
         <OfficeLogo height={14} />
@@ -116,7 +116,7 @@ const SignupFunc = () => {
           Sign Up
         </button>
 
-        <div className="flex w-full gap-x-5 justify-center items-center min-h-16">
+        <div className="flex w-full gap-x-5 justify-center items-center min-h-14">
           {error && (
             <div className="error bg-red-200 border border-red-500 text-red-800 rounded-lg px-2 py-3 my-2">
               {error}test

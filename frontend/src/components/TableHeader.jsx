@@ -8,7 +8,7 @@ const TableHeader = ({userType}) => {
     return userType != 'manager'
     ?
         <>
-            <div className="row grid py-4 pl-7 pr-14 rounded-xl font-bold text-xs xl:text-base">
+            <div className="row grid py-4 pl-7 pr-14 rounded-xl font-bold text-xs md:text-[0.8rem] 2xl:text-base">
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">#</h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Name {icon} </h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">University ID {icon} </h2>
@@ -22,7 +22,7 @@ const TableHeader = ({userType}) => {
         </>
     :
     <>
-            <div className="row-manager grid py-4 pl-7 pr-14 rounded-xl font-bold text-xs xl:text-base">
+            <div className="row-manager grid py-4 pl-7 pr-14 rounded-xl font-bold text-xs md:text-[0.8rem] 2xl:text-base">
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">#</h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Company Name {icon} </h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Company Email {icon} </h2>
