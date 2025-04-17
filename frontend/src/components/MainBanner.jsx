@@ -126,7 +126,7 @@ const MainBanner = ({link}) => {
     return (
         <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto scroll-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
             <TopBar user={user} />
-            <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-auto rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto">
+            <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow ${user?.companyName == "CASTO Office" ? 'overflow-y-hidden' : 'overflow-y-auto'} rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
                 
                 <div className="flex md:flex-row flex-col justify-between items-center pl-2 border-b border-b-gray-400 pb-5 mb-3">
                     <h2 className="text-center text-2xl xl:text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
@@ -138,7 +138,7 @@ const MainBanner = ({link}) => {
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
                 <div className="grow h-40 rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-96'} pr-3 overflow-y-auto w-full`}>
+                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-80'} py-2 pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
                             counter += 1;
 
@@ -160,7 +160,7 @@ const MainBanner = ({link}) => {
                                     attended={applicant.attended ? "Confirmed" : "No"}
                                     age={2024 - parseInt(String(applicant.applicantDetails.birthdate)?.slice(0, 4))}
                                     languages={String(applicant.applicantDetails.languages)}
-                                    portfolio={applicant.applicantDetails.portfolio}
+                                    portfolio={applicant.applicantDetails?.linkedIn}
                                     file={applicant.cv}
                                     qrCode={applicant._id}
                                     status={applicant?.attended}
@@ -217,7 +217,7 @@ const MainBanner = ({link}) => {
                                             attended={applicant.attended ? "Confirmed" : "No"}
                                             age={2024 - parseInt(String(applicant.applicantDetails.birthdate)?.slice(0, 4))}
                                             languages={String(applicant.applicantDetails.languages)}
-                                            portfolio={applicant.applicantDetails.portfolio}
+                                            portfolio={applicant.applicantDetails?.linkedIn}
                                             file={applicant.cv}
                                             qrCode={applicant._id}
                                             status={applicant?.attended}
