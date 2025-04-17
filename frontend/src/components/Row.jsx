@@ -84,7 +84,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 <h2 className="flex">{uniId}</h2>
                 <h2 className="flex">{nationality}</h2>
                 {/* <h2 className="flex">{age}</h2> */}
-                <h2 className="flex">{parseFloat(gpa)?.toFixed(2)}</h2>
+                <h2 className="flex">{gpa == 0 || gpa == NaN  ? 'XX' : parseFloat(gpa)?.toFixed(2)}</h2>
                 <div className=" ">
                     <span>{studyLevel} of</span>
                     <span> {major}</span>
