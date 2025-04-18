@@ -18,54 +18,8 @@ import { TopBar } from "./index";
 const MainBanner = ({link}) => {
 
 
-    const [visibleCount, setVisibleCount] = useState(window.innerWidth < 768 ? 0 : finalList.length); // show all on desktop
 
     const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
-
-    // batch rendering on mobile
-    useEffect(() => {
-        if (isMobile()) {
-            let current = 0;
-            const batchSize = 50;
-            const interval = setInterval(() => {
-                current += batchSize;
-                setVisibleCount(prev => {
-                    const next = prev + batchSize;
-                    if (next >= finalList.length) {
-                        clearInterval(interval);
-                        return finalList.length;
-                    }
-                    return next;
-                });
-            }, 100);
-
-            return () => clearInterval(interval);
-        } else {
-            setVisibleCount(finalList.length); // render all instantly on desktop
-        }
-    }, [finalList]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -203,6 +157,35 @@ const MainBanner = ({link}) => {
         
 
     }
+
+
+        const [visibleCount, setVisibleCount] = useState(window.innerWidth < 768 ? 0 : finalList.length); // show all on desktop
+
+        // batch rendering on mobile
+        useEffect(() => {
+            if (isMobile()) {
+                let current = 0;
+                const batchSize = 50;
+                const interval = setInterval(() => {
+                    current += batchSize;
+                    setVisibleCount(prev => {
+                        const next = prev + batchSize;
+                        if (next >= finalList.length) {
+                            clearInterval(interval);
+                            return finalList.length;
+                        }
+                        return next;
+                    });
+                }, 100);
+    
+                return () => clearInterval(interval);
+            } else {
+                setVisibleCount(finalList.length); // render all instantly on desktop
+            }
+        }, [finalList]);
+    
+
+
 
 
 
