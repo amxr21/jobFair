@@ -169,7 +169,7 @@ const Managers = ({link}) => {
             <TopBar user={user} />
             <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-hidden rounded-xl p-8 col-span-10 w-full mx-auto">
                 
-                <div className="flex md:flex-row flex-col justify-between items-center px-2 border-b border-b-gray-400 pb-5 mb-8">
+                <div className="flex md:flex-row flex-col justify-between items-center px-2 border-b border-b-gray-400 pb-5">
                     <h2 className="text-center text-3xl font-bold md:my-0 mb-7">Companies & Cooperations</h2>
                 </div>
 
