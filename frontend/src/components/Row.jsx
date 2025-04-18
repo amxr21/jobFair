@@ -68,35 +68,21 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
         }
         
         const handleClickOutside = (e) => {
-            const parentElement = document.querySelector('.parent');
-            const descendantsList = [];
-            getAllDescendants(parentElement, descendantsList);
-        
-            // Check if the clicked target is part of the descendants list
+            const dropdown = expandApplicantDiv.current;
+            const trigger = expandApplicantBtn.current;
+    
+            // If click is NOT inside dropdown AND NOT the trigger button, close it
             if (
-                expandApplicantDiv.current &&
-                e.target !== expandApplicantBtn.current &&
-                !descendantsList.includes(e.target) &&
-                e.target.type !== 'checkbox' // Ensure checkboxes are not included in the "outside click" detection
+                dropdown &&
+                !dropdown.contains(e.target) &&
+                trigger &&
+                e.target !== trigger
             ) {
-                setIsVisible(false); // Hide div when clicking outside
+                setIsVisible(false);
                 setIsClicked(false);
             }
         };
-        
-        // const handleClickOutside = (e) => {
-        //     const parentElement = document.querySelector('.parent');
-        //     const descendantsList = [];
-        //     getAllDescendants(parentElement, descendantsList);
-            
-            
-            
-        //     if (expandApplicantDiv.current && e.target !== expandApplicantBtn.current && !descendantsList.includes(e.target)) {
-        //         setIsVisible(false); // Hide div when clicking outside
-        //         setIsClicked(false)
-        //     }
-        // };
-
+    
         window.addEventListener("click", handleClickOutside);
 
         return () => {
@@ -123,8 +109,8 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 {/* <h2 className="flex">{age}</h2> */}
                 <h2 className="flex">{gpa == 0 || gpa == NaN  ? 'XX' : parseFloat(gpa)?.toFixed(2)}</h2>
                 <div className=" ">
-                    <span>{studyLevel} of</span>
-                    <span> {major}</span>
+                    <span>{studyLevel?.startsWith('Master') ? "" : studyLevel}</span>
+                    <span>{studyLevel?.startsWith('Master') ? "" : ' of'} {major}</span>
                 </div>
                 <h2 className={`flex text-center justify-center text-sm xl:text-[1rem] px-2 py-2 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
     
