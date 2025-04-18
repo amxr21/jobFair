@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import axios from "axios";
 
-import { AccessButtons, Row, TableHeader, ControlBar, BarButtons, ListHeader, FlagButton } from "./index";
+import { Row, TableHeader, BarButtons, ListHeader, FlagButton } from "./index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
 
@@ -69,7 +69,9 @@ const MainBanner = ({link}) => {
 
 
     useEffect(() => {
-        if(applicants.length != 0) setFinalList(sortedApplicants(filterCriteriaa));
+        if(applicants.length != 0){
+            setFinalList(sortedApplicants(filterCriteriaa));
+        }
     }, [filterCriteriaa, applicants, path.pathname]);
 
     let counter = 0;
@@ -81,7 +83,7 @@ const MainBanner = ({link}) => {
                 setIsLoading(true)
                 const response = await axios.get(`${link}/applicants`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
-                });
+                  });
                 let allIds = []
                 if (user) {
                     if(user.email == "casto@sharjah.ac.ae"){
@@ -149,14 +151,6 @@ const MainBanner = ({link}) => {
     }
 
 
-    useEffect(() => {
-        console.log('====================================');
-        console.log('flags');
-        console.log('====================================');
-    }, [isFlagged])
-
-
-
 
 
 
@@ -171,14 +165,9 @@ const MainBanner = ({link}) => {
                 <div className="flex md:flex-row flex-col justify-between items-center pl-2 border-b border-b-gray-400 pb-5 mb-3">
                     <div className="flex gap-x-6">
                         <h2 className="text-center text-2xl xl:text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
-                        
-                        
-                        
-                        <FlagButton btnRef={flagIcon} handleClick={filterFlagged}/>
-
-
-
-
+                         
+                        {user && <FlagButton btnRef={flagIcon} handleClick={filterFlagged} />}
+ 
                     </div>
 
                     {user && <BarButtons link={link} />}
@@ -199,24 +188,24 @@ const MainBanner = ({link}) => {
                                     key={applicant?._id}
                                     ticketId={applicant?._id}
                                     number={counter}
-                                    name={applicant?.applicantDetails.fullName}
-                                    uniId={applicant?.applicantDetails.uniId}
-                                    nationality={applicant?.applicantDetails.nationality}
-                                    email={applicant?.applicantDetails.email}
-                                    phoneNumber={applicant?.applicantDetails.phoneNumber}
-                                    studyLevel={applicant?.applicantDetails.studyLevel}
-                                    major={applicant?.applicantDetails.major}
-                                    gpa={applicant?.applicantDetails.cgpa}
-                                    experience={applicant?.applicantDetails.experience}
+                                    name={applicant?.applicantDetails?.fullName}
+                                    uniId={applicant?.applicantDetails?.uniId}
+                                    nationality={applicant?.applicantDetails?.nationality}
+                                    email={applicant?.applicantDetails?.email}
+                                    phoneNumber={applicant?.applicantDetails?.phoneNumber}
+                                    studyLevel={applicant?.applicantDetails?.studyLevel}
+                                    major={applicant?.applicantDetails?.major}
+                                    gpa={applicant?.applicantDetails?.cgpa}
+                                    experience={applicant?.applicantDetails?.experience}
                                     attended={applicant?.attended ? "Confirmed" : "No"}
-                                    age={2024 - parseInt(String(applicant?.applicantDetails.birthdate)?.slice(0, 4))}
-                                    languages={String(applicant?.applicantDetails.languages)}
+                                    age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
+                                    languages={String(applicant?.applicantDetails?.languages)}
                                     portfolio={applicant?.applicantDetails?.linkedIn}
                                     file={applicant?.cv}
                                     qrCode={applicant?._id}
                                     status={applicant?.attended}
-                                    city={applicant?.applicantDetails.city}
-                                    skills={{tech: applicant?.applicantDetails.technicalSkills, nontech: applicant?.applicantDetails.nonTechnicalSkills}}
+                                    city={applicant?.applicantDetails?.city}
+                                    skills={{tech: applicant?.applicantDetails?.technicalSkills, nontech: applicant?.applicantDetails?.nonTechnicalSkills}}
                                     expectedToGraduate={applicant?.applicantDetails?.ExpectedToGraduate}
                                     flags={applicant?.flags}
                                     user={user}
@@ -258,18 +247,18 @@ const MainBanner = ({link}) => {
                                             key={applicant?._id}
                                             ticketId={applicant?._id}
                                             number={counter}
-                                            name={applicant?.applicantDetails.fullName}
-                                            uniId={applicant?.applicantDetails.uniId}
-                                            email={applicant?.applicantDetails.email}
-                                            phoneNumber={applicant?.applicantDetails.phoneNumber}
-                                            studyLevel={applicant?.applicantDetails.studyLevel}
-                                            major={applicant?.applicantDetails.major}
-                                            gpa={applicant?.applicantDetails.cgpa}
-                                            nationality={applicant?.applicantDetails.nationality}
-                                            experience={applicant?.applicantDetails.experience}
+                                            name={applicant?.applicantDetails?.fullName}
+                                            uniId={applicant?.applicantDetails?.uniId}
+                                            email={applicant?.applicantDetails?.email}
+                                            phoneNumber={applicant?.applicantDetails?.phoneNumber}
+                                            studyLevel={applicant?.applicantDetails?.studyLevel}
+                                            major={applicant?.applicantDetails?.major}
+                                            gpa={applicant?.applicantDetails?.cgpa}
+                                            nationality={applicant?.applicantDetails?.nationality}
+                                            experience={applicant?.applicantDetails?.experience}
                                             attended={applicant?.attended ? "Confirmed" : "No"}
-                                            age={2024 - parseInt(String(applicant?.applicantDetails.birthdate)?.slice(0, 4))}
-                                            languages={String(applicant?.applicantDetails.languages)}
+                                            age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
+                                            languages={String(applicant?.applicantDetails?.languages)}
                                             portfolio={applicant?.applicantDetails?.linkedIn}
                                             file={applicant?.cv}
                                             qrCode={applicant?._id}
