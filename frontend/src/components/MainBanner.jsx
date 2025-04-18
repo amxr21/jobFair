@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import axios from "axios";
 
-import { AccessButtons, Row, TableHeader, ControlBar, BarButtons, ListHeader } from "./index";
+import { AccessButtons, Row, TableHeader, ControlBar, BarButtons, ListHeader, FlagButton } from "./index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
 
@@ -17,6 +17,9 @@ const MainBanner = ({link}) => {
 
     const path = useLocation()
 
+    const [ isFlagged, setIsFlagged ] = useState(false)
+
+    const flagIcon = useRef()
 
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const [otherApplicants, setOtherApplicants] = useState([]); // State to store the list of applicants
@@ -123,13 +126,61 @@ const MainBanner = ({link}) => {
 
     // console.log(applicants); // Logging to debug and verify the applicants' list
 
+
+
+    const filterFlagged = () => {
+        if(!isFlagged){
+            const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
+            flagIcon.current.classList.replace("bg-[#F3F6FF]", "bg-white")
+            // flagIcon.current.classList.replace("border-gray-300", "border-none")
+            flagIcon.current.classList.replace("opacity-50", "opacity-100")
+            setFinalList(a)
+        }
+        else{
+            setFinalList(sortedApplicants(filterCriteriaa))
+            flagIcon.current.classList.replace("bg-white", "bg-[#F3F6FF]")
+            // flagIcon.current.classList.replace("border-none", "border-gray-300")
+            flagIcon.current.classList.replace("opacity-100", "opacity-50")
+        }
+        setIsFlagged(prev => !prev)
+
+        
+
+    }
+
+
+    useEffect(() => {
+        console.log('====================================');
+        console.log('flags');
+        console.log('====================================');
+    }, [isFlagged])
+
+
+
+
+
+
+
+
+
     return (
         <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto scroll-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
             <TopBar user={user} />
             <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow ${user?.companyName == "CASTO Office" ? 'overflow-y-hidden' : 'overflow-y-auto'} rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
                 
                 <div className="flex md:flex-row flex-col justify-between items-center pl-2 border-b border-b-gray-400 pb-5 mb-3">
-                    <h2 className="text-center text-2xl xl:text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
+                    <div className="flex gap-x-6">
+                        <h2 className="text-center text-2xl xl:text-3xl font-bold md:my-0 mb-7">Applicants list</h2>
+                        
+                        
+                        
+                        <FlagButton btnRef={flagIcon} handleClick={filterFlagged}/>
+
+
+
+
+                    </div>
+
                     {user && <BarButtons link={link} />}
                 </div>
 
