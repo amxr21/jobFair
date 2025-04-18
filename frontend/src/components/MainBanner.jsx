@@ -236,7 +236,7 @@ const MainBanner = ({link}) => {
 
                 {
                     user?.email != 'casto@sharjah.ac.ae' &&
-                    <div className="flex flex-col gap-5 z-50">
+                    <div className="flex flex-col gap-5 ">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
                         <div className="  rounded-lg text-xs md:text-lg" onClick={filter}>
                             <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
