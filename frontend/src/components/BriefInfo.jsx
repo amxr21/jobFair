@@ -7,8 +7,9 @@ import CardInfo from './CardInfo';
 import QRCode from 'qrcode.react';
 
 // const link = "https://jobfair-7zaa.onrender.com"
-// const link = "https://localhost:2000"
+// const link = "http://localhost:2000"
 const link = "https://jobfair-production.up.railway.app"
+import { useAuthContext } from "../Hooks/useAuthContext"
 
 
 
@@ -17,6 +18,72 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     const interviewButton = useRef();
     const rejectionButton = useRef();
     const otherButton = useRef();
+
+    
+    
+    const [ isFlagging, setIsFlagging ] = useState(false)
+    
+    
+    const { user } = useAuthContext();
+    
+    
+    const tickedIdRef = useRef()
+    const [ isFlagged, setIsFlagged ] = useState(false)
+    
+    
+    const applicant_id = tickedIdRef.current?.textContent.trim()
+    
+    const flagApplicant = async () => {
+        
+    
+        try {
+            setIsFlagging(true)
+            const flagResponse = await axios.patch(link+"/applicants/flag/"+applicant_id.replace(/[^a-zA-Z0-9]/g,''), {
+                flags: [user?.companyName]
+            })
+            
+            console.log(flagResponse);
+
+        } catch (error) {
+            console.log('Failed to flag the applicant', error);
+            
+        }
+        finally{
+            setIsFlagged(true)
+            setIsFlagging(false)
+        }
+
+
+
+
+
+
+    }
+    // useEffect(() => {
+    //     const checkFlag = async () => {
+    //         try {
+    //             setIsFlagging(true)
+    //             const flagResponse = await axios.get(link+"/applicants/flag/"+applicant_id.replace(/[^a-zA-Z0-9]/g,''))
+                
+    //             console.log(flagResponse);
+
+    //             return flagResponse.data?.flags.includes(user?.companyName)
+    
+    //         } catch (error) {
+    //             console.log('Failed to flag the applicant', error);   
+    //         }
+    //     }
+
+    //     let a = checkFlag()
+    //     setIsFlagged(a ? true : false)
+
+
+    // }, [])
+
+
+
+
+
     // const sendInterviewEmail = () => {
     //     const res = axios.post("http://localhost:2000/email", {
     //             uniId:id,
@@ -92,11 +159,16 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                     {!ticketQrCodeSrc && <h2>Loading the QR code...</h2>}
                 </div>
 
+
                 <div className="applicant-id">
                     <h6 className="text-lg font-bold  underline">Ticket no:</h6>
-                    <h6 className='break-words whitespace-normal overflow-hidden text-ellipsis w-full max-w-full'>{ticketId}</h6>
+                    <h6 ref={tickedIdRef} className='break-words whitespace-normal overflow-hidden text-ellipsis w-full max-w-full'>{ticketId}</h6>
                 </div>
 
+                <div className="flag flex items-center justify-center gap-2">
+                    <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" />
+                    <label className='' htmlFor="">Flag Applicant</label>
+                </div>
             </div>
 
 

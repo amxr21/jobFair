@@ -136,9 +136,9 @@ const MainBanner = ({link}) => {
 
 
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
-                <div className="grow h-40 rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
+                <div className="grow min-h-40 rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-80' : 'max-h-80'} py-2 pr-3 overflow-y-auto w-full`}>
+                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-[26rem]' : 'max-h-[26rem]'} py-2 pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
                             counter += 1;
 
@@ -167,6 +167,8 @@ const MainBanner = ({link}) => {
                                     city={applicant.applicantDetails.city}
                                     skills={{tech: applicant.applicantDetails.technicalSkills, nontech: applicant.applicantDetails.nonTechnicalSkills}}
                                     expectedToGraduate={applicant.applicantDetails?.ExpectedToGraduate}
+                                    flags={applicant?.flags}
+                                    user={user}
                                 />
                             );
 
@@ -221,6 +223,7 @@ const MainBanner = ({link}) => {
                                             file={applicant.cv}
                                             qrCode={applicant._id}
                                             status={applicant?.attended}
+                                            flags={applicant?.flags}
                                         />
                                     );
 

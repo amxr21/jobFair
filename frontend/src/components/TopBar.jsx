@@ -21,7 +21,7 @@ const TopBar = ({user}) => {
                     
                 setDate(String(now).split(' ').slice(1,4))
         
-                const today = dayIndex - 1 > 0 ? days[dayIndex-1] : days[dayIndex]
+                const today = dayIndex - 1 > 0 ? days[dayIndex] : days[dayIndex+1]
                 setDay(today)
             }
             getDay()

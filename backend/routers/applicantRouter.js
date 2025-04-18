@@ -12,7 +12,7 @@ const { ObjectId } = mongoose.Types;
 const requireAuth = require("../middlewares/requireAuth")
 
 
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
 
@@ -145,6 +145,8 @@ router.get("/applicants/:id", getApplicant);
 router.get("/applicants", getAllApplicants);
 
 router.patch("/applicants/:id", updateApplicant);
+router.patch("/applicants/flag/:id", flagApplicant);
+router.get("/applicants/flag/:id", getApplicantFlag);
 
 router.patch("/applicants/confirm/:id", confirmAttendant);
 
