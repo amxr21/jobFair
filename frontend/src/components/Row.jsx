@@ -14,12 +14,19 @@ import CardInfoFile from "./CardInfoFile";
 import { ExpandIcon } from "./Icons";
  
 
+// const colorCode = {
+//     confirmed: {active: '#0066CC', off: '#E5F0FF'},
+//     registerd: {active: '#0E7F41', off: '#E5FFE5'},
+//     pending: {active: '#EBC600', off: '#FFFACD'},
+//     canceled: {active: '#CC0000', off: '#FFE5E5'},
+// } 
+
 const colorCode = {
-    confirmed: {active: '#0066CC', off: '#E5F0FF'},
-    registerd: {active: '#0E7F41', off: '#E5FFE5'},
-    pending: {active: '#EBC600', off: '#FFFACD'},
-    canceled: {active: '#CC0000', off: '#FFE5E5'},
-} 
+    Confirmed: 'bg-[#E5F0FF] text-[#0066CC]',
+    Registered: 'bg-[#E5FFE5] text-[#0E7F41]',
+    Pending: 'bg-[#FFFACD] text-[#EBC600]',
+    Canceled: 'bg-[#FFE5E5] text-[#CC0000]',
+}
 
 
 
@@ -107,12 +114,12 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 <h2 className="flex">{uniId == "" || uniId?.length != 8 || uniId == 18000000 ? '00000000' : uniId}</h2>
                 <h2 className="flex">{nationality}</h2>
                 {/* <h2 className="flex">{age}</h2> */}
-                <h2 className="flex">{gpa == 0 || gpa == NaN  ? 'XX' : parseFloat(gpa)?.toFixed(2)}</h2>
+                <h2 className="flex">{gpa == 0 || Number.isNaN(gpa)  ? 'XX' : parseFloat(gpa)?.toFixed(2)}</h2>
                 <div className=" ">
                     <span>{studyLevel?.startsWith('Master') ? "" : studyLevel}</span>
                     <span>{studyLevel?.startsWith('Master') ? "" : ' of'} {major}</span>
                 </div>
-                <h2 className={`flex text-center justify-center text-sm xl:text-[1rem] px-2 py-2 rounded-xl font-semibold ${status ? `bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}]`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
+                <h2 className={`flex text-center justify-center text-sm xl:text-[1rem] px-2 py-2 rounded-xl font-semibold ${status ? `${colorCode.Confirmed}` : `${colorCode.Registered}`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
     
                
                
