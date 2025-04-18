@@ -106,7 +106,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     else{
         return userType != 'manager'
         ?
-            <div className={`row grid py-4 px-7 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
+            <div className={`row grid py-4 pl-7 pr-12 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
                 <h2 className="flex">{number}
                     
                 </h2>
