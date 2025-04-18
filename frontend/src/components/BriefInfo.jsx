@@ -13,7 +13,7 @@ import { useAuthContext } from "../Hooks/useAuthContext"
 
 
 
-const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc, emailRec, status, graduationYear}) => {
+const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc, emailRec, status, graduationYear, flag}) => {
     const [nextStep, setNextStep] = useState(null);
     const interviewButton = useRef();
     const rejectionButton = useRef();
@@ -166,8 +166,27 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                 </div>
 
                 <div className="flag flex items-center justify-center gap-2">
-                    <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" />
-                    <label className='' htmlFor="">Flag Applicant</label>
+                    {
+                        flag.includes(user?.companyName)
+                        ?
+                        <>
+                            {/* <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" /> */}
+                            <div className='flex gap-2 p-1.5 text-green-700 font-bold text-base rounded-md' >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+
+                                <p> Already Flagged</p>
+
+                            </div>
+                        </>
+                        
+                        :
+                        <>
+                            <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" />
+                            <label className='' htmlFor="">Flag Applicant</label>
+                        </>
+                    }
                 </div>
             </div>
 
