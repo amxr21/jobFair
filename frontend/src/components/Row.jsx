@@ -119,6 +119,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                                     emailRec = {email}
                                     status={status}
                                     graduationYear={expectedToGraduate}
+                                    flag={flags}
                                 />
                             </Brief>
                             <div className="details md:w-8/12 flex flex-col gap-3">
