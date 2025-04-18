@@ -255,24 +255,24 @@ const MainBanner = ({link}) => {
                                     return (
                                         <Row
                                             userType={'casto'}
-                                            key={applicant._id}
-                                            ticketId={applicant._id}
+                                            key={applicant?._id}
+                                            ticketId={applicant?._id}
                                             number={counter}
-                                            name={applicant.applicantDetails.fullName}
-                                            uniId={applicant.applicantDetails.uniId}
-                                            email={applicant.applicantDetails.email}
-                                            phoneNumber={applicant.applicantDetails.phoneNumber}
-                                            studyLevel={applicant.applicantDetails.studyLevel}
-                                            major={applicant.applicantDetails.major}
-                                            gpa={applicant.applicantDetails.cgpa}
-                                            nationality={applicant.applicantDetails.nationality}
-                                            experience={applicant.applicantDetails.experience}
-                                            attended={applicant.attended ? "Confirmed" : "No"}
-                                            age={2024 - parseInt(String(applicant.applicantDetails.birthdate)?.slice(0, 4))}
-                                            languages={String(applicant.applicantDetails.languages)}
-                                            portfolio={applicant.applicantDetails?.linkedIn}
-                                            file={applicant.cv}
-                                            qrCode={applicant._id}
+                                            name={applicant?.applicantDetails.fullName}
+                                            uniId={applicant?.applicantDetails.uniId}
+                                            email={applicant?.applicantDetails.email}
+                                            phoneNumber={applicant?.applicantDetails.phoneNumber}
+                                            studyLevel={applicant?.applicantDetails.studyLevel}
+                                            major={applicant?.applicantDetails.major}
+                                            gpa={applicant?.applicantDetails.cgpa}
+                                            nationality={applicant?.applicantDetails.nationality}
+                                            experience={applicant?.applicantDetails.experience}
+                                            attended={applicant?.attended ? "Confirmed" : "No"}
+                                            age={2024 - parseInt(String(applicant?.applicantDetails.birthdate)?.slice(0, 4))}
+                                            languages={String(applicant?.applicantDetails.languages)}
+                                            portfolio={applicant?.applicantDetails?.linkedIn}
+                                            file={applicant?.cv}
+                                            qrCode={applicant?._id}
                                             status={applicant?.attended}
                                             flags={applicant?.flags}
                                         />
