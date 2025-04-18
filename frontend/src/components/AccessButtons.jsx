@@ -6,7 +6,7 @@ import "../style.css"
 import { useLogout } from "../Hooks/useLogout"
 import { useAuthContext } from "../Hooks/useAuthContext";
 
-const AccessButtons = () => {
+const AccessButtons = ({otherClasses}) => {
     const [ visible, setVisible ] = useState(false);
 
     const { logout } = useLogout();
@@ -92,7 +92,7 @@ const AccessButtons = () => {
 
 
     return (
-        <div className="access-buttons flex flex-col gap-4 w-full">
+        <div className={`access-buttons flex flex-col gap-4 w-full ${otherClasses}`}>
                 {/* {user && (<div className="flex flex-col items-center justify-between"> <span className="mx-2">{user.email}</span>
                     <button onClick={handleLogout} className="px-3 py-1 border border-2 rounded-md" type="submit">Log out</button>
                 </div>)} */}

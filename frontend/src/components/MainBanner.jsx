@@ -6,6 +6,8 @@ import axios from "axios";
 import { Row, TableHeader, BarButtons, ListHeader, FlagButton } from "./index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
+import { AccessButtons } from "./index";
+
 
 import { CircularProgress } from "@mui/material"
 
@@ -159,6 +161,7 @@ const MainBanner = ({link}) => {
 
     return (
         <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto overflow-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
+            <AccessButtons otherClasses={'md:hidden'} />
             <TopBar user={user} />
             <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow ${user?.companyName == "CASTO Office" ? 'overflow-y-hidden' : 'overflow-y-auto'} rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
                 
