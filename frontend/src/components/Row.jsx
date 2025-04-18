@@ -40,13 +40,30 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
 
 
     useEffect(() => {
+        // function getAllDescendants(element, descendantsList) {
+        //     if (!element) return;
+            
+        //     const children = element.children;
+        //     for (let i = 0; i < children.length; i++) {
+        //         descendantsList.push(children[i]);
+        //         getAllDescendants(children[i], descendantsList);
+        //     }
+        // }
         function getAllDescendants(element, descendantsList) {
             if (!element) return;
-            
-            const children = element.children;
-            for (let i = 0; i < children.length; i++) {
-                descendantsList.push(children[i]);
-                getAllDescendants(children[i], descendantsList);
+        
+            const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_ELEMENT,
+                null,
+                false
+            );
+        
+            let currentNode = walker.currentNode;
+        
+            while (currentNode) {
+                descendantsList.push(currentNode);
+                currentNode = walker.nextNode();
             }
         }
         
@@ -54,14 +71,31 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
             const parentElement = document.querySelector('.parent');
             const descendantsList = [];
             getAllDescendants(parentElement, descendantsList);
-            
-            
-            
-            if (expandApplicantDiv.current && e.target !== expandApplicantBtn.current && !descendantsList.includes(e.target)) {
+        
+            // Check if the clicked target is part of the descendants list
+            if (
+                expandApplicantDiv.current &&
+                e.target !== expandApplicantBtn.current &&
+                !descendantsList.includes(e.target) &&
+                e.target.type !== 'checkbox' // Ensure checkboxes are not included in the "outside click" detection
+            ) {
                 setIsVisible(false); // Hide div when clicking outside
-                setIsClicked(false)
+                setIsClicked(false);
             }
         };
+        
+        // const handleClickOutside = (e) => {
+        //     const parentElement = document.querySelector('.parent');
+        //     const descendantsList = [];
+        //     getAllDescendants(parentElement, descendantsList);
+            
+            
+            
+        //     if (expandApplicantDiv.current && e.target !== expandApplicantBtn.current && !descendantsList.includes(e.target)) {
+        //         setIsVisible(false); // Hide div when clicking outside
+        //         setIsClicked(false)
+        //     }
+        // };
 
         window.addEventListener("click", handleClickOutside);
 
