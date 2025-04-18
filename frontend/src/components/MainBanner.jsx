@@ -163,36 +163,26 @@ const MainBanner = ({link}) => {
 
         // batch rendering on mobile
         useEffect(() => {
-    if (isMobile() && finalList.length > 0) {
-        setVisibleCount(0); // reset before starting batching
-
-        let current = 0;
-        const batchSize = 50;
-
-        intervalRef.current = setInterval(() => {
-            current += batchSize;
-
-            setVisibleCount(prev => {
-                const next = Math.min(prev + batchSize, finalList.length);
-                if (next >= finalList.length) {
-                    clearInterval(intervalRef.current);
-                }
-                return next;
-            });
-        }, 100);
-
-        return () => clearInterval(intervalRef.current);
-    } else {
-        // On desktop, render all at once
-        setVisibleCount(finalList.length);
-    }
-    // Only run when finalList changes significantly
-}, [JSON.stringify(finalList)]);
+            if (isMobile()) {
+                let current = 0;
+                const batchSize = 10;
+                const interval = setInterval(() => {
+                    current += batchSize;
+                    setVisibleCount(prev => {
+                        const next = prev + batchSize;
+                        if (next >= finalList.length) {
+                            clearInterval(interval);
+                            return finalList.length;
+                        }
+                        return next;
+                    });
+                }, 1000);
     
-
-
-
-
+                return () => clearInterval(interval);
+            } else {
+                setVisibleCount(finalList.length); // render all instantly on desktop
+            }
+        }, [finalList]);
 
 
 
