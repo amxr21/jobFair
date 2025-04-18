@@ -176,7 +176,7 @@ const MainBanner = ({link}) => {
                         }
                         return next;
                     });
-                }, 100);
+                }, 1000);
     
                 return () => clearInterval(interval);
             } else {
