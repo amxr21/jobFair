@@ -17,6 +17,58 @@ import { TopBar } from "./index";
 
 const MainBanner = ({link}) => {
 
+
+    const [visibleCount, setVisibleCount] = useState(window.innerWidth < 768 ? 0 : finalList.length); // show all on desktop
+
+    const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
+
+    // batch rendering on mobile
+    useEffect(() => {
+        if (isMobile()) {
+            let current = 0;
+            const batchSize = 50;
+            const interval = setInterval(() => {
+                current += batchSize;
+                setVisibleCount(prev => {
+                    const next = prev + batchSize;
+                    if (next >= finalList.length) {
+                        clearInterval(interval);
+                        return finalList.length;
+                    }
+                    return next;
+                });
+            }, 100);
+
+            return () => clearInterval(interval);
+        } else {
+            setVisibleCount(finalList.length); // render all instantly on desktop
+        }
+    }, [finalList]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const path = useLocation()
 
     const [ isFlagged, setIsFlagged ] = useState(false)
@@ -182,7 +234,7 @@ const MainBanner = ({link}) => {
                 <div className="grow h-fit rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
                     <div className={`list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
-                        {finalList.length != 0 ?  finalList.map((applicant) => {
+                        {finalList.length != 0 ?  finalList.slice(0, visibleCount).map((applicant) => {
                             counter += 1;
 
                             return (
