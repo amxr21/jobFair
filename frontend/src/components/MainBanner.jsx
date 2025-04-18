@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import axios from "axios";
 
-import { Row, TableHeader, BarButtons, ListHeader, FlagButton } from "./index";
+import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants } from "./index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
 import { AccessButtons } from "./index";
@@ -226,9 +226,7 @@ const MainBanner = ({link}) => {
                             <p className="text-sm">Loading applicants...</p>
                         </div>
                         :
-                        <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <p className="text-sm">Np Applicants</p>
-                        </div>
+                        <NoApplicants />
 
 
                             }
