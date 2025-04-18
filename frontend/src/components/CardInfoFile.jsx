@@ -35,11 +35,11 @@ const CardInfoFile = ({file}) => {
 
 
     return (
-        <div className="w-5/12">
+        <div className="w-4/12">
             <h6 className="text-lg">{"CV:"}</h6>
             
             <div className="flex h-7 overflow-hidden justify-between">
-              <h2 className={`${file ? 'text-black' : 'text-gray-300 cursor-not-allowed'} font-semibold`}>{file ? file.originalname : "No Uploaded file" }</h2>
+              <h2 className={`${file ? 'text-black break-words whitespace-normal overflow-hidden text-wrap' : 'text-gray-300 cursor-not-allowed'} font-semibold`}>{file ? file.originalname : "No Uploaded file" }</h2>
               <button onClick={() => downloadCV(file)} className={`flex h-auto w-fit max-h-fit text-lg font-bold w-full ${file ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`${file ? 'text-black' : 'text-gray-300'} size-6`}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
