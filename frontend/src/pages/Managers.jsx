@@ -223,7 +223,7 @@ const Managers = ({link}) => {
                                     companyEmail={company.email}
                                     companyRepresentitives={company.representitives}
                                     companyFields={company.fields}
-                                    companyStatus={'registered'}
+                                    companyStatus={company?.status}
                                     companySector={company.sector}
                                     companyCity={company.city}
                                     numberOfPositions={company.noOfPositions}
