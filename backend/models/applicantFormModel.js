@@ -4,6 +4,9 @@ const applicantSchema = mongoose.Schema;
 // { uniId ,fullName ,birthdate ,gender ,nationality ,studyLevel, college , major ,email ,phoneNumber, cgpa , linkedIn,skills ,languages ,brief ,cv ,portfolio}
 
 const applicantModel = new applicantSchema ({
+    flags: {
+        type: [String],
+    },
     applicantDetails: {
         type: Object
     },
@@ -17,9 +20,6 @@ const applicantModel = new applicantSchema ({
     user_id: {
         type: Array,
         // required: true,
-    },
-    flags: {
-        type: Array,
     },
     attended: {
         type: Boolean

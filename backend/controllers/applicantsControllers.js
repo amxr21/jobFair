@@ -173,6 +173,77 @@ const updateApplicant = async (req, res) => {
     }
 }
 
+
+
+
+const flagApplicant = async (req, res) => {
+
+    try {
+        const { id } = req.params;
+        
+        if(!mongoose.Types.ObjectId.isValid(id)){
+            return res.status(404).json({error: "No such id for an applicant"})
+        }
+
+
+        let updateData = {};
+        // if(req.body.hasOwnProperty("user_id")){
+        //     updateData.$addToSet = { flags: req.body.flags }
+        // };
+
+        if (req.body.flags && Array.isArray(req.body.flags)) {
+            updateData.$addToSet = { flags: req.body.flags[0] };
+        }
+
+
+
+
+        const applicant = await ApplicantModel.findOneAndUpdate({_id: id},
+            updateData,
+            {new: false}
+        );
+        console.log(id);
+        console.log(applicant);
+
+        res.status(200).json(applicant)
+
+    } catch(error){
+        console.log({error: error.message});
+    }
+}
+
+
+const getApplicantFlag = async (req, res) => {
+    
+    const { id } = req.params;
+    
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(404).json({error: "No such id for an applicant"})
+    }
+    
+    
+    
+    const applicant = await ApplicantModel.findById(id);
+    try {
+        // console.log(id);
+        // console.log(applicant);
+
+        res.status(200).json(applicant)
+
+    } catch(error){
+        console.log({error: error.message});
+    }
+
+        
+}
+
+
+
+
+
+
+
+
 const addApplicantPublic = async (req, res) => {
     try{
         
@@ -386,4 +457,4 @@ const confirmAttendant = async (req, res) => {
 
 
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant}
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag}
