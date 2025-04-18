@@ -165,7 +165,7 @@ const MainBanner = ({link}) => {
         useEffect(() => {
             if (isMobile()) {
                 let current = 0;
-                const batchSize = 50;
+                const batchSize = 10;
                 const interval = setInterval(() => {
                     current += batchSize;
                     setVisibleCount(prev => {
