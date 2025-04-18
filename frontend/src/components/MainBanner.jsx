@@ -179,9 +179,9 @@ const MainBanner = ({link}) => {
 
 
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
-                <div className="grow min-h-40 rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
+                <div className="grow h-fit rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list ${user?.email != 'casto@sharjah.ac.ae' ? 'max-h-[26rem]' : 'max-h-[26rem]'} py-2 pr-3 overflow-y-auto w-full`}>
+                    <div className={`list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.map((applicant) => {
                             counter += 1;
 
@@ -236,10 +236,11 @@ const MainBanner = ({link}) => {
 
                 {
                     user?.email != 'casto@sharjah.ac.ae' &&
-                    <>
+                    <div className="flex flex-col gap-5 z-50">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
-                        <div className="grow rounded-lg text-xs md:text-lg" onClick={filter}>
-                            <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0">
+                        <div className="  rounded-lg text-xs md:text-lg" onClick={filter}>
+                            <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
+                            {/* <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0"> */}
                                 {otherApplicants.length != 0 ?  otherApplicants.map((applicant) => {
                                     counter += 1;
 
@@ -287,7 +288,7 @@ const MainBanner = ({link}) => {
                                     }
                             </div>
                         </div>
-                    </>
+                    </div >
                 }
 
 
