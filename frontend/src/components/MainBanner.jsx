@@ -133,16 +133,16 @@ const MainBanner = ({link}) => {
     const filterFlagged = () => {
         if(!isFlagged){
             const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-            flagIcon.current.classList.replace("bg-[#F3F6FF]", "bg-white")
-            // flagIcon.current.classList.replace("border-gray-300", "border-none")
-            flagIcon.current.classList.replace("opacity-50", "opacity-100")
+            flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
+            // flagIcon?.current.classList.replace("border-gray-300", "border-none")
+            flagIcon?.current.classList.replace("opacity-50", "opacity-100")
             setFinalList(a)
         }
         else{
             setFinalList(sortedApplicants(filterCriteriaa))
-            flagIcon.current.classList.replace("bg-white", "bg-[#F3F6FF]")
-            // flagIcon.current.classList.replace("border-none", "border-gray-300")
-            flagIcon.current.classList.replace("opacity-100", "opacity-50")
+            flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
+            // flagIcon?.current.classList.replace("border-none", "border-gray-300")
+            flagIcon?.current.classList.replace("opacity-100", "opacity-50")
         }
         setIsFlagged(prev => !prev)
 
@@ -158,7 +158,7 @@ const MainBanner = ({link}) => {
 
 
     return (
-        <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto scroll-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
+        <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto overflow-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
             <TopBar user={user} />
             <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow ${user?.companyName == "CASTO Office" ? 'overflow-y-hidden' : 'overflow-y-auto'} rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
                 
@@ -198,7 +198,8 @@ const MainBanner = ({link}) => {
                                     gpa={applicant?.applicantDetails?.cgpa}
                                     experience={applicant?.applicantDetails?.experience}
                                     attended={applicant?.attended ? "Confirmed" : "No"}
-                                    age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
+                                    age={2024 - parseInt(applicant?.applicantDetails?.birthdate?.split("-")[0] || 2006)}
+                                    // age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
                                     languages={String(applicant?.applicantDetails?.languages)}
                                     portfolio={applicant?.applicantDetails?.linkedIn}
                                     file={applicant?.cv}
