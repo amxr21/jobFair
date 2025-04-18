@@ -151,9 +151,9 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
 
     return (
-        <div className="brief-info flex flex-col gap-y-10 text-left w-full md:px-8">
+        <div className="brief-info flex flex-col gap-y-5 text-left w-full md:px-8">
 
-            <div className='flex flex-col gap-6 px-5 py-8 text-center border bg-white shadow-md shadow-gray-200 hover:shadow-xl rounded-xl'>
+            <div className='flex flex-col items-center gap-4 px-5 py-8 text-center border bg-white shadow-md shadow-gray-200 hover:shadow-xl rounded-xl'>
                 <div className="qr-code w-full  flex flex-col items-center">
                     {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
                     {ticketQrCodeSrc && <QRCode value={ticketQrCodeSrc} />}
@@ -161,7 +161,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                 </div>
 
 
-                <div className="applicant-id">
+                <div className="applicant-id max-w-full">
                     <h6 className="text-lg font-bold  underline">Ticket no:</h6>
                     <h6 ref={tickedIdRef} className='break-words whitespace-normal overflow-hidden text-ellipsis w-full max-w-full'>{ticketId}</h6>
                 </div>
@@ -194,17 +194,18 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                                 </>
                     }
                 </div>
+                <CardInfo infoHeader={''} infoText={status ? `Confirmed` : `Registered`} />
             </div>
 
 
             <div className='flex flex-col gap-y-4'>
                 <div>
-                    <h2 className="text-2xl font-bold font-uppercase">
+                    {/* <h2 className="text-2xl font-bold font-uppercase">
                         {shortName}
-                    </h2>
+                    </h2> */}
                     <h6 className="text-sm font-regular font-uppercase mb-2">{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</h6>
                 </div>
-                <CardInfo infoHeader={'Attended'} infoText={status ? `Confirmed` : `Registered`} />
+                
             </div>
             
             {/* bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}] */}
