@@ -159,7 +159,7 @@ const MainBanner = ({link}) => {
     }
 
 
-        const [visibleCount, setVisibleCount] = useState(window.innerWidth < 768 ? 0 : finalList.length); // show all on desktop
+        const [visibleCount, setVisibleCount] = useState(window.innerWidth < 1100 ? 0 : finalList.length); // show all on desktop
 
         // batch rendering on mobile
         useEffect(() => {
