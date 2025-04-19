@@ -56,34 +56,39 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
         //         getAllDescendants(children[i], descendantsList);
         //     }
         // }
-        function getAllDescendants(element, descendantsList) {
-            if (!element) return;
+        // function getAllDescendants(element, descendantsList) {
+        //     if (!element) return;
         
-            const walker = document.createTreeWalker(
-                element,
-                NodeFilter.SHOW_ELEMENT,
-                null,
-                false
-            );
+        //     const walker = document.createTreeWalker(
+        //         element,
+        //         NodeFilter.SHOW_ELEMENT,
+        //         null,
+        //         false
+        //     );
         
-            let currentNode = walker.currentNode;
+        //     let currentNode = walker.currentNode;
         
-            while (currentNode) {
-                descendantsList.push(currentNode);
-                currentNode = walker.nextNode();
-            }
-        }
+        //     while (currentNode) {
+        //         descendantsList.push(currentNode);
+        //         currentNode = walker.nextNode();
+        //     }
+        // }
         
         const handleClickOutside = (e) => {
             const dropdown = expandApplicantDiv.current;
             const trigger = expandApplicantBtn.current;
-    
-            // If click is NOT inside dropdown AND NOT the trigger button, close it
+
+            const flagButton = document.getElementById('FlagCheckboxContainer')
+            
+
+            // console.log('====================================');
+            // console.log(e.target);
+            // console.log('====================================');
             if (
                 dropdown &&
                 !dropdown.contains(e.target) &&
                 trigger &&
-                e.target !== trigger
+                !trigger.contains(e.target)
             ) {
                 setIsVisible(false);
                 setIsClicked(false);

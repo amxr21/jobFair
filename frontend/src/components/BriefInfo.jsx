@@ -34,16 +34,25 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     
     const applicant_id = tickedIdRef.current?.textContent.trim()
     
-    const flagApplicant = async () => {
+    const flagApplicant = async (e) => {
         
+        console.log('====================================');
+        console.log(e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement);
+        console.log('====================================');
+        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border')
+        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border-2')
+        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border-green-500')
     
         try {
+            
             setIsFlagging(true)
             const flagResponse = await axios.patch(link+"/applicants/flag/"+applicant_id.replace(/[^a-zA-Z0-9]/g,''), {
                 flags: [user?.companyName]
             })
+
+
+
             
-            console.log(flagResponse);
 
         } catch (error) {
             console.log('Failed to flag the applicant', error);
@@ -188,10 +197,10 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                                     <Flagged />
                                 </>
                                 :
-                                <>
-                                    <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" />
-                                    <label className='' htmlFor="">Flag Applicant</label>
-                                </>
+                                <div id='FlagCheckboxContainer' className='flex gap-2 items-center z-[9999]'>
+                                    <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4 flag-checkbox' type="checkbox" name="flag-checkbox" id="FlagCheckbox" />
+                                    <label className='' htmlFor="FlagCheckbox">Flag Applicant</label>
+                                </div>
                     }
                 </div>
                 <CardInfo infoHeader={''} infoText={status ? `Confirmed` : `Registered`} />
