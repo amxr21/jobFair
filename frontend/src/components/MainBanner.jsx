@@ -165,7 +165,7 @@ const MainBanner = ({link}) => {
         useEffect(() => {
             if (isMobile()) {
                 let current = 0;
-                const batchSize = 10;
+                const batchSize = 50;
                 const interval = setInterval(() => {
                     current += batchSize;
                     setVisibleCount(prev => {
@@ -176,18 +176,13 @@ const MainBanner = ({link}) => {
                         }
                         return next;
                     });
-                }, 100);
+                }, 10000);
     
                 return () => clearInterval(interval);
             } else {
                 setVisibleCount(finalList.length); // render all instantly on desktop
             }
         }, [finalList]);
-    
-
-
-
-
 
 
 
