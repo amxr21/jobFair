@@ -265,7 +265,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                 <h2 className="flex">{companySector}</h2>
                 {/* <h2 className="flex">{companyFields?.toLowerCase()}</h2> */}
                 <h2 className="flex">{numebrOfApplicants}</h2>
-                <h2 className={`flex justify-center text-sm xl:text-[1rem] p-2 rounded-xl font-semibold ${companyStatus == 'Confirmed' ? `bg-[${colorCode.Confirmed}] text-[#${colorCode.confirmed.active}]` : `bg-[${colorCode.Canceled}] text-[#${colorCode.canceled.active}]`}`}>{companyStatus == 'Confirmed' ? 'Confirmed' : 'Canceled'}</h2>
+                <h2 className={`flex justify-center text-sm xl:text-[1rem] p-2 rounded-xl font-semibold ${companyStatus == 'Confirmed' ? `${colorCode.Confirmed}` : `${colorCode.Canceled}]`}`}>{companyStatus == 'Confirmed' ? 'Confirmed' : 'Canceled'}</h2>
     
                
                
