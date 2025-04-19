@@ -49,7 +49,7 @@ const LoginFunc = () => {
                     />
                     <div className="w-10/12 flex items-center relative border rounded-xl mb-2">
                         <input
-                            type={isVisible ? 'password' : 'text'}
+                            type={isVisible ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Password"
