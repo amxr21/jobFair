@@ -24,7 +24,7 @@ const Managers = ({link}) => {
 
 
     const filter = (e) => {
-        if(['Company Name', 'Company Email', 'Representatives', 'Fields of interest', 'Applicants', 'City', 'Sector', 'Status'].includes(e.target.parentElement.innerText)){
+        if(['Company Name', 'Company Email', 'Representatives', 'Fields of interest', 'No of App', 'City', 'Sector', 'Status'].includes(e.target.parentElement.innerText)){
             console.log('====================================');
             console.log(e.target.parentElement.innerText);
             console.log('====================================');
@@ -53,7 +53,7 @@ const Managers = ({link}) => {
                         return sortedArray.sort((a, b) => a.city?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.city.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
                 case "Fields of interest":
                     return sortedArray.sort((a, b) => a.fields.localeCompare(b.fields));
-                case "Applicants":
+                case "No of App":
                     return sortedArray.sort((a, b) => b.numberOfApplicants - a.numberOfApplicants); 
                 // case "Status":
                 //     return sortedArray.sort((a, b) => {
