@@ -212,7 +212,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                     {/* <h2 className="text-2xl font-bold font-uppercase">
                         {shortName}
                     </h2> */}
-                    <h6 className="text-sm font-regular font-uppercase mb-2">{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</h6>
+                    <h6 className="text-base font-regular font-uppercase mb-2">Educational Status: <span className='font-bold'>{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</span></h6>
                 </div>
                 
             </div>
