@@ -38,7 +38,9 @@ const CardInfo = ({infoHeader, infoText}) => {
             }
             </a>
 
-            : infoText && infoText != 'undefined' ? infoText : "-" }</h1>
+            : infoText && infoText != 'undefined' 
+            ? infoHeader == 'CGPA' && infoText == 0 ? "Not mentioned" : infoText
+            : "-" }</h1>
         </div>
     )
 }
