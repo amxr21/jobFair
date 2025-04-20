@@ -1,12 +1,21 @@
 import axios from "axios"
+import { useState } from "react";
+
+import LoadingImage from './../assets/images/loading.gif'
+
 
 // const link = "https://jobfair-7zaa.onrender.com"
 // const link = "http://localhost:2000"
 const link = "https://jobfair-production.up.railway.app"
 
 const CardInfoFile = ({file}) => {
+  const [ isFileLoading, setIsFileLoading ] = useState(false)
+
+
+
     const downloadCV = () => {
         console.log(`${link}/cv/${file?.id}`);
+        setIsFileLoading(true)
         
         axios({
           method: "GET",
@@ -27,7 +36,12 @@ const CardInfoFile = ({file}) => {
         })
         .catch((error) => {
           console.error("Download failed:", error);
-        });
+        })
+        .finally(() => {
+          setIsFileLoading(false)
+        })
+        
+        ;
       };
       
 
@@ -35,7 +49,21 @@ const CardInfoFile = ({file}) => {
 
 
     return (
+      <>
+          {
+            isFileLoading &&
+            <div className="fixed inset-0 z-[9999] flex items-center justify-center ">
+              <div className="w-20 h-20 p-1 flex items-center justify-center rounded-xl overflow-hidden text-white text-lg font-semibold border shadow-xl">
+                <img src={LoadingImage} alt="" className="scale-[130%]" />
+              </div>
+            </div>
+
+          }
+
+
+
         <div className="w-4/12">
+
             <h6 className="text-lg">{"CV:"}</h6>
             
             <div className="flex h-7 overflow-hidden justify-between">
@@ -49,6 +77,7 @@ const CardInfoFile = ({file}) => {
 
             </div>
         </div>
+      </>
 
     )
 }
