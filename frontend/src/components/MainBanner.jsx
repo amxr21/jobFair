@@ -1,18 +1,13 @@
+import axios from "axios";
+import { CircularProgress } from "@mui/material"
+
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-import axios from "axios";
-
-import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants } from "./index";
 import { useAuthContext } from "../Hooks/useAuthContext";
+import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants, AccessButtons, TopBar } from "./index";
 
-import { AccessButtons } from "./index";
-
-
-import { CircularProgress } from "@mui/material"
-
-
-import { TopBar } from "./index";
+ 
 
 
 const MainBanner = ({link}) => {
@@ -21,13 +16,12 @@ const MainBanner = ({link}) => {
 
     const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
 
-
-
     const path = useLocation()
 
-    const [ isFlagged, setIsFlagged ] = useState(false)
 
+    const [ isFlagged, setIsFlagged ] = useState(false)
     const flagIcon = useRef()
+
 
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const [otherApplicants, setOtherApplicants] = useState([]); // State to store the list of applicants

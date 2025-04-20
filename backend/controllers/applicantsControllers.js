@@ -82,6 +82,7 @@ const getAllApplicants = async (req, res) => {
     }
 };
 
+
 const addApplicant =  async (req, res) => {
     const userId = !req.user ? "662d20b4754626de2c3ac2b7" : req.user._id;
     console.log("\n\n\n\n\n\n",req,"\n\n\n\n\n\n");
@@ -126,6 +127,7 @@ const addApplicant =  async (req, res) => {
 
 }
 
+
 const getApplicant = async (req, res) => {
     const { id } = req.params;
 
@@ -142,6 +144,8 @@ const getApplicant = async (req, res) => {
         res.status(401).json({error: "did not find the applicant"});
     }
 }
+
+
 const updateApplicant = async (req, res) => {
 
     try {
@@ -172,8 +176,6 @@ const updateApplicant = async (req, res) => {
         console.log({error: error.message});
     }
 }
-
-
 
 
 const flagApplicant = async (req, res) => {
