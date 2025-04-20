@@ -12,30 +12,25 @@ const TopBar = ({user}) => {
     
     
     
-    useEffect(() => {
-        let isMounted = true 
-        if(isMounted){
-            const getDay = () => {
-                const now = new Date()
-                const dayIndex = now.getDay()
-                    
-                setDate(String(now).split(' ').slice(1,4))
+   useEffect(() => {
+    const getDay = () => {
+        const now = new Date();
+
+        // Get the full date string in UAE timezone
+        const options = { timeZone: "Asia/Dubai", weekday: "long", month: "short", day: "numeric", year: "numeric" };
+        const dateInUAE = new Date().toLocaleString("en-US", options);
+
+        // Split the string to get day and date info
+        const [weekday, month, dayNum, year] = dateInUAE.replace(',', '').split(' ');
         
-                const today = dayIndex - 1 > 0 ? days[dayIndex] : days[dayIndex+1]
-                setDay(today)
-            }
-            getDay()
+        setDay(weekday); // e.g., 'Sunday'
+        setDate([month, dayNum, year]); // e.g., ['Apr', '21', '2024']
+    };
 
-        }
+    getDay();
 
+}, []);
 
-        return () => {
-            isMounted = false
-        }
-
-
-
-    }, [])
 
     
     
