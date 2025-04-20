@@ -132,6 +132,39 @@ const MainBanner = ({link}) => {
 
 
 
+
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            console.log('this is a new fetch');
+            
+            // Fetch new applicants data
+            axios.get(`${link}/applicants`)
+                .then(response => {
+                    setApplicants(response.data); // update state with new applicants
+                    setFinalList(sortedApplicants(filterCriteriaa));
+                })
+                .catch(error => {
+                    console.error("Error fetching applicants:", error);
+                });
+        }, 5000); // Poll every 5 seconds
+    
+        return () => clearInterval(intervalId); // Cleanup on unmount
+    }, []);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const filterFlagged = () => {
         if(!isFlagged){
             const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
