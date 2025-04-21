@@ -36,17 +36,15 @@ const Statistics = ({ link }) => {
 
 
 
-
-
-
   const pieData = [
+    
     { id: 0, value: a?.filter((app) => app.attended).length || 0, label: 'Confirmed' },
     { id: 1, value: a?.filter((app) => !app.attended).length || 0, label: 'Unconfirmed' },
   ];
 
   const pieData2 = [
     { id: 0, value: data.managers?.filter((m) => m.status == 'Confirmed').length || 0, label: 'Confirmed' },
-    { id: 1, value: data.managers?.filter((m) => m.status == 'Canceled').length || 0, label: 'Unconfirmed' },
+    { id: 1, value: data.managers?.filter((m) => m.status != 'Confirmed').length || 0, label: 'Canceled' },
   ];
 
   useEffect(() => {
