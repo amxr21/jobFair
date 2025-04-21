@@ -147,18 +147,40 @@ const MainBanner = ({link}) => {
             // Fetch new applicants data
             axios.get(`${link}/applicants`)
                 .then(response => {
-                    console.log(isFlagged);
-                    if(isFlagged){
+                    // console.log(isFlagged);
+
+                    // if(user?.email == 'casto@sharjah.ac.ae'){
+                    // }
+                    
+                    if(user){
+                        if(user.email == 'casto@sharjah.ac.ae'){
+                            setApplicants(response.data)
+                            setFinalList(sortedApplicants(filterSelected));
+                            
+                        }
+                        else{
+                            setApplicants(response.data?.filter((applicant) => applicant.user_id.includes(user.companyName)))
+                            setFinalList(sortedApplicants(filterSelected));
+
+                        }
                         
-                        setApplicants(response.data); // update state with new applicants
-                        setFinalList(sortedApplicants(filterSelected));
-                        const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-                        setFinalList(a)
+                        if(isFlagged){                        
+                            const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
+                            setFinalList(a)
+                        }
+
+                        
+                        console.log(user?.email != 'casto@sharjah.ac.ae');
+                        
+
                     }
-                    else{
-                        setApplicants(response.data); // update state with new applicants
-                        setFinalList(sortedApplicants(filterSelected));
-                    }
+                    
+                    
+
+
+
+
+
                 })
                 .catch(error => {
                     console.error("Error fetching applicants:", error);
@@ -166,7 +188,7 @@ const MainBanner = ({link}) => {
         }, 5000); // Poll every 5 seconds
     
         return () => clearInterval(intervalId); // Cleanup on unmount
-    }, [isFlagged]);
+    }, [isFlagged, user]);
 
 
 
