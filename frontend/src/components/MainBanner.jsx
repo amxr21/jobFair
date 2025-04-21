@@ -231,6 +231,25 @@ const MainBanner = ({link}) => {
 
 
 
+        const scrollableRef = useRef(null);
+        const [isAtTop, setIsAtTop] = useState(true);
+
+        useEffect(() => {
+            const el = scrollableRef.current;
+          
+            const handleScroll = () => {
+              if (el) setIsAtTop(el.scrollTop === 0);
+            };
+          
+            if (el) {
+              el.addEventListener('scroll', handleScroll);
+              handleScroll(); // run once on mount
+            }
+          
+            return () => {
+              if (el) el.removeEventListener('scroll', handleScroll);
+            };
+          }, []);
 
 
     return (
@@ -255,7 +274,7 @@ const MainBanner = ({link}) => {
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
                 <div className="grow h-fit rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div className={`list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
+                    <div ref={scrollableRef} className={`relative list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.slice(0, visibleCount).map((applicant) => {
                             counter += 1;
 
@@ -304,6 +323,29 @@ const MainBanner = ({link}) => {
 
 
                             }
+
+
+                        <button
+                            className={`sticky flex items-center justify-center bottom-5 left-[95%] scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
+                            isAtTop ? 'opacity-0' : 'opacity-100'
+                            }`}
+                            onClick={() => {
+                            scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                        >
+                            <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="size-4"
+                            >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                            </svg>
+                        </button>
+
+
                     </div>
                 </div>
 
