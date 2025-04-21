@@ -63,8 +63,9 @@ const StatisticsElement = ({ data = {}, type }) => {
   useEffect(() => {
     switch (type) {
       case "students":
+        let students = new Set(applicants.map(a => a.applicantDetails.uniId))
         setIcon(StudentIcon);
-        setHeader(applicants.length);
+        setHeader(students.size);
         setSubheader("Registered Students");
         break;
 
@@ -95,13 +96,13 @@ const StatisticsElement = ({ data = {}, type }) => {
   }, [type, managers, applicants, managersNumber, fieldsNumber]);
 
   return (
-    <div className="statistics-element col-span-3 flex gap-5 bg-white p-4 rounded-xl">
-      <div className="icon">
-        <img src={icon} alt="icon" />
+    <div className="statistics-element col-span-3 flex gap-3 bg-white p-3 h-fit rounded-xl">
+      <div className="icon h-10 w-10">
+        <img src={icon} alt="icon h-full" />
       </div>
-      <div className="text flex flex-col gap-y-1">
-        <h2 className="number text-4xl font-bold">{header}+</h2>
-        <h6 className="subtitle text-sm font-medium">{subheader}</h6>
+      <div className="text flex flex-col gap-y-0">
+        <h2 className="number text-3xl font-bold">{header}+</h2>
+        <h6 className="subtitle text-xs font-medium">{subheader}</h6>
       </div>
     </div>
   );

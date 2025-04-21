@@ -8,7 +8,7 @@ const PieChartElement = ({title, dataset, colorsPair = ['#0066CC', '#0E7F41']}) 
             <PieChart
                 sx={{ "& .MuiChartsLegend-root": { display: "none" }, display: 'flex', flexDirection: 'column', alignItems: 'center'}}
                 className=""
-                height={250}
+                height={280}
                 width={280}
                 colors={colorsPair} 
                 series={[
@@ -21,8 +21,7 @@ const PieChartElement = ({title, dataset, colorsPair = ['#0066CC', '#0E7F41']}) 
                         startAngle: 90,
                         endAngle: 450,
                         color: 'red',
-                        cx: 135,
-                        cy: 100,
+                        cx: 140, 
                     }
                 ]}
             />

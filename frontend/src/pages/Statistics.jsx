@@ -118,12 +118,12 @@ const Statistics = ({ link }) => {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
+    <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[100vh] overflow-hidden">
       {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
 
-      <div id="Statistics" className="bg-[#F3F6FF] min-h-[76vh] h-full overflow-y-auto grow rounded-xl px-6 py-4 col-span-10 w-full mx-auto">
-        <div className="flex flex-col gap-4 w-full h-full justify-between">
-          <div className="grid grid-cols-12 gap-x-5 h-fit rounded-lg overflow-hidden">
+      <div id="Statistics" className="bg-[#F3F6FF] min-h-full h-full overflow-y-auto grow rounded-xl px-6 py-4 col-span-10   mx-auto">
+        <div className="flex flex-col w-full gap-3">
+          <div className="grid grid-cols-12 gap-x-5 rounded-lg overflow-hidden">
             {titles.map((type, i) => (
               <StatisticsElement key={i} data={data} type={type} />
             ))}
@@ -135,7 +135,7 @@ const Statistics = ({ link }) => {
             <BarChartElement dataset={sectors} />
           </div>
 
-          <div className="grid grid-cols-12 gap-x-5">
+          <div className="grid grid-cols-12 gap-x-5 max-h-full">
             <TopStatistic title="Max Capacity" subtitle="" data={number ? [number, 'Capacity'] : ['', '']} icon={<LightningIcon />} />
             <TopStatistic title="Top Company by Applications" subtitle="Applicants" data={mostCompany?.length ? mostCompany : ['', '']} icon={<StarIcon />} />
             <TopStatistic title="Top Applied Field" subtitle="Companies" data={mostField?.length ? mostField : ['', '']} icon={<TrendIcon />} />
