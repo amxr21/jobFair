@@ -147,15 +147,19 @@ const MainBanner = ({link}) => {
             // Fetch new applicants data
             axios.get(`${link}/applicants`)
                 .then(response => {
-                    // console.log(isFlagged);
-
-                    // if(user?.email == 'casto@sharjah.ac.ae'){
-                    // }
-                    
+                    let allIds = []
                     if(user){
                         if(user.email == 'casto@sharjah.ac.ae'){
-                            setApplicants(response.data)
-                            setFinalList(sortedApplicants(filterSelected));
+                            setApplicants(response.data.filter((applicant) => {
+                                if(!allIds.includes(applicant.applicantDetails.uniId)) {
+                                    allIds.push(applicant.applicantDetails.uniId)
+                                    return true
+                                }
+                                return false
+                            }))
+
+                                setFinalList(sortedApplicants(filterSelected));
+  
                             
                         }
                         else{
@@ -163,12 +167,6 @@ const MainBanner = ({link}) => {
                             setFinalList(sortedApplicants(filterSelected));
 
                         }
-                        
-                        if(isFlagged){                        
-                            const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-                            setFinalList(a)
-                        }
-
                         
                         console.log(user?.email != 'casto@sharjah.ac.ae');
                         
@@ -196,25 +194,17 @@ const MainBanner = ({link}) => {
 
 
 
-
-
-
-
-
-
-
-
     const filterFlagged = () => {
         if(!isFlagged){
             const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-            flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
+            // flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
             // flagIcon?.current.classList.replace("border-gray-300", "border-none")
             flagIcon?.current.classList.replace("opacity-50", "opacity-100")
             setFinalList(a)
         }
         else{
             setFinalList(sortedApplicants(filterCriteriaa))
-            flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
+            // flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
             // flagIcon?.current.classList.replace("border-none", "border-gray-300")
             flagIcon?.current.classList.replace("opacity-100", "opacity-50")
         }
