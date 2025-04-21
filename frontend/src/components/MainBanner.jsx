@@ -22,6 +22,7 @@ const MainBanner = ({link}) => {
     const [ isFlagged, setIsFlagged ] = useState(false)
     const flagIcon = useRef()
 
+    const [ filterSelected, setFilterSelected ] = useState('')
 
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const [otherApplicants, setOtherApplicants] = useState([]); // State to store the list of applicants
@@ -45,16 +46,22 @@ const MainBanner = ({link}) => {
 
         switch (filterCriteria) {
             case "CGPA":
+                setFilterSelected('CGPA')
                 return sortedArray.sort((a, b) => b.applicantDetails.cgpa - a.applicantDetails.cgpa);
             case "University ID":
+                setFilterSelected('University ID')
                     return sortedArray.sort((a, b) => a.applicantDetails.uniId.localeCompare(b.applicantDetails.uniId));
             case "Major":
+                setFilterSelected('Major')
                 return sortedArray.sort((a, b) => a.applicantDetails.major.localeCompare(b.applicantDetails.major));
             case "Name":
+                setFilterSelected('Name')
                 return sortedArray.sort((a, b) => a.applicantDetails.fullName.toLowerCase().localeCompare(b.applicantDetails.fullName.toLowerCase())); 
             case "Nationality":
+                setFilterSelected('Nationality')
                 return sortedArray.sort((a, b) => a.applicantDetails.nationality.toLowerCase().localeCompare(b.applicantDetails.nationality.toLowerCase())); 
             case "Age":
+                setFilterSelected('Age')
                 return sortedArray.sort((a, b) => {
                     // console.log((2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0]));
                     return (2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0])
@@ -140,8 +147,18 @@ const MainBanner = ({link}) => {
             // Fetch new applicants data
             axios.get(`${link}/applicants`)
                 .then(response => {
-                    setApplicants(response.data); // update state with new applicants
-                    setFinalList(sortedApplicants(filterCriteriaa));
+                    console.log(isFlagged);
+                    if(isFlagged){
+                        
+                        setApplicants(response.data); // update state with new applicants
+                        setFinalList(sortedApplicants(filterSelected));
+                        const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
+                        setFinalList(a)
+                    }
+                    else{
+                        setApplicants(response.data); // update state with new applicants
+                        setFinalList(sortedApplicants(filterSelected));
+                    }
                 })
                 .catch(error => {
                     console.error("Error fetching applicants:", error);
@@ -149,7 +166,7 @@ const MainBanner = ({link}) => {
         }, 5000); // Poll every 5 seconds
     
         return () => clearInterval(intervalId); // Cleanup on unmount
-    }, []);
+    }, [isFlagged]);
 
 
 
