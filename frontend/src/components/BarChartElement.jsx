@@ -12,9 +12,9 @@ const BarChartElement = ({dataset}) => {
       ]
 
     return(
-        <div className="col-span-6 bg-white rounded-xl p-5 flex flex-col gap-x-0 w-full">
+        <div className="col-span-6 bg-white rounded-xl p-5 flex flex-col gap-x-0 w-full overflow-hidden">
             <BarChart
-                width={580} 
+                width={550} 
                 xAxis=
                 {
                     [{
