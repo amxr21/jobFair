@@ -143,62 +143,62 @@ const MainBanner = ({link}) => {
         isFlaggedRef.current = isFlagged;
     }, [isFlagged]);
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            console.log('this is a new fetch');
+    // useEffect(() => {
+    //     const intervalId = setInterval(() => {
+    //         console.log('this is a new fetch');
             
-            // Fetch new applicants data
-            axios.get(`${link}/applicants`)
-                .then(response => {
-                    let allIds = []
-                    if(user){
-                        if(user.email == 'casto@sharjah.ac.ae'){
+    //         // Fetch new applicants data
+    //         axios.get(`${link}/applicants`)
+    //             .then(response => {
+    //                 let allIds = []
+    //                 if(user){
+    //                     if(user.email == 'casto@sharjah.ac.ae'){
 
 
-                            if (isFlaggedRef.current) {
-                                const flagged = applicants.filter(applicant => applicant.flags?.includes(user?.companyName));
-                                setFinalList(sortedApplicants(filterSelected, flagged));
-                              }
+    //                         if (isFlaggedRef.current) {
+    //                             const flagged = applicants.filter(applicant => applicant.flags?.includes(user?.companyName));
+    //                             setFinalList(sortedApplicants(filterSelected, flagged));
+    //                           }
 
-                            else{
-                                setApplicants(response.data.filter((applicant) => {
-                                    if(!allIds.includes(applicant.applicantDetails.uniId)) {
-                                        allIds.push(applicant.applicantDetails.uniId)
-                                        return true
-                                    }
-                                    return false
-                                }))
+    //                         else{
+    //                             setApplicants(response.data.filter((applicant) => {
+    //                                 if(!allIds.includes(applicant.applicantDetails.uniId)) {
+    //                                     allIds.push(applicant.applicantDetails.uniId)
+    //                                     return true
+    //                                 }
+    //                                 return false
+    //                             }))
     
-                                    setFinalList(sortedApplicants(filterSelected));
+    //                                 setFinalList(sortedApplicants(filterSelected));
 
-                            }
+    //                         }
 
   
                             
-                        }
-                        else{
+    //                     }
+    //                     else{
 
 
-                            if (isFlaggedRef.current) {
-                                const flagged = applicants.filter((applicant) => applicant.user_id.includes(user.companyName)).filter(applicant => applicant.flags?.includes(user?.companyName));
-                                setFinalList(sortedApplicants(filterSelected, flagged));
-                              }
+    //                         if (isFlaggedRef.current) {
+    //                             const flagged = applicants.filter((applicant) => applicant.user_id.includes(user.companyName)).filter(applicant => applicant.flags?.includes(user?.companyName));
+    //                             setFinalList(sortedApplicants(filterSelected, flagged));
+    //                           }
 
-                            else{
-                                setApplicants(response.data.filter((applicant) => applicant.user_id.includes(user.companyName)))
-                                setFinalList(sortedApplicants(filterSelected));
-                            }
-
-
+    //                         else{
+    //                             setApplicants(response.data.filter((applicant) => applicant.user_id.includes(user.companyName)))
+    //                             setFinalList(sortedApplicants(filterSelected));
+    //                         }
 
 
 
-                        }
+
+
+    //                     }
                         
-                        // console.log(user?.email != 'casto@sharjah.ac.ae');
+    //                     // console.log(user?.email != 'casto@sharjah.ac.ae');
                         
 
-                    }
+    //                 }
                     
                     
 
@@ -206,14 +206,14 @@ const MainBanner = ({link}) => {
 
 
 
-                })
-                .catch(error => {
-                    console.error("Error fetching applicants:", error);
-                });
-        }, 5000); // Poll every 5 seconds
+    //             })
+    //             .catch(error => {
+    //                 console.error("Error fetching applicants:", error);
+    //             });
+    //     }, 5000); // Poll every 5 seconds
     
-        return () => clearInterval(intervalId); // Cleanup on unmount
-    }, [user]);
+    //     return () => clearInterval(intervalId); // Cleanup on unmount
+    // }, [user]);
 
 
 
