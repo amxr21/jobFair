@@ -137,8 +137,11 @@ const MainBanner = ({link}) => {
 
     // console.log(applicants); // Logging to debug and verify the applicants' list
 
+    const isFlaggedRef = useRef(isFlagged);
 
-
+    useEffect(() => {
+        isFlaggedRef.current = isFlagged;
+    }, [isFlagged]);
 
     useEffect(() => {
         const intervalId = setInterval(() => {
@@ -150,25 +153,49 @@ const MainBanner = ({link}) => {
                     let allIds = []
                     if(user){
                         if(user.email == 'casto@sharjah.ac.ae'){
-                            setApplicants(response.data.filter((applicant) => {
-                                if(!allIds.includes(applicant.applicantDetails.uniId)) {
-                                    allIds.push(applicant.applicantDetails.uniId)
-                                    return true
-                                }
-                                return false
-                            }))
 
-                                setFinalList(sortedApplicants(filterSelected));
+
+                            if (isFlaggedRef.current) {
+                                const flagged = applicants.filter(applicant => applicant.flags?.includes(user?.companyName));
+                                setFinalList(sortedApplicants(filterSelected, flagged));
+                              }
+
+                            else{
+                                setApplicants(response.data.filter((applicant) => {
+                                    if(!allIds.includes(applicant.applicantDetails.uniId)) {
+                                        allIds.push(applicant.applicantDetails.uniId)
+                                        return true
+                                    }
+                                    return false
+                                }))
+    
+                                    setFinalList(sortedApplicants(filterSelected));
+
+                            }
+
   
                             
                         }
                         else{
-                            setApplicants(response.data?.filter((applicant) => applicant.user_id.includes(user.companyName)))
-                            setFinalList(sortedApplicants(filterSelected));
+
+
+                            if (isFlaggedRef.current) {
+                                const flagged = applicants.filter((applicant) => applicant.user_id.includes(user.companyName)).filter(applicant => applicant.flags?.includes(user?.companyName));
+                                setFinalList(sortedApplicants(filterSelected, flagged));
+                              }
+
+                            else{
+                                setApplicants(response.data.filter((applicant) => applicant.user_id.includes(user.companyName)))
+                                setFinalList(sortedApplicants(filterSelected));
+                            }
+
+
+
+
 
                         }
                         
-                        console.log(user?.email != 'casto@sharjah.ac.ae');
+                        // console.log(user?.email != 'casto@sharjah.ac.ae');
                         
 
                     }
@@ -186,8 +213,7 @@ const MainBanner = ({link}) => {
         }, 5000); // Poll every 5 seconds
     
         return () => clearInterval(intervalId); // Cleanup on unmount
-    }, [isFlagged, user]);
-
+    }, [user]);
 
 
 
@@ -195,24 +221,43 @@ const MainBanner = ({link}) => {
 
 
     const filterFlagged = () => {
-        if(!isFlagged){
-            const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-            // flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
-            // flagIcon?.current.classList.replace("border-gray-300", "border-none")
-            flagIcon?.current.classList.replace("opacity-50", "opacity-100")
-            setFinalList(a)
-        }
-        else{
-            setFinalList(sortedApplicants(filterCriteriaa))
-            // flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
-            // flagIcon?.current.classList.replace("border-none", "border-gray-300")
-            flagIcon?.current.classList.replace("opacity-100", "opacity-50")
-        }
-        setIsFlagged(prev => !prev)
+        setIsFlagged(prev => {
+            const newValue = !prev;
+    
+            if (newValue) {
+                const a = finalList.filter(applicant => applicant.flags?.includes(user?.companyName));
+                flagIcon?.current.classList.replace("opacity-50", "opacity-100");
+                setFinalList(a);
+            } else {
+                flagIcon?.current.classList.replace("opacity-100", "opacity-50");
+                setFinalList(sortedApplicants(filterCriteriaa));
+            }
+    
+            return newValue;
+        });
+    };
+
+    // const filterFlagged = () => {
+    //     setIsFlagged(prev => !prev)
+    //     if(isFlagged){
+    //         const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
+    //         // flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
+    //         // flagIcon?.current.classList.replace("border-gray-300", "border-none")
+    //         flagIcon?.current.classList.replace("opacity-50", "opacity-100")
+    //         setFinalList(a)
+            
+    //     }
+    //     else{
+    //         setFinalList(sortedApplicants(filterCriteriaa))
+    //         // flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
+    //         // flagIcon?.current.classList.replace("border-none", "border-gray-300")
+    //         flagIcon?.current.classList.replace("opacity-100", "opacity-50")
+            
+    //     }
 
         
 
-    }
+    // }
 
 
         const [visibleCount, setVisibleCount] = useState(window.innerWidth < 1100 ? 0 : finalList.length); // show all on desktop
