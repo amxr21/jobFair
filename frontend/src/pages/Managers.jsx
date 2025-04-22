@@ -76,6 +76,10 @@ const Managers = ({link}) => {
 
     useEffect(() => {
         if(companies.length != 0) setFinalList(sortedCompanies(filterCriteriaa));
+
+        console.log(finalList);
+        
+
     }, [filterCriteriaa, companies, path.pathname]);
 
     let counter = 0;
@@ -86,7 +90,10 @@ const Managers = ({link}) => {
         const fetchApplicantsNumberForCompanies = async () => {
             try {
                 const response = await axios.get(link + '/applicants')
-                if(user && user.email == "casto@sharjah.ac.ae")setApplicantsList(response.data)
+                if(user && user.email == "casto@sharjah.ac.ae") setApplicantsList(response.data)
+
+
+                
                     
             } catch (error) {
                 console.log(error)
@@ -113,26 +120,29 @@ const Managers = ({link}) => {
                     if(user.email == "casto@sharjah.ac.ae"){
 
                         let numberOfApplicantsPerCompany = {}
-                        const updatedCompanies = response.data.map((company) => {
-                            numberOfApplicantsPerCompany[company.companyName] = 0
-                            // console.log(numberOfApplicantsPerCompany);
-                            applicantsList.forEach((applicant) => {
-                                if(applicant.user_id.includes(company.companyName)){
-                                    numberOfApplicantsPerCompany[company.companyName] =  numberOfApplicantsPerCompany[company.companyName] + 1
+                        if(response.data){
+                            const updatedCompanies = response.data.map((company) => {
+                                numberOfApplicantsPerCompany[company.companyName] = 0
+                                // console.log(numberOfApplicantsPerCompany);
+                                applicantsList.forEach((applicant) => {
+                                    if(applicant.user_id.includes(company.companyName)){
+                                        numberOfApplicantsPerCompany[company.companyName] =  numberOfApplicantsPerCompany[company.companyName] + 1
+                                    }
+                                })
+    
+                                return {
+                                    ...company,
+                                    'numberOfApplicants': numberOfApplicantsPerCompany[company.companyName]
                                 }
+                                
                             })
-
-                            return {
-                                ...company,
-                                'numberOfApplicants': numberOfApplicantsPerCompany[company.companyName]
-                            }
+    
+    
+    
+                            // Filter applicants to only include those associated with the logged-in user
+                            setCompanies([...updatedCompanies].slice(1));
                             
-                        })
-
-
-
-                        // Filter applicants to only include those associated with the logged-in user
-                        setCompanies([...updatedCompanies].slice(1));
+                        }
                     }
                     else{
                         // Filter applicants to only include those associated with the logged-in user
