@@ -33,7 +33,7 @@ const Managers = ({link}) => {
         }
     } 
  
-        
+    
 
     // Sorting function to arrange applicants by specified criteria
     const sortedCompanies = (filterCriteria) => {
@@ -86,93 +86,164 @@ const Managers = ({link}) => {
 
 
 
-    useEffect(() => {
-        const fetchApplicantsNumberForCompanies = async () => {
-            try {
-                const response = await axios.get(link + '/applicants')
-                if(user && user.email == "casto@sharjah.ac.ae") setApplicantsList(response.data)
+    // useEffect(() => {
+    //     const fetchApplicantsNumberForCompanies = async () => {
+    //         try {
+    //             const response = await axios.get(link + '/applicants')
+    //             if(user && user.email == "casto@sharjah.ac.ae") setApplicantsList(response.data)
 
 
                 
                     
-            } catch (error) {
-                console.log(error)
-            }
-        }
+    //         } catch (error) {
+    //             console.log(error)
+    //         }
+    //     }
         
-        fetchApplicantsNumberForCompanies() 
-    }, [user])
+    //     fetchApplicantsNumberForCompanies() 
+    // }, [user])
+
+
+
+    // useEffect(() => {
+
+    //     const fetchCompanies = async () => {
+    //         try {
+    //             setIsLoading(true)
+    //             const response = await axios.get(`${link}/companies`, {
+    //                 headers: user ? { Authorization: `Bearer ${user.token}` } : {},
+    //             });
+
+
+
+    //             if (user) {
+    //                 if(user.email == "casto@sharjah.ac.ae"){
+
+    //                     let numberOfApplicantsPerCompany = {}
+    //                     if(response.data){
+    //                         const updatedCompanies = response.data.map((company) => {
+    //                             numberOfApplicantsPerCompany[company.companyName] = 0
+    //                             // console.log(numberOfApplicantsPerCompany);
+    //                             applicantsList.forEach((applicant) => {
+    //                                 if(applicant.user_id.includes(company.companyName)){
+    //                                     numberOfApplicantsPerCompany[company.companyName] =  numberOfApplicantsPerCompany[company.companyName] + 1
+    //                                 }
+    //                             })
+    
+    //                             return {
+    //                                 ...company,
+    //                                 'numberOfApplicants': numberOfApplicantsPerCompany[company.companyName]
+    //                             }
+                                
+    //                         })
+    
+    
+    
+    //                         // Filter applicants to only include those associated with the logged-in user
+    //                         setCompanies([...updatedCompanies].slice(1));
+                            
+    //                     }
+    //                 }
+    //                 else{
+    //                     // Filter applicants to only include those associated with the logged-in user
+    //                     setCompanies(
+    //                         response.data.filter((applicant) =>
+    //                         // SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
+    //                         applicant.user_id.includes(user.email)
+    //                         // SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
+    
+    //                     )
+    //                     );
+
+    //                 }
+    //             }
+    //         } catch (err) {
+    //             console.log("Error fetching data:", err);
+    //         }
+    //         finally{
+    //             setTimeout(() => {
+    //                 setIsLoading(false)
+
+    //             }, 2000)
+    //         }
+    //     };
+
+
+    //     fetchCompanies();
+    // }, [user, path.pathname, applicantsList]); // Fetch companies again if the user changes
+
+    // console.log(companies); // Logging to debug and verify the companies' list
+
+
 
 
 
     useEffect(() => {
-
-        const fetchCompanies = async () => {
+        const fetchData = async () => {
             try {
-                setIsLoading(true)
-                const response = await axios.get(`${link}/companies`, {
+                setIsLoading(true);
+    
+                // 1. Fetch applicants (if casto)
+                let applicants = [];
+                if (user?.email === "casto@sharjah.ac.ae") {
+                    const applicantsResponse = await axios.get(`${link}/applicants`);
+                    applicants = applicantsResponse.data;
+                    setApplicantsList(applicants);
+                }
+    
+                // 2. Fetch companies
+                const companiesResponse = await axios.get(`${link}/companies`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
                 });
-
-
-
+    
+                const companiesData = companiesResponse.data;
+    
                 if (user) {
-                    if(user.email == "casto@sharjah.ac.ae"){
-
-                        let numberOfApplicantsPerCompany = {}
-                        if(response.data){
-                            const updatedCompanies = response.data.map((company) => {
-                                numberOfApplicantsPerCompany[company.companyName] = 0
-                                // console.log(numberOfApplicantsPerCompany);
-                                applicantsList.forEach((applicant) => {
-                                    if(applicant.user_id.includes(company.companyName)){
-                                        numberOfApplicantsPerCompany[company.companyName] =  numberOfApplicantsPerCompany[company.companyName] + 1
-                                    }
-                                })
+                    if (user.email === "casto@sharjah.ac.ae") {
+                        // Build a map of applicants per company
+                        const updatedCompanies = companiesData.map((company) => {
+                            const num = applicants.filter((app) =>
+                                app.user_id.includes(company.companyName)
+                            ).length;
     
-                                return {
-                                    ...company,
-                                    'numberOfApplicants': numberOfApplicantsPerCompany[company.companyName]
-                                }
-                                
-                            })
+                            return {
+                                ...company,
+                                numberOfApplicants: num,
+                            };
+                        });
     
-    
-    
-                            // Filter applicants to only include those associated with the logged-in user
-                            setCompanies([...updatedCompanies].slice(1));
-                            
-                        }
-                    }
-                    else{
-                        // Filter applicants to only include those associated with the logged-in user
-                        setCompanies(
-                            response.data.filter((applicant) =>
-                            // SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
+                        setCompanies([...updatedCompanies].slice(1));
+                    } else {
+                        const filtered = companiesData.filter((applicant) =>
                             applicant.user_id.includes(user.email)
-                            // SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE. SOOOOO SIMPLE.
-    
-                        )
                         );
-
+                        setCompanies(filtered);
                     }
                 }
-            } catch (err) {
-                console.log("Error fetching data:", err);
-            }
-            finally{
-                setTimeout(() => {
-                    setIsLoading(false)
-
-                }, 2000)
+    
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            } finally {
+                setTimeout(() => setIsLoading(false), 2000);
             }
         };
+    
+        if (user) fetchData();
+    
+    }, [user, path.pathname]);
+    
 
 
-        fetchCompanies();
-    }, [user, path.pathname, applicantsList]); // Fetch companies again if the user changes
 
-    // console.log(companies); // Logging to debug and verify the companies' list
+
+
+
+
+
+
+
+
+
 
     return (
         <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
