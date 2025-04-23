@@ -37,3 +37,4 @@ export {default as FlagButton} from "./FlagButton";
 export {default as Flagged} from "./Flagged";
 export {default as NoApplicants} from "./NoApplicants";
 export {default as Success} from "./Success";
+export {default as LoadingApplicants} from "./LoadingApplicants";
