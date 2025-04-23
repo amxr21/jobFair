@@ -1,18 +1,17 @@
 import axios from "axios";
-import { CircularProgress } from "@mui/material"
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 
 import { useAuthContext } from "../Hooks/useAuthContext";
-import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants, AccessButtons, TopBar } from "./index";
+import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants, AccessButtons, TopBar, LoadingApplicants } from "./index";
 
- 
+
+
+import { FixedSizeList as List } from 'react-window';
 
 
 const MainBanner = ({link}) => {
-
-
 
     const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
 
@@ -143,81 +142,6 @@ const MainBanner = ({link}) => {
         isFlaggedRef.current = isFlagged;
     }, [isFlagged]);
 
-    // useEffect(() => {
-    //     const intervalId = setInterval(() => {
-    //         console.log('this is a new fetch');
-            
-    //         // Fetch new applicants data
-    //         axios.get(`${link}/applicants`)
-    //             .then(response => {
-    //                 let allIds = []
-    //                 if(user){
-    //                     if(user.email == 'casto@sharjah.ac.ae'){
-
-
-    //                         if (isFlaggedRef.current) {
-    //                             const flagged = applicants.filter(applicant => applicant.flags?.includes(user?.companyName));
-    //                             setFinalList(sortedApplicants(filterSelected, flagged));
-    //                           }
-
-    //                         else{
-    //                             setApplicants(response.data.filter((applicant) => {
-    //                                 if(!allIds.includes(applicant.applicantDetails.uniId)) {
-    //                                     allIds.push(applicant.applicantDetails.uniId)
-    //                                     return true
-    //                                 }
-    //                                 return false
-    //                             }))
-    
-    //                                 setFinalList(sortedApplicants(filterSelected));
-
-    //                         }
-
-  
-                            
-    //                     }
-    //                     else{
-
-
-    //                         if (isFlaggedRef.current) {
-    //                             const flagged = applicants.filter((applicant) => applicant.user_id.includes(user.companyName)).filter(applicant => applicant.flags?.includes(user?.companyName));
-    //                             setFinalList(sortedApplicants(filterSelected, flagged));
-    //                           }
-
-    //                         else{
-    //                             setApplicants(response.data.filter((applicant) => applicant.user_id.includes(user.companyName)))
-    //                             setFinalList(sortedApplicants(filterSelected));
-    //                         }
-
-
-
-
-
-    //                     }
-                        
-    //                     // console.log(user?.email != 'casto@sharjah.ac.ae');
-                        
-
-    //                 }
-                    
-                    
-
-
-
-
-
-    //             })
-    //             .catch(error => {
-    //                 console.error("Error fetching applicants:", error);
-    //             });
-    //     }, 5000); // Poll every 5 seconds
-    
-    //     return () => clearInterval(intervalId); // Cleanup on unmount
-    // }, [user]);
-
-
-
-
 
 
     const filterFlagged = () => {
@@ -237,53 +161,79 @@ const MainBanner = ({link}) => {
         });
     };
 
-    // const filterFlagged = () => {
-    //     setIsFlagged(prev => !prev)
-    //     if(isFlagged){
-    //         const a = finalList.filter((applicant) => applicant.flags?.includes(user?.companyName))
-    //         // flagIcon?.current.classList.replace("bg-[#F3F6FF]", "bg-white")
-    //         // flagIcon?.current.classList.replace("border-gray-300", "border-none")
-    //         flagIcon?.current.classList.replace("opacity-50", "opacity-100")
-    //         setFinalList(a)
-            
-    //     }
-    //     else{
-    //         setFinalList(sortedApplicants(filterCriteriaa))
-    //         // flagIcon?.current.classList.replace("bg-white", "bg-[#F3F6FF]")
-    //         // flagIcon?.current.classList.replace("border-none", "border-gray-300")
-    //         flagIcon?.current.classList.replace("opacity-100", "opacity-50")
-            
-    //     }
 
-        
 
-    // }
+
+    
+
+    const RowVirsualized = React.memo(({index, style, data}) => {
+        const { applicants , user } = data
+        const applicant = applicants[index]
+
+        return (
+            <div style={style}>
+                <Row
+                    userType={'casto'}
+                    key={applicant?._id}
+                    ticketId={applicant?._id}
+                    number={index+1}
+                    name={applicant?.applicantDetails?.fullName}
+                    uniId={applicant?.applicantDetails?.uniId}
+                    nationality={applicant?.applicantDetails?.nationality}
+                    email={applicant?.applicantDetails?.email}
+                    phoneNumber={applicant?.applicantDetails?.phoneNumber}
+                    studyLevel={applicant?.applicantDetails?.studyLevel}
+                    major={applicant?.applicantDetails?.major}
+                    gpa={applicant?.applicantDetails?.cgpa}
+                    experience={applicant?.applicantDetails?.experience}
+                    attended={applicant?.attended ? "Confirmed" : "No"}
+                    age={2024 - parseInt(applicant?.applicantDetails?.birthdate?.split("-")[0] || 2006)}
+                    // age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
+                    languages={String(applicant?.applicantDetails?.languages)}
+                    portfolio={applicant?.applicantDetails?.linkedIn}
+                    file={applicant?.cv}
+                    qrCode={applicant?._id}
+                    status={applicant?.attended}
+                    city={applicant?.applicantDetails?.city}
+                    skills={{tech: applicant?.applicantDetails?.technicalSkills, nontech: applicant?.applicantDetails?.nonTechnicalSkills}}
+                    expectedToGraduate={applicant?.applicantDetails?.ExpectedToGraduate}
+                    flags={applicant?.flags}
+                    user={user}
+                />
+            </div>
+
+        )
+    })
+
+
+    const itemData = useMemo(() => ({ applicants: finalList, user }), [finalList, user]);
+
 
 
         const [visibleCount, setVisibleCount] = useState(window.innerWidth < 1100 ? 0 : finalList.length); // show all on desktop
 
         // batch rendering on mobile
-        useEffect(() => {
-            if (isMobile()) {
-                let current = 0;
-                const batchSize = 50;
-                const interval = setInterval(() => {
-                    current += batchSize;
-                    setVisibleCount(prev => {
-                        const next = prev + batchSize;
-                        if (next >= finalList.length) {
-                            clearInterval(interval);
-                            return finalList.length;
-                        }
-                        return next;
-                    });
-                }, 5000);
+        // useEffect(() => {
+        //     if (isMobile()) {
+        //         let current = 0;
+        //         const batchSize = 50;
+        //         const interval = setInterval(() => {
+        //             current += batchSize;
+        //             setVisibleCount(prev => {
+        //                 const next = prev + batchSize;
+        //                 if (next >= finalList.length) {
+        //                     clearInterval(interval);
+        //                     return finalList.length;
+        //                 }
+        //                 return next;
+        //             });
+        //         }, 5000);
     
-                return () => clearInterval(interval);
-            } else {
-                setVisibleCount(finalList.length); // render all instantly on desktop
-            }
-        }, [finalList]);
+        //         return () => clearInterval(interval);
+        //     } else {
+        //         setVisibleCount(finalList.length); // render all instantly on desktop
+        //     }
+        // }, [finalList]);
 
 
 
@@ -331,7 +281,30 @@ const MainBanner = ({link}) => {
                 {/* <ListHeader headerText={'Registered Applicants'} /> */}
                 <div className="grow h-fit rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
                     <TableHeader/>
-                    <div ref={scrollableRef} className={`relative list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
+
+                    {
+                        isLoading
+                        ?
+                        <LoadingApplicants />
+                        :
+                            finalList.length > 0
+                            ?
+                            <List
+                                height={400}
+                                itemCount={finalList.length}
+                                itemSize={106}
+                                width="100%"
+                                itemData={itemData}
+                            >
+                                {RowVirsualized}
+                            </List>
+                            :
+                            <NoApplicants />   
+                    }   
+
+
+
+                    {/* <div ref={scrollableRef} className={`relative list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
                         {finalList.length != 0 ?  finalList.slice(0, visibleCount).map((applicant) => {
                             counter += 1;
 
@@ -371,10 +344,7 @@ const MainBanner = ({link}) => {
                         :
                         isLoading
                         ?
-                        <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <CircularProgress size={20}/>
-                            <p className="text-sm">Loading applicants...</p>
-                        </div>
+                        
                         :
                         <NoApplicants />
 
@@ -403,7 +373,7 @@ const MainBanner = ({link}) => {
                         </button>
 
 
-                    </div>
+                    </div> */}
                 </div>
 
 
@@ -411,7 +381,7 @@ const MainBanner = ({link}) => {
                     user?.email != 'casto@sharjah.ac.ae' &&
                     <div className="flex flex-col gap-5 ">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
-                        <div className="  rounded-lg text-xs md:text-lg" onClick={filter}>
+                        <div className="relative  rounded-lg text-xs md:text-lg" onClick={filter}>
                             <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
                             {/* <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0"> */}
                                 {otherApplicants.length != 0 ?  otherApplicants.map((applicant) => {
