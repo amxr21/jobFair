@@ -292,7 +292,7 @@ const MainBanner = ({link}) => {
                             <List
                                 height={400}
                                 itemCount={finalList.length}
-                                itemSize={106}
+                                itemSize={110}
                                 width="100%"
                                 itemData={itemData}
                             >
