@@ -1,5 +1,6 @@
 import axios from "axios"
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
+import { createPortal } from "react-dom"
 import EmailToSection from "./EmailToSection";
 import BriefInfo from "./BriefInfo";
 import PersonalPhoto from "./PersonalPhoto";
@@ -10,8 +11,15 @@ import CardInfo2 from "./CardInfo2";;
 import CardInfoFile from "./CardInfoFile";
 
 
-
 import { ExpandIcon } from "./Icons";
+
+
+
+
+
+
+
+
  
 
 // const colorCode = {
@@ -36,6 +44,28 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     const [isVisible, setIsVisible] = useState(false);
 
     const [ isClicked, setIsClicked ] = useState(false)
+
+    
+
+
+    
+const ApplicantModal = ({visible, onClose, children}) => {
+    // if(!visible) return null
+
+    // className={`fixed top-1/2 left-1/2 z-[99999] transform -translate-x-1/2 -translate-y-1/2 w-[80%] max-w-[64rem] max-h-[90vh] overflow-y-auto bg-white shadow-2xl rounded-xl px-8 py-10 transition all ease-in-out ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
+    
+    return createPortal(
+        <div ref={expandApplicantDiv}
+            className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[36rem] max-h-[40rem] overflow-y-scroll md:overflow-y-auto fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${visible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`} >
+            {children}
+        </div>,
+        document.body
+    )
+
+    
+
+}
+
 
 
     useEffect(() => {
@@ -107,7 +137,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     else{
         return userType != 'manager'
         ?
-            <div className={`relative overflow-hidden row grid py-4 pl-7 pr-14 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
+            <div className={`overflow-hidden row grid py-4 pl-7 pr-14 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
                 <h2 className="flex">{number}
                     
                 </h2>
@@ -145,133 +175,137 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
                
                
                
-                <div className="relative flex justify-end">
-                    <button className="flex items-center justify-center w-7 h-7" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}}>
-                        <ExpandIcon />
-                    </button>
-                    
-                    
-                    
-                    
-                    
-                    <div ref={expandApplicantDiv} className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[36rem] max-h-[40rem] overflow-y-scroll md:overflow-y-auto fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
-                        <div className="card-info flex flex-col md:flex-row gap-x-4 md:h-11/12">
-                            <Brief>
-                                <BriefInfo
-                                    ticketId={ticketId}
-                                    id={uniId}
-                                    shortName={name}
-                                    ticketQrCodeSrc={qrCode}
-                                    emailRec = {email}
-                                    status={status}
-                                    graduationYear={expectedToGraduate}
-                                    flag={flags}
-                                />
-                            </Brief>
-                            <div className="details md:w-8/12 flex flex-col gap-3">
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Full name"}
-                                        infoText={name}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"University ID"}
-                                        infoText={uniId}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Age"}
-                                        infoText={age}
-                                    /> 
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Email"}
-                                        infoText={email}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Phone number"}
-                                        infoText={phoneNumber}
-                                    />
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Study program"}
-                                        infoText={studyLevel}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Major"}
-                                        infoText={major}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"CGPA"}
-                                        infoText={gpa ? parseFloat(gpa).toFixed(2) : ''}
-                                    />
-                                </CardRow>
-                                
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Technical Skills"}
-                                        infoText={skills?.tech}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Not-technical Skills"}
-                                        infoText={skills?.nontech}
-                                    />
-                                </CardRow>
+                    <div className="relative flex justify-end">
+                        <button className="flex items-center justify-center w-7 h-7" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}}>
+                            <ExpandIcon />
+                        </button>
+                        
+                        
+                        
+                        
+                        
+                        {/* <div ref={expandApplicantDiv} className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[36rem] max-h-[40rem] overflow-y-scroll md:overflow-y-auto fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}> */}
+                        <ApplicantModal visible={isClicked} onClose={() => setIsClicked(false)} >
 
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Nationality"}
-                                        infoText={nationality}
+                            <div className="card-info flex flex-col md:flex-row gap-x-4 md:h-11/12">
+                                <Brief>
+                                    <BriefInfo
+                                        ticketId={ticketId}
+                                        id={uniId}
+                                        shortName={name}
+                                        ticketQrCodeSrc={qrCode}
+                                        emailRec = {email}
+                                        status={status}
+                                        graduationYear={expectedToGraduate}
+                                        flag={flags}
                                     />
-                                    <CardInfo
-                                        infoHeader={"Languages"}
-                                        infoText={languages}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"City"}
-                                        infoText={city}
-                                    />
-                                </CardRow>
+                                </Brief>
+                                <div className="details md:w-8/12 flex flex-col gap-3">
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Full name"}
+                                            infoText={name}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"University ID"}
+                                            infoText={uniId}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"Age"}
+                                            infoText={age}
+                                        /> 
+                                    </CardRow>
+        
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Email"}
+                                            infoText={email}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"Phone number"}
+                                            infoText={phoneNumber}
+                                        />
+                                    </CardRow>
+        
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Study program"}
+                                            infoText={studyLevel}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"Major"}
+                                            infoText={major}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"CGPA"}
+                                            infoText={gpa ? parseFloat(gpa).toFixed(2) : ''}
+                                        />
+                                    </CardRow>
+                                    
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Technical Skills"}
+                                            infoText={skills?.tech}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"Not-technical Skills"}
+                                            infoText={skills?.nontech}
+                                        />
+                                    </CardRow>
 
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Experience"}
-                                        infoText={experience}
-                                    />
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Nationality"}
+                                            infoText={nationality}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"Languages"}
+                                            infoText={languages}
+                                        />
+                                        <CardInfo
+                                            infoHeader={"City"}
+                                            infoText={city}
+                                        />
+                                    </CardRow>
 
-                                </CardRow>
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"Experience"}
+                                            infoText={experience}
+                                        />
 
-    
-    
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"LinkedIn"}
-                                        infoText={portfolio}
-                                    />
-    
-    
-    
-                                    <CardInfoFile file={file} />
-    
-    
-    
-    
-    
-                                </CardRow>
+                                    </CardRow>
+
+        
+        
+                                    <CardRow>
+                                        <CardInfo
+                                            infoHeader={"LinkedIn"}
+                                            infoText={portfolio}
+                                        />
+        
+        
+        
+                                        <CardInfoFile file={file} />
+        
+        
+        
+        
+        
+                                    </CardRow>
+                                </div>
                             </div>
-                        </div>
-                        {/* <hr className="my-4" /> */}
-                        {/* <EmailToSection /> */}
+                            {/* <hr className="my-4" /> */}
+                            {/* <EmailToSection /> */}
+                        </ApplicantModal>
                     </div>
     
     
     
                     
                 </div>
-            </div>
+    
+            // </div>
         :
             <div className="row-manager grid py-4 px-7 min-h-24 bg-white rounded-xl gap-x-4 items-center mb-2 text-sm xl:text-base">
                 <h2 className="flex">{number}</h2>
@@ -406,4 +440,4 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
 
 }
 
-export default Row;
+export default React.memo(Row);
