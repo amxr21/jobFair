@@ -209,54 +209,26 @@ const MainBanner = ({link}) => {
     const itemData = useMemo(() => ({ applicants: finalList, user }), [finalList, user]);
 
 
-
-        const [visibleCount, setVisibleCount] = useState(window.innerWidth < 1100 ? 0 : finalList.length); // show all on desktop
-
-        // batch rendering on mobile
-        // useEffect(() => {
-        //     if (isMobile()) {
-        //         let current = 0;
-        //         const batchSize = 50;
-        //         const interval = setInterval(() => {
-        //             current += batchSize;
-        //             setVisibleCount(prev => {
-        //                 const next = prev + batchSize;
-        //                 if (next >= finalList.length) {
-        //                     clearInterval(interval);
-        //                     return finalList.length;
-        //                 }
-        //                 return next;
-        //             });
-        //         }, 5000);
-    
-        //         return () => clearInterval(interval);
-        //     } else {
-        //         setVisibleCount(finalList.length); // render all instantly on desktop
-        //     }
-        // }, [finalList]);
-
-
-
-
         const scrollableRef = useRef(null);
         const [isAtTop, setIsAtTop] = useState(true);
 
         useEffect(() => {
-            const el = scrollableRef.current;
-          
+            const el = scrollableRef?.current;
+        
             const handleScroll = () => {
-              if (el) setIsAtTop(el.scrollTop === 0);
+                console.log("scrollTop:", el?.scrollTop); // Debug
+                if (el) setIsAtTop(el.scrollTop === 0);
             };
-          
+        
             if (el) {
-              el.addEventListener('scroll', handleScroll);
-              handleScroll(); // run once on mount
+                el.addEventListener('scroll', handleScroll);
+                handleScroll(); // run once on mount
             }
-          
+        
             return () => {
-              if (el) el.removeEventListener('scroll', handleScroll);
+                if (el) el.removeEventListener('scroll', handleScroll);
             };
-          }, []);
+        }, []);
 
 
     return (
@@ -295,6 +267,7 @@ const MainBanner = ({link}) => {
                                 itemSize={108}
                                 width="100%"
                                 itemData={itemData}
+                                outerRef={scrollableRef}
                             >
                                 {RowVirsualized}
                             </List>
@@ -352,25 +325,7 @@ const MainBanner = ({link}) => {
                             }
 
 
-                        <button
-                            className={`sticky flex items-center justify-center bottom-5 left-[95%] scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
-                            isAtTop ? 'opacity-0' : 'opacity-100'
-                            }`}
-                            onClick={() => {
-                            scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                        >
-                            <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="currentColor"
-                            className="size-4"
-                            >
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
-                            </svg>
-                        </button>
+                        
 
 
                     </div> */}
@@ -382,7 +337,7 @@ const MainBanner = ({link}) => {
                     <div className="flex flex-col gap-5 ">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
                         <div className="relative  rounded-lg text-xs md:text-lg" onClick={filter}>
-                            <div className="list max-h-0 pr-3 overflow-x-hidden overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
+                            <div className="relative list max-h-0 pr-3 overflow-x-hidden overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
                             {/* <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0"> */}
                                 {otherApplicants.length != 0 ?  otherApplicants.map((applicant) => {
                                     counter += 1;
@@ -426,9 +381,26 @@ const MainBanner = ({link}) => {
                                 <div className="flex items-center w-48 justify-between mx-auto mt-4">
                                     <p className="text-sm">No Applicants</p>
                                 </div>
-
-
-                                    }
+                                }
+                                <button
+                                    className={`sticky flex items-center justify-center bottom-5 left-[95%] scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
+                                    isAtTop ? 'opacity-0' : 'opacity-100'
+                                    }`}
+                                    onClick={() => {
+                                    scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
+                                >
+                                    <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={1.5}
+                                    stroke="currentColor"
+                                    className="size-4"
+                                    >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div >
@@ -442,19 +414,3 @@ const MainBanner = ({link}) => {
 };
 
 export default MainBanner;
-
-
-
-
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
