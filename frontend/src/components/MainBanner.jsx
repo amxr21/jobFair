@@ -13,7 +13,6 @@ import { FixedSizeList as List } from 'react-window';
 
 const MainBanner = ({link}) => {
 
-    const isMobile = () => /Mobi|Android/i.test(navigator.userAgent);
 
     const path = useLocation()
 
@@ -59,6 +58,9 @@ const MainBanner = ({link}) => {
             case "Nationality":
                 setFilterSelected('Nationality')
                 return sortedArray.sort((a, b) => a.applicantDetails.nationality.toLowerCase().localeCompare(b.applicantDetails.nationality.toLowerCase())); 
+            case "Status":
+                setFilterSelected('Status')
+                return sortedArray.sort((a, b) => String(b.attended).toLowerCase().localeCompare(String(a.attended).toLowerCase()))
             case "Age":
                 setFilterSelected('Age')
                 return sortedArray.sort((a, b) => {
