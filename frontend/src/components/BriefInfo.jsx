@@ -37,16 +37,23 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     const flagApplicant = async (e) => {
         
         console.log('====================================');
-        console.log(e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement);
+        console.log(e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent);
+        const ticketId = e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
         console.log('====================================');
-        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border')
-        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border-2')
-        e.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add('border-green-500')
+        document.getElementById(ticketId).classList.add('border')
+        document.getElementById(ticketId).classList.add('border-2')
+        document.getElementById(ticketId).classList.add('border-green-500')
+
+
+
+        // e.target.parentElement.parentElement.classList.add('border')
+        // e.target.parentElement.parentElement.classList.add('border-2')
+        // e.target.parentElement.parentElement.classList.add('border-green-500')
     
         try {
             
             setIsFlagging(true)
-            const flagResponse = await axios.patch(link+"/applicants/flag/"+applicant_id.replace(/[^a-zA-Z0-9]/g,''), {
+            const flagResponse = await axios.patch(link+"/applicants/flag/"+ticketId.replace(/[^a-zA-Z0-9]/g,''), {
                 flags: [user?.companyName]
             })
 
