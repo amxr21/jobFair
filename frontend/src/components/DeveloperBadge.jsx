@@ -7,7 +7,7 @@ const DeveloperBadge = () => {
                 </svg>
 
                 <p className="opacity-0 hover:opacity-100 transition-all smooth ease-in-out text-sm text-white font-medium w-full pt-10 ">
-                    The Developer
+                    Portal Developer
                 </p> 
 
             </div>
