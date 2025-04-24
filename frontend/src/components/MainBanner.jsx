@@ -270,7 +270,7 @@ const MainBanner = ({link}) => {
                             <List
                                 height={400}
                                 itemCount={finalList.length}
-                                itemSize={108}
+                                itemSize={112}
                                 width="100%"
                                 itemData={itemData}
                                 outerRef={scrollableRef}
