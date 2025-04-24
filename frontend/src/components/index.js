@@ -38,3 +38,4 @@ export {default as Flagged} from "./Flagged";
 export {default as NoApplicants} from "./NoApplicants";
 export {default as Success} from "./Success";
 export {default as LoadingApplicants} from "./LoadingApplicants";
+export {default as DeveloperBadge} from "./DeveloperBadge";
