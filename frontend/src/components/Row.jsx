@@ -39,7 +39,7 @@ const colorCode = {
 
 
 
-const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user}) => {
+const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user, cv}) => {
     const expandApplicantDiv = useRef();
     const expandApplicantBtn = useRef();
     const [isVisible, setIsVisible] = useState(false);
@@ -124,6 +124,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                     <span>{studyLevel?.startsWith('Master') ? "" : studyLevel}</span>
                     <span>{studyLevel?.startsWith('Master') ? "" : ' of'} {major}</span>
                 </div>
+                <h2 className="flex">{cv? 'Uplaoded' : 'None'}</h2>
                 <h2 className={`flex text-center justify-center text-sm xl:text-[1rem] px-2 py-2 rounded-xl font-semibold ${status ? `${colorCode.Confirmed}` : `${colorCode.Registered}`}`}>{status ? 'Confirmed' : 'Registered'}</h2>
     
                 {

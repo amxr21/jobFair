@@ -32,7 +32,7 @@ const MainBanner = ({link}) => {
 
 
     const filter = (e) => {
-        if(['Name', 'University ID', 'Major', 'Age', 'CGPA', 'Status' , 'Nationality'].includes(e.target.parentElement.innerText)){
+        if(['Name', 'University ID', 'Major', 'Age', 'CGPA', 'Status' , 'Nationality', 'CV'].includes(e.target.parentElement.innerText)){
             setFilterCriteria(e.target.parentElement.innerText);
         }
     }
@@ -61,6 +61,9 @@ const MainBanner = ({link}) => {
             case "Status":
                 setFilterSelected('Status')
                 return sortedArray.sort((a, b) => String(b.attended).toLowerCase().localeCompare(String(a.attended).toLowerCase()))
+            case "CV":
+                setFilterSelected('CV')
+                return sortedArray.sort((a, b) => String(a.cv).localeCompare(String(b.cv)))
             case "Age":
                 setFilterSelected('Age')
                 return sortedArray.sort((a, b) => {
@@ -201,6 +204,7 @@ const MainBanner = ({link}) => {
                     expectedToGraduate={applicant?.applicantDetails?.ExpectedToGraduate}
                     flags={applicant?.flags}
                     user={user}
+                    cv={applicant?.cv?.fieldname}
                 />
             </div>
 

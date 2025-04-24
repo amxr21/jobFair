@@ -16,6 +16,7 @@ const TableHeader = ({userType}) => {
                 {/* <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Age {icon} </h2> */}
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">CGPA {icon}</h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Major {icon}</h2>
+                <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">CV {icon}</h2>
                 <h2 className="flex items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">Status {icon}</h2>
                 <h2 className="flex text-[#F3F6FF] items-center break-words whitespace-normal overflow-hidden text-ellipsis max-w-full">.</h2>
             </div> 
