@@ -382,7 +382,7 @@ const MainBanner = ({link}) => {
                     <div className="flex flex-col gap-5 ">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
                         <div className="relative  rounded-lg text-xs md:text-lg" onClick={filter}>
-                            <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
+                            <div className="list max-h-0 pr-3 overflow-x-hidden overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
                             {/* <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0"> */}
                                 {otherApplicants.length != 0 ?  otherApplicants.map((applicant) => {
                                     counter += 1;
