@@ -10,6 +10,7 @@ import CardInfo from "./CardInfo";
 import CardInfo2 from "./CardInfo2";;
 import CardInfoFile from "./CardInfoFile";
 
+import { DeveloperBadge } from './index'
 
 import { ExpandIcon } from "./Icons";
 
@@ -76,34 +77,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     }, [isClicked])
 
 
-    useEffect(() => {
-        // function getAllDescendants(element, descendantsList) {
-        //     if (!element) return;
-            
-        //     const children = element.children;
-        //     for (let i = 0; i < children.length; i++) {
-        //         descendantsList.push(children[i]);
-        //         getAllDescendants(children[i], descendantsList);
-        //     }
-        // }
-        // function getAllDescendants(element, descendantsList) {
-        //     if (!element) return;
-        
-        //     const walker = document.createTreeWalker(
-        //         element,
-        //         NodeFilter.SHOW_ELEMENT,
-        //         null,
-        //         false
-        //     );
-        
-        //     let currentNode = walker.currentNode;
-        
-        //     while (currentNode) {
-        //         descendantsList.push(currentNode);
-        //         currentNode = walker.nextNode();
-        //     }
-        // }
-        
+    useEffect(() => {        
         const handleClickOutside = (e) => {
             const dropdown = expandApplicantDiv.current;
             const trigger = expandApplicantBtn.current;
@@ -137,7 +111,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     else{
         return userType != 'manager'
         ?
-            <div className={`overflow-hidden row grid py-4 pl-7 pr-14 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
+            <div className={`overflow-hidden relative row grid py-4 pl-7 pr-14 min-h-24 ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
                 <h2 className="flex">{number}
                     
                 </h2>
@@ -155,19 +129,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                 {
                     uniId == 22105176
                     ?
-                    <div className="bg-[#dba514] developer-mark flex items-center justify-start absolute origin-top-left h-full w-24 top-0 -right-14 hover:right-0 transition-all smooth ease-in-out z-50">
-                        <div className="flex flex-col p-3 gap-0 max-w-full text-brown-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="size-5 -mb-8 z-50">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                            </svg>
-
-                            <p className="opacity-0 hover:opacity-100 transition-all smooth ease-in-out text-sm text-white font-medium w-full pt-10 ">
-                                The Developer
-                            </p> 
-
-                        </div>
-                            
-                    </div>
+                    <DeveloperBadge />
                     :
                     ""
                 }
@@ -324,110 +286,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                
                
                
-               
-                {/* <div className="relative">
-                    <button className="flex items-center justify-center w-7 h-7 " aria-label="Expand" ref={expandApplicantBtn} onClick={expandApplicant}>
-                        <ExpandIcon />.
-                    </button>
-                    
-                    
-                    
-                    
-                    
-                    <div ref={expandApplicantDiv} className={`parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[56em] md:max-w-[196em] h-[50em] overflow-y-scroll md:overflow-hidden md:h-fit fixed top-[50%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${isVisible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`}>
-                        <div className="card-info flex flex-col md:flex-row gap-x-4 md:h-11/12">
-                            <Brief>
-                                <BriefInfo
-                                    ticketId={ticketId}
-                                    id={uniId}
-                                    shortName={`${String(name).split(" ")[0]} ${String(name).split(" ")[String(name).split(" ").length-1]}`}
-                                    ticketQrCodeSrc={qrCode}
-                                    emailRec = {email}
-                                />
-                            </Brief>
-                            <div className="details md:w-8/12">
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Full name:"}
-                                        infoText={name}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"University ID:"}
-                                        infoText={uniId}
-                                    />
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo
-                                        infoHeader={"Email:"}
-                                        infoText={email}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Phone number:"}
-                                        infoText={phoneNumber}
-                                    />
-                                    <CardInfo
-                                        infoHeader={"Age:"}
-                                        infoText={age}
-                                    />
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo2
-                                        infoHeader={"Study program:"}
-                                        infoText={studyLevel}
-                                    />
-                                    <CardInfo2
-                                        infoHeader={"Major:"}
-                                        infoText={major}
-                                    />
-                                    <CardInfo2
-                                        infoHeader={"CGPA:"}
-                                        infoText={gpa}
-                                    />
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo2
-                                        infoHeader={"Nationality:"}
-                                        infoText={nationality}
-                                    />
-                                    <CardInfo2
-                                        infoHeader={"Experience:"}
-                                        infoText={experience}
-                                    />
-                                    <CardInfo2
-                                        infoHeader={"Attended:"}
-                                        infoText={attended}
-                                    />
-                                </CardRow>
-    
-                                <CardRow>
-                                    <CardInfo2
-                                        infoHeader={"Languages:"}
-                                        infoText={languages}
-                                    />
-                                    <CardInfo2
-                                        infoHeader={"Portfolio:"}
-                                        infoText={portfolio}
-                                    />
-    
-    
-    
-                                    <CardInfoFile file={file} />
-    
-    
-    
-    
-    
-                                </CardRow>
-                            </div>
-                        </div>
-                        <hr className="my-4" />
-                        <EmailToSection />
-                    </div> 
-    
-                </div> */}
+          
 
 
 
