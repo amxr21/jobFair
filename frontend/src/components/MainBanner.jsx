@@ -1,44 +1,42 @@
 import axios from "axios";
 import { CircularProgress } from "@mui/material"
-
-
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
+import { FixedSizeList as List } from 'react-window';
 
 import { useAuthContext } from "../Hooks/useAuthContext";
-import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants, AccessButtons, TopBar, LoadingApplicants } from "./index";
+import { Row, TableHeader, BarButtons, ListHeader, FlagButton, NoApplicants, AccessButtons, TopBar, LoadingApplicants, ScrollToTopButton } from "./index";
 
-
-
-import { FixedSizeList as List } from 'react-window';
 
 
 const MainBanner = ({link}) => {
-
-
     const path = useLocation()
 
+    const { user } = useAuthContext(); // Access the authenticated user context
 
-    const [ isFlagged, setIsFlagged ] = useState(false)
+    
     const flagIcon = useRef()
-
+    const scrollableRef = useRef(null);
+    
+    const [ isFlagged, setIsFlagged ] = useState(false)
     const [ filterSelected, setFilterSelected ] = useState('')
-
+    const [isLoading, setIsLoading] = useState(false)
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const [otherApplicants, setOtherApplicants] = useState([]); // State to store the list of applicants
-    const { user } = useAuthContext(); // Access the authenticated user context
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
+    const [isAtTop, setIsAtTop] = useState(true);
+    
 
-    const [isLoading, setIsLoading] = useState(false)
-
+    const itemData = useMemo(() => ({ applicants: finalList, user }), [finalList, user]);
+    const otherItemData = useMemo(() => ({ otherApplicants: otherApplicants }), [otherApplicants, user])
+    
 
     const filter = (e) => {
         if(['Name', 'University ID', 'Major', 'Age', 'CGPA', 'Status' , 'Nationality', 'CV'].includes(e.target.parentElement.innerText)){
             setFilterCriteria(e.target.parentElement.innerText);
         }
     }
-
 
     // Sorting function to arrange applicants by specified criteria
     const sortedApplicants = (filterCriteria) => {
@@ -150,6 +148,25 @@ const MainBanner = ({link}) => {
     }, [isFlagged]);
 
 
+    
+    useEffect(() => {
+        const el = scrollableRef?.current;
+    
+        const handleScroll = () => {
+            console.log("scrollTop:", el?.scrollTop); // Debug
+            if (el) setIsAtTop(el.scrollTop === 0);
+        };
+    
+        if (el) {
+            el.addEventListener('scroll', handleScroll);
+            handleScroll(); // run once on mount
+        }
+    
+        return () => {
+            if (el) el.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
+
 
     const filterFlagged = () => {
         setIsFlagged(prev => {
@@ -171,14 +188,13 @@ const MainBanner = ({link}) => {
 
 
 
-    
 
     const RowVirsualized = React.memo(({index, style, data}) => {
         const { applicants , user } = data
         const applicant = applicants[index]
 
         return (
-            <div style={style}>
+            <div style={style} className="flex flex-col gap-3">
                 <Row
                     userType={'casto'}
                     key={applicant?._id}
@@ -214,36 +230,62 @@ const MainBanner = ({link}) => {
     })
 
 
-    const itemData = useMemo(() => ({ applicants: finalList, user }), [finalList, user]);
 
 
-        const scrollableRef = useRef(null);
-        const [isAtTop, setIsAtTop] = useState(true);
+    
+    const OthersRowVisualized = React.memo(({index, style, data}) => {
+        const { otherApplicants, user } = data
+        const otherApplicant = otherApplicants[index]
+        
 
-        useEffect(() => {
-            const el = scrollableRef?.current;
-        
-            const handleScroll = () => {
-                console.log("scrollTop:", el?.scrollTop); // Debug
-                if (el) setIsAtTop(el.scrollTop === 0);
-            };
-        
-            if (el) {
-                el.addEventListener('scroll', handleScroll);
-                handleScroll(); // run once on mount
-            }
-        
-            return () => {
-                if (el) el.removeEventListener('scroll', handleScroll);
-            };
-        }, []);
+        return (
+            <div style={style} className="relative">
+                <Row
+                    userType={'casto'}
+                    key={otherApplicant?._id}
+                    ticketId={otherApplicant?._id}
+                    number={index + 1 + finalList?.length}
+                    name={otherApplicant?.applicantDetails?.fullName}
+                    uniId={otherApplicant?.applicantDetails?.uniId}
+                    email={otherApplicant?.applicantDetails?.email}
+                    phoneNumber={otherApplicant?.applicantDetails?.phoneNumber}
+                    studyLevel={otherApplicant?.applicantDetails?.studyLevel}
+                    major={otherApplicant?.applicantDetails?.major}
+                    gpa={otherApplicant?.applicantDetails?.cgpa}
+                    nationality={otherApplicant?.applicantDetails?.nationality}
+                    experience={otherApplicant?.applicantDetails?.experience}
+                    attended={otherApplicant?.attended ? "Confirmed" : "No"}
+                    age={2024 - parseInt(String(otherApplicant?.applicantDetails?.birthdate)?.slice(0, 4))}
+                    languages={String(otherApplicant?.applicantDetails?.languages)}
+                    portfolio={otherApplicant?.applicantDetails?.linkedIn}
+                    file={otherApplicant?.cv}
+                    qrCode={otherApplicant?._id}
+                    status={otherApplicant?.attended}
+                    flags={otherApplicant?.flags}
+                />
+
+
+            </div>
+        )
+
+
+
+
+    })
+
+
+
+
+
+    
+
 
 
     return (
         <div id="Main" className="flex flex-col md:gap-y-6 xl:gap-y-8 col-span-12 md:col-span-10 w-full md:mx-auto overflow-y-auto p-8 md:p-0 max-w-[100vw] max-h-[92vh]">
             <AccessButtons otherClasses={'md:hidden'} />
             <TopBar user={user} />
-            <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow ${user?.companyName == "CASTO Office" ? 'overflow-y-hidden' : 'overflow-y-auto'} rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
+            <div id="Hero" className={`bg-[#F3F6FF] flex flex-col grow  overflow-y-hidden rounded-xl p-8 col-span-12 md:col-span-10 w-full md:mx-auto`}>
                 
                 <div className="flex md:flex-row flex-col justify-between items-center pl-2 border-b border-b-gray-400 pb-5 mb-3">
                     <div className="flex gap-x-6">
@@ -257,9 +299,7 @@ const MainBanner = ({link}) => {
                 </div>
 
 
-
-                {/* <ListHeader headerText={'Registered Applicants'} /> */}
-                <div className="grow h-fit rounded-lg text-xs md:text-lg mb-4" onClick={filter}>
+                <div className={`relative ${user?.companyName == "CASTO Office" ? 'grow' : 'h-[60%]'} overflow-y-hidden rounded-lg text-xs md:text-lg mb-4`} onClick={filter}>
                     <TableHeader/>
 
                     {
@@ -269,74 +309,27 @@ const MainBanner = ({link}) => {
                         :
                             finalList.length > 0
                             ?
-                            <List
-                                height={400}
-                                itemCount={finalList.length}
-                                itemSize={112}
-                                width="100%"
-                                itemData={itemData}
-                                outerRef={scrollableRef}
-                            >
-                                {RowVirsualized}
-                            </List>
+                            <>
+                                <List
+                                    height={user.companyName == "CASTO Office" ? 400 : 280}
+                                    itemCount={finalList.length}
+                                    itemSize={112}
+                                    width="100%"
+                                    itemData={itemData}
+                                    outerRef={scrollableRef}
+                                >
+                                    {RowVirsualized}
+                                </List>
+                                <ScrollToTopButton isAtTop={isAtTop} scrollableRef={scrollableRef} />
+
+                            </>
                             :
                             <NoApplicants />   
                     }   
 
 
 
-                    {/* <div ref={scrollableRef} className={`relative list max-h-[26rem] py-2 pr-3 overflow-y-auto w-full`}>
-                        {finalList.length != 0 ?  finalList.slice(0, visibleCount).map((applicant) => {
-                            counter += 1;
-
-                            return (
-                                <Row
-                                    userType={'casto'}
-                                    key={applicant?._id}
-                                    ticketId={applicant?._id}
-                                    number={counter}
-                                    name={applicant?.applicantDetails?.fullName}
-                                    uniId={applicant?.applicantDetails?.uniId}
-                                    nationality={applicant?.applicantDetails?.nationality}
-                                    email={applicant?.applicantDetails?.email}
-                                    phoneNumber={applicant?.applicantDetails?.phoneNumber}
-                                    studyLevel={applicant?.applicantDetails?.studyLevel}
-                                    major={applicant?.applicantDetails?.major}
-                                    gpa={applicant?.applicantDetails?.cgpa}
-                                    experience={applicant?.applicantDetails?.experience}
-                                    attended={applicant?.attended ? "Confirmed" : "No"}
-                                    age={2024 - parseInt(applicant?.applicantDetails?.birthdate?.split("-")[0] || 2006)}
-                                    // age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
-                                    languages={String(applicant?.applicantDetails?.languages)}
-                                    portfolio={applicant?.applicantDetails?.linkedIn}
-                                    file={applicant?.cv}
-                                    qrCode={applicant?._id}
-                                    status={applicant?.attended}
-                                    city={applicant?.applicantDetails?.city}
-                                    skills={{tech: applicant?.applicantDetails?.technicalSkills, nontech: applicant?.applicantDetails?.nonTechnicalSkills}}
-                                    expectedToGraduate={applicant?.applicantDetails?.ExpectedToGraduate}
-                                    flags={applicant?.flags}
-                                    user={user}
-                                />
-                            );
-
-                        }) 
-
-                        :
-                        isLoading
-                        ?
-                        
-                        :
-                        <NoApplicants />
-
-
-                            }
-
-
-                        
-
-
-                    </div> */}
+                    
                 </div>
 
 
@@ -345,54 +338,32 @@ const MainBanner = ({link}) => {
                     <div className="flex flex-col gap-5 ">
                         <ListHeader headerText={'Other Applicants'} type={'other'} />
                         <div className="relative  rounded-lg text-xs md:text-lg" onClick={filter}>
-                            <div className="relative list max-h-0 pr-3 overflow-x-hidden overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
-                            {/* <div className="list max-h-0 pr-3 overflow-y-auto w-full pt-0 pb-0"> */}
-                                {otherApplicants.length != 0 ?  otherApplicants.map((applicant) => {
-                                    counter += 1;
+                            <div className="list max-h-0 pr-3 overflow-x-hidden overflow-y-auto w-full pt-0 pb-0 transition-all duration-500 ease-in-out">
+                                {
+                                    isLoading
+                                    ?
+                                    <LoadingApplicants />
+                                    :
+                                    otherApplicants?.length > 0
+                                        ?
+                                        <List
+                                            height={200}
+                                            itemCount={otherApplicants.length}
+                                            itemSize={112}
+                                            width='100%'
+                                            itemData={otherItemData}
+                                        >
+                                            {OthersRowVisualized}
+                                        </List>
+                                        :
+                                        <NoApplicants />
 
-                                    return (
-                                        <Row
-                                            userType={'casto'}
-                                            key={applicant?._id}
-                                            ticketId={applicant?._id}
-                                            number={counter}
-                                            name={applicant?.applicantDetails?.fullName}
-                                            uniId={applicant?.applicantDetails?.uniId}
-                                            email={applicant?.applicantDetails?.email}
-                                            phoneNumber={applicant?.applicantDetails?.phoneNumber}
-                                            studyLevel={applicant?.applicantDetails?.studyLevel}
-                                            major={applicant?.applicantDetails?.major}
-                                            gpa={applicant?.applicantDetails?.cgpa}
-                                            nationality={applicant?.applicantDetails?.nationality}
-                                            experience={applicant?.applicantDetails?.experience}
-                                            attended={applicant?.attended ? "Confirmed" : "No"}
-                                            age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
-                                            languages={String(applicant?.applicantDetails?.languages)}
-                                            portfolio={applicant?.applicantDetails?.linkedIn}
-                                            file={applicant?.cv}
-                                            qrCode={applicant?._id}
-                                            status={applicant?.attended}
-                                            flags={applicant?.flags}
-                                        />
-                                    );
-
-                                }) 
-
-                                :
-                                isLoading
-                                ?
-                                <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                                    <CircularProgress size={20}/>
-                                    <p className="text-sm">Loading applicants...</p>
-                                </div>
-                                :
-                                <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                                    <p className="text-sm">No Applicants</p>
-                                </div>
                                 }
-                                <button
-                                    className={`sticky flex items-center justify-center bottom-5 left-[95%] scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
-                                    isAtTop ? 'opacity-0' : 'opacity-100'
+
+
+                                {/* <button
+                                    className={`sticky flex items-center justify-center bottom-[50%] left-[95%] scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
+                                    isAtTop ? 'opacity-100' : 'opacity-100'
                                     }`}
                                     onClick={() => {
                                     scrollableRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -408,7 +379,7 @@ const MainBanner = ({link}) => {
                                     >
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                                     </svg>
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </div >
@@ -420,5 +391,9 @@ const MainBanner = ({link}) => {
         </div>
     );
 };
+
+
+
+
 
 export default MainBanner;
