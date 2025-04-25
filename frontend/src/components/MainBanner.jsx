@@ -194,7 +194,7 @@ const MainBanner = ({link}) => {
         const applicant = applicants[index]
 
         return (
-            <div style={style} className="flex flex-col gap-3">
+            <div style={style} className="relative flex flex-col gap-3">
                 <Row
                     userType={'casto'}
                     key={applicant?._id}
@@ -239,7 +239,7 @@ const MainBanner = ({link}) => {
         
 
         return (
-            <div style={style} className="relative">
+            <div style={style} className="relative flex flex-col gap-3">
                 <Row
                     userType={'casto'}
                     key={otherApplicant?._id}
