@@ -26,9 +26,7 @@ const Action = ({type, handleClick}) => {
             
             default:
             return (
-                <button className="flex flex-col gap-1 border p-2 rounded-xl text-sm justify-center items-center">
-                    {type == 'reject' ? "Reject" : 'Shortlist'}
-                </button>
+                <h2>d</h2>
             )
 
     }
