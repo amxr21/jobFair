@@ -42,3 +42,4 @@ export {default as ScrollToTopButton} from "./ScrollToTopButton";
 export {default as DeveloperBadge} from "./DeveloperBadge";
 export {default as Action} from "./Action";
 export {default as EmailIcon} from "./EmailIcon";
+export {default as ApplicantStatus} from "./ApplicantStatus";

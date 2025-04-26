@@ -210,6 +210,8 @@ const MainBanner = ({link}) => {
                     gpa={applicant?.applicantDetails?.cgpa}
                     experience={applicant?.applicantDetails?.experience}
                     attended={applicant?.attended ? "Confirmed" : "No"}
+                    shortlistedBy={applicant?.shortlistedBy}
+                    rejectedBy={applicant?.rejectedBy}
                     age={2024 - parseInt(applicant?.applicantDetails?.birthdate?.split("-")[0] || 2006)}
                     // age={2024 - parseInt(String(applicant?.applicantDetails?.birthdate)?.slice(0, 4))}
                     languages={String(applicant?.applicantDetails?.languages)}

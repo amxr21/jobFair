@@ -12,11 +12,12 @@ const link = "https://jobfair-production.up.railway.app"
 import { useAuthContext } from "../Hooks/useAuthContext"
 import Flagged from './Flagged';
 import Action from './Action';
+import ApplicantStatus from './ApplicantStatus';
 
 
 
-const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc, emailRec, status, graduationYear, flag}) => {
-    const [nextStep, setNextStep] = useState(null);
+const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc, emailRec, status, graduationYear, flag, shortlistedByStatus, rejectedByStatus}) => {
+    const [isProcessing, setIsProcessing] = useState(false);
     const interviewButton = useRef();
     const rejectionButton = useRef();
     const otherButton = useRef();
@@ -29,6 +30,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     const { user } = useAuthContext();
     
     
+    const nextAction = useRef()
     const tickedIdRef = useRef()
     const [ isFlagged, setIsFlagged ] = useState(false)
     
@@ -168,37 +170,71 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
 
     
-    const shortListApplicant = async (e) => {
-        const ticketId =e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
-        console.log(ticketId);
+    // const shortListApplicant = async (e) => {
+    //     const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
+    //     console.log(ticketId);
         
+    //     try {
+    //         setIsProcessing(true)
+    //         const shortlistResponse = await axios.patch(link+'/applicants/shortlist/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
+    //             shortlistedBy: [user?.companyName]
+    //         })
+            
+
+
+    //     } catch (error) {
+    //         console.log('Failed to shortlist the applicant', error);
+    //     }
+
+    //     finally{
+    //         setIsProcessing(false)
+    //         console.log(ticketId, 'is Shortlisted');
+            
+    //     }
+
+
+    // }
+
+
+    
+
+
+    const shortListApplicant = async (e) => {
+        const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent;
+        console.log(ticketId);
+    
         try {
-            
-            const shortlistResponse = await axios.patch(link+'/applicants/shortlist/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
+            setIsProcessing(true);
+            const shortlistResponse = await axios.patch(link + '/applicants/shortlist/' + ticketId?.replace(/[^a-zA-Z0-9]/g, ''), {
                 shortlistedBy: [user?.companyName]
-            })
-            
-
-
+            });
+    
         } catch (error) {
             console.log('Failed to shortlist the applicant', error);
-        }
-
-        finally{
+        } finally {
+            setIsProcessing(false);
+    
+            console.log(e.target.parentElement.parentElement);
+    
+            nextAction.current.firstElementChild.lastElementChild.classList.replace('flex', 'hidden');
+            // nextAction.current.firstElementChild.lastElementChild.firstElementChild.classList.add('hidden')
+            nextAction.current.firstElementChild.firstElementChild.lastElementChild.textContent = 'Shortlisted';
+    
             console.log(ticketId, 'is Shortlisted');
-            
         }
+    };
+    
 
 
-    }
+
 
 
     const rejectApplicant = async (e) => {
-        const ticketId = e.target.parentElement.parentElement.children[1].lastElementChild.textContent == 'Reject' ? e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent : e.target.parentElement.parentElement.children[1].lastElementChild.textContent
+        const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent
         console.log(ticketId);
         
         try {
-            
+            setIsProcessing(true)
             const rejectResponse = await axios.patch(link+'/applicants/reject/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
                 rejectedBy: [user?.companyName]
             })
@@ -210,6 +246,13 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
         }
 
         finally{
+            setIsProcessing(false)
+            console.log(e.target.parentElement.parentElement)
+            
+            nextAction.current.firstElementChild.firstElementChild.classList.replace('flex', 'hidden')
+            // nextAction.current.firstElementChild.lastElementChild.firstElementChild.classList.add('hidden')
+            nextAction.current.firstElementChild.lastElementChild.lastElementChild.textContent = 'Rejected'
+
             console.log(ticketId, 'is rejected');
             
         }
@@ -226,7 +269,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     return (
         <div className="brief-info flex flex-col gap-y-5 text-left w-full md:px-8">
 
-            <div className='flex flex-col items-center gap-4 px-5 py-8 text-center border bg-white shadow-md shadow-gray-200 hover:shadow-xl rounded-xl'>
+            <div className='relative flex flex-col items-center gap-4 px-5 pt-14 pb-10 text-center border bg-white shadow-md shadow-gray-200 hover:shadow-xl rounded-xl overflow-hidden'>
                 <div className="qr-code w-full  flex flex-col items-center">
                     {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
                     {ticketQrCodeSrc && <QRCode value={ticketQrCodeSrc} />}
@@ -269,9 +312,47 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                 </div>
                 <CardInfo infoHeader={''} infoText={status ? `Confirmed` : `Registered`} />
 
-                <div className="next-action flex gap-2">
-                    <Action type='shortlist' handleClick={shortListApplicant} />
-                    <Action type='reject' handleClick={rejectApplicant} />
+                <div ref={nextAction} className="next-action flex w-full">
+                    {/* rejectedByStatus */}
+                    {
+                        isProcessing
+                        ?
+                        <h2>Processing</h2>
+                        :
+                            shortlistedByStatus?.includes(user?.companyName)
+                            ?
+                            <ApplicantStatus
+                                type="shortlisted"
+                                status={shortlistedByStatus.length} 
+                            />
+                            :
+                            rejectedByStatus?.includes(user?.companyName)
+                            ?
+                            <ApplicantStatus
+                                type="rejected"
+                                status={rejectedByStatus.length} 
+                            />
+                            :
+                            <div className='w-full flex justify-between items-center gap-2'>
+                                <Action type='shortlist' handleClick={shortListApplicant} />
+                                <Action type='reject' handleClick={rejectApplicant} />
+                            </div>
+                            
+                            
+                            
+                            
+                            // (shortlistedByStatus?.includes(user?.companyName) || rejectedByStatus?.includes(user?.companyName)) && !isProcessing
+                            // ?
+                            // <ApplicantStatus
+                            //     status={[shortlistedByStatus, rejectedByStatus]} 
+                            // />
+                            // :
+                            // <div className='flex justify-between items-center gap-2'>
+                            //     <Action type='shortlist' handleClick={shortListApplicant} />
+                            //     <Action type='reject' handleClick={rejectApplicant} />
+                            // </div>
+                        
+                    }
                 </div>
 
 
