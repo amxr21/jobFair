@@ -7,6 +7,12 @@ const applicantModel = new applicantSchema ({
     flags: {
         type: [String],
     },
+    shortlistedBy: {
+        type: [String],
+    },
+    rejectedBy: {
+        type: [String],
+    },
     applicantDetails: {
         type: Object
     },
