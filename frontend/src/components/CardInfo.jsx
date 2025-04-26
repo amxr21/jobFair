@@ -17,7 +17,7 @@ const CardInfo = ({infoHeader, infoText}) => {
             <a
             className="underline flex gap-x-2 items-center"
             target={
-                infoText?.startsWith('http') || infoText?.startsWith('www')
+                infoText?.startsWith('http') || infoText?.startsWith('www') || infoText?.startsWith('linkedin') 
                 ? "_blank"
                 : "_self"
             }
