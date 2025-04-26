@@ -112,7 +112,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     else{
         return userType != 'manager'
         ?
-            <div id={ticketId} className={`row relative overflow-hidden grid py-4 pl-7 pr-14 min-h-24 h-full ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} ${shortlistedBy?.length ? 'border-2 border-blue-500' : rejectedBy?.length ? 'border-2 border-red-600' : ''} rounded-xl items-center mb-2 text-sm xl:text-base`}>
+            <div id={ticketId} className={`row relative overflow-hidden grid py-4 pl-7 pr-14 min-h-24 h-full ${shortlistedBy?.length ? 'border-2 border-blue-500' : rejectedBy?.length ? 'border-2 border-red-600' : ''} ${flags?.includes(user?.companyName) ? "border border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-sm xl:text-base`}>
                 <h2 className="flex">{number}
                     
                 </h2>
