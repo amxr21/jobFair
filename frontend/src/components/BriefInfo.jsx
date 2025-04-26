@@ -169,7 +169,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
     
     const shortListApplicant = async (e) => {
-        const ticketId = e.target.parentElement.parentElement.children[1].lastElementChild.textContent == 'Shortlist' ? e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent : e.target.parentElement.parentElement.children[1].lastElementChild.textContent
+        const ticketId =e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
         console.log(ticketId);
         
         try {
