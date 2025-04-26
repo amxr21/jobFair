@@ -1,6 +1,6 @@
 const ScrollToTopButton = ({ scrollableRefC, isAtTop }) => {
   const handleScrollToTop = () => {
-    scrollableRefC.current?.scrollTo(0);
+    scrollableRefC.current?.scrollTo({top: 0});
   };
 
   return (
