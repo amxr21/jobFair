@@ -200,7 +200,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
         try {
             
             const rejectResponse = await axios.patch(link+'/applicants/reject/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
-                shortlistedBy: [user?.companyName]
+                rejectedBy: [user?.companyName]
             })
             
 
