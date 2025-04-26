@@ -220,6 +220,10 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
             // nextAction.current.firstElementChild.lastElementChild.firstElementChild.classList.add('hidden')
             nextAction.current.firstElementChild.firstElementChild.lastElementChild.textContent = 'Shortlisted';
     
+            document.getElementById(ticketId).classList.add('border-2')
+            document.getElementById(ticketId).classList.add('border-blue-400')
+
+
             console.log(ticketId, 'is Shortlisted');
         }
     };
