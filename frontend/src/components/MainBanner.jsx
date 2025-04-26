@@ -151,6 +151,8 @@ const MainBanner = ({link}) => {
     
     useEffect(() => {
         const el = scrollableRef?.current;
+        console.log(el);
+        
     
         const handleScroll = () => {
             console.log("scrollTop:", el?.scrollTop); // Debug
@@ -194,7 +196,7 @@ const MainBanner = ({link}) => {
         const applicant = applicants[index]
 
         return (
-            <div style={style} className="relative flex flex-col gap-3">
+            <div style={{...style}} className="relative flex flex-col gap-3">
                 <Row
                     userType={'casto'}
                     key={applicant?._id}
@@ -309,26 +311,29 @@ const MainBanner = ({link}) => {
                         ?
                         <LoadingApplicants />
                         :
-                            finalList.length > 0
-                            ?
-                            <>
-                                <List
-                                    height={user.companyName == "CASTO Office" ? 400 : 280}
-                                    itemCount={finalList.length}
-                                    itemSize={112}
-                                    width="100%"
-                                    itemData={itemData}
-                                    outerRef={scrollableRef}
-                                >
-                                    {RowVirsualized}
-                                </List>
-                                <ScrollToTopButton isAtTop={isAtTop} scrollableRef={scrollableRef} />
+                        finalList.length > 0
+                        ?
+                        <>
+                        <List
+                            height={user.companyName == "CASTO Office" ? 400 : 280}
+                            itemCount={finalList.length}
+                            itemSize={112}
+                            width="100%"
+                            itemData={itemData}
+                            outerRef={scrollableRef}
+                            onScroll={({ scrollOffset }) => {
+                                setIsAtTop(scrollOffset === 0);
+                            }}
+                            >
+                            {RowVirsualized}
+                        </List>
 
-                            </>
-                            :
-                            <NoApplicants />   
+                            <ScrollToTopButton isAtTop={isAtTop} scrollableRefC={scrollableRef} />
+                        </>
+                        :
+                        <NoApplicants />   
+
                     }   
-
 
 
                     
