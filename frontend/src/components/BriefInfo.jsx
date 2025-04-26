@@ -11,6 +11,7 @@ import QRCode from 'qrcode.react';
 const link = "https://jobfair-production.up.railway.app"
 import { useAuthContext } from "../Hooks/useAuthContext"
 import Flagged from './Flagged';
+import Action from './Action';
 
 
 
@@ -166,6 +167,62 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     }
 
 
+    
+    const shortListApplicant = async (e) => {
+        const ticketId = e.target.parentElement.parentElement.children[1].lastElementChild.textContent == 'Shortlist' ? e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent : e.target.parentElement.parentElement.children[1].lastElementChild.textContent
+        console.log(ticketId);
+        
+        try {
+            
+            const shortlistResponse = await axios.patch(link+'/applicants/shortlist/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
+                shortlistedBy: [user?.companyName]
+            })
+            
+
+
+        } catch (error) {
+            console.log('Failed to shortlist the applicant', error);
+        }
+
+        finally{
+            console.log(ticketId, 'is Shortlisted');
+            
+        }
+
+
+    }
+
+
+    const rejectApplicant = async (e) => {
+        const ticketId = e.target.parentElement.parentElement.children[1].lastElementChild.textContent == 'Reject' ? e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent : e.target.parentElement.parentElement.children[1].lastElementChild.textContent
+        console.log(ticketId);
+        
+        try {
+            
+            const rejectResponse = await axios.patch(link+'/applicants/reject/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
+                shortlistedBy: [user?.companyName]
+            })
+            
+
+
+        } catch (error) {
+            console.log('Failed to shortlist the applicant', error);
+        }
+
+        finally{
+            console.log(ticketId, 'is rejected');
+            
+        }
+
+
+    }
+
+
+
+
+
+
+
     return (
         <div className="brief-info flex flex-col gap-y-5 text-left w-full md:px-8">
 
@@ -211,6 +268,13 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                     }
                 </div>
                 <CardInfo infoHeader={''} infoText={status ? `Confirmed` : `Registered`} />
+
+                <div className="next-action flex gap-2">
+                    <Action type='shortlist' handleClick={shortListApplicant} />
+                    <Action type='reject' handleClick={rejectApplicant} />
+                </div>
+
+
             </div>
 
 
@@ -224,17 +288,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                 
             </div>
             
-            {/* bg-[${colorCode.confirmed.off}] text-[#${colorCode.confirmed.active}] */}
-            {/* bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}] */}
-
-            {/* <div className="status">
-                <p>Status:</p>
-                <div className="text-md text-left font-bold text-gray-600 flex">
-                    <button ref={interviewButton} onClick={() => {email("interview")}} className='text-sm border border-gray-300 py-1.5 px-2 mr-2 rounded-md'>Set an interview</button>
-                    <button ref={rejectionButton} onClick={() => {email("rejection")}} className='text-sm border border-gray-300 py-1.5 px-2 mr-2 rounded-md'>Reject applicant</button>
-                    <button ref={otherButton} onClick={() => {email("other")}} className='text-sm border border-gray-300 py-1.5 px-2 mr-2 rounded-md'>Email</button>
-                </div>
-            </div> */}
+           
         </div>
     )
 }

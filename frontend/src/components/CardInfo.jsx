@@ -5,6 +5,8 @@ const colorCode = {
     canceled: {active: '#CC0000', off: '#FFE5E5'},
 } 
 
+import { EmailIcon } from "./index"
+
 const CardInfo = ({infoHeader, infoText}) => {
     return (
         <div className={`${infoHeader == 'Full name' ? 'w-1/2' : infoHeader == "Email" ? 'max-w-1/2  ' : infoHeader == 'CGPA' ? 'w-1/6' : infoHeader == "Major" ? 'w-6/12' : infoHeader == 'Technical Skills' ? 'w-1/2' : infoHeader == 'Not-technical Skills' ? 'w-1/2' : infoHeader == 'LinkedIn' ? 'w-3/4' : ''} grow overflow-hidden`}>
@@ -13,7 +15,7 @@ const CardInfo = ({infoHeader, infoText}) => {
             {(infoHeader == "LinkedIn" || infoHeader == "Email") && infoText != '-' 
             ?
             <a
-            className="underline"
+            className="underline flex gap-x-2 items-center"
             target={
                 infoText?.startsWith('http') || infoText?.startsWith('www')
                 ? "_blank"
@@ -29,6 +31,7 @@ const CardInfo = ({infoHeader, infoText}) => {
                 : '#'
             }
             >
+                {infoText?.includes('@') ? <EmailIcon size={5} /> : ''}
             {
                 infoText?.includes('@')
                 ? infoText
