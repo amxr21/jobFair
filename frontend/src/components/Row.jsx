@@ -39,7 +39,7 @@ const colorCode = {
 
 
 
-const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user, cv}) => {
+const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, shortlistedBy, rejectedBy, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentitives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user, cv}) => {
     const expandApplicantDiv = useRef();
     const expandApplicantBtn = useRef();
     const [isVisible, setIsVisible] = useState(false);
@@ -57,7 +57,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     
     return createPortal(
         <div ref={expandApplicantDiv}
-            className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[40rem] max-h-[40rem] overflow-y-scroll md:overflow-y-auto fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${visible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`} >
+            className={`expandDetails parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[42rem] max-h-[45rem] overflow-y-scroll md:overflow-y-auto fixed top-[48%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${visible ? 'opacity-100 z-[99999]' : 'opacity-0 -z-[9999]'}`} >
             {children}
         </div>,
         document.body
@@ -92,7 +92,8 @@ const ApplicantModal = ({visible, onClose, children}) => {
                 dropdown &&
                 !dropdown.contains(e.target) &&
                 trigger &&
-                !trigger.contains(e.target)
+                !trigger.contains(e.target) &&
+                !e.target.parentElement.classList.contains('action-button')
             ) {
                 setIsVisible(false);
                 setIsClicked(false);
@@ -161,6 +162,8 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                         status={status}
                                         graduationYear={expectedToGraduate}
                                         flag={flags}
+                                        shortlistedByStatus={shortlistedBy}
+                                        rejectedByStatus={rejectedBy}
                                     />
                                 </Brief>
                                 <div className="details md:w-8/12 flex flex-col gap-3">
