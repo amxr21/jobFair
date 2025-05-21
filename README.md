@@ -1,115 +1,147 @@
-JobFair
-A platform connecting job seekers with employers efficiently.
-License
-Build Status
-GitHub Issues
+🎯 JobFair – Streamlining Job Applications for CASTO
+JobFair is an interactive web application developed to assist the CASTO office in organizing the process of applying and receiving student and graduate applications through more paperless and efficient procedures. 
+GitHub
++1
+GitHub
++1
 
-📌 Description
-JobFair is a web-based platform designed to streamline the job search process by connecting job seekers with potential employers. It includes features like resume uploads, job listings, and an AI-powered matching system.
+🌐 Live Demo
 
-🚀 Installation
-To set up JobFair locally, follow these steps:
+🚀 Features
+User-Friendly Interface: Intuitive design for both applicants and administrators.
 
+Application Management: Efficient handling of student and graduate applications.
+
+Paperless Process: Reduces the need for physical documentation.
+
+Real-Time Updates: Immediate reflection of application statuses and updates.
+
+Secure Data Handling: Ensures confidentiality and integrity of applicant information.
+
+🛠️ Tech Stack
+Frontend: React.js, CSS, HTML
+
+Backend: Node.js, Express.js
+
+Database: MongoDB
+
+Deployment: Vercel
+GitHub
+GitHub
++3
+GitHub
++3
+GitHub
++3
+
+📦 Installation
 Prerequisites
-Node.js (v16+)
+Node.js (v16 or higher)
 
-npm / Yarn
+npm or Yarn
 
-MongoDB (for database)
+MongoDB
+GitHub
 
-Setup
-Clone the repository:
+Steps
+Clone the Repository
 
-sh
+bash
+Copy
+Edit
 git clone https://github.com/amxr21/jobFair.git
 cd jobFair
-Install dependencies:
+Install Dependencies
 
-sh
+bash
+Copy
+Edit
 npm install
-Configure environment variables:
+Configure Environment Variables
 
-Create a .env file and add:
+Create a .env file in the root directory and add the following:
 
 env
+Copy
+Edit
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 PORT=3000
-Run the application:
+Run the Application
 
-sh
+bash
+Copy
+Edit
 npm start
-Open in browser:
+Access the Application
 
-sh
-http://localhost:3000
-💡 Usage
-Job Seekers:
+Open your browser and navigate to http://localhost:3000
 
-Create a profile and upload a resume.
+👥 User Roles
+Applicants: Submit applications and track their status.
 
-Browse and apply for jobs.
+Administrators: Manage and review applications, communicate with applicants.
+GitHub
++1
+GitHub
++1
+GitHub
 
-Get AI-powered job recommendations.
-
-Employers:
-
-Post job listings.
-
-Review applicant profiles.
-
-Shortlist candidates.
-
-⚙️ Configuration
-Customize the app by modifying:
-
-config/ – Database and authentication settings.
-
-src/routes/ – API endpoints.
-
-src/models/ – Data schemas.
-
+📁 Project Structure
+plaintext
+Copy
+Edit
+jobFair/
+├── backend/            # Backend source code
+├── frontend/           # Frontend source code
+├── .vscode/            # Visual Studio Code settings
+├── .gitignore          # Git ignore file
+├── README.md           # Project documentation
+├── package.json        # Project metadata and scripts
+├── vercel.json         # Vercel deployment configuration
 🤝 Contributing
-We welcome contributions! Here’s how you can help:
+We welcome contributions! Please follow these steps:
+GitHub
 
-Fork the repository.
+Fork the Repository
 
-Create a new branch (git checkout -b feature-branch).
+Create a New Branch
 
-Commit your changes (git commit -m 'Add new feature').
+bash
+Copy
+Edit
+git checkout -b feature/your-feature-name
+Commit Your Changes
 
-Push to the branch (git push origin feature-branch).
+bash
+Copy
+Edit
+git commit -m "Add your message here"
+Push to Your Fork
 
-Open a Pull Request.
+bash
+Copy
+Edit
+git push origin feature/your-feature-name
+Open a Pull Request
 
-Guidelines:
-
-Follow ESLint rules.
-
-Write clear commit messages.
-
-Test changes before submitting.
-
-📜 License
-This project is licensed under the MIT License – see the LICENSE file for details.
-
-❓ FAQ / Troubleshooting
-Common Issues
-🔹 Database connection fails
-
-Ensure MongoDB is running and the MONGO_URI is correct.
-
-🔹 Server crashes on startup
-
-Check .env variables and dependencies (npm install).
-
-🔹 Authentication errors
-
-Verify JWT secret and token expiration settings.
-
-For more help, open an issue.
+📄 License
+This project is licensed under the MIT License.
 
 📬 Contact
-Author: amxr21
+Author: Ammar
 
 Email: [Your Email]
+
+Website: ammarobad.info
+GitHub
++1
+Instagram
++1
+
+📌 Acknowledgements
+Special thanks to the CASTO office for their support and collaboration.
+GitHub
++1
+GitHub
++1
