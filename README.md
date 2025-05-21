@@ -71,55 +71,6 @@ Scan QR codes to instantly pull applicant records.
 
 Track and manage statistics & metrics for reporting.
 
-⚙️ Getting Started
-🛠️ Prerequisites
-Node.js ≥ 16.x
-
-MongoDB Atlas or local instance
-
-Yarn or npm
-
-📥 Installation
-Clone the repository
-
-bash
-Copy
-Edit
-git clone https://github.com/amxr21/jobFair.git
-cd jobFair
-Install dependencies
-
-bash
-Copy
-Edit
-cd client
-npm install
-cd ../server
-npm install
-Configure environment variables
-
-Duplicate .env.example into .env in the server folder and update the values:
-
-env
-Copy
-Edit
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-EMAIL_USER=your_email@gmail.com
-EMAIL_PASS=your_password
-Run the development servers
-
-bash
-Copy
-Edit
-# Terminal 1 - Backend
-cd server
-npm run dev
-
-# Terminal 2 - Frontend
-cd client
-npm run dev
-Open http://localhost:5173 in your browser.
 
 📊 Key Features (Admin Side)
 🔄 Live applicant list with real-time updates
@@ -131,9 +82,6 @@ Open http://localhost:5173 in your browser.
 📸 QR Code scanning to pull applicant info on the spot
 
 📈 Statistics dashboard with top applicants and booth data
-
-🧪 Demo Credentials (for testing)
-Use these credentials on the live demo for a quick tour.
 
 🙌 Acknowledgements
 Big thanks to:
