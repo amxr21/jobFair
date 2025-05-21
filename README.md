@@ -53,7 +53,7 @@ jobFair/
 ├── package.json        # Project metadata and scripts
 ├── vercel.json         # Vercel deployment configuration
 └── ...                 # Other configuration files
-
+```
 🧑‍💻 Roles & Flows
 🎓 Applicants
 Fill in and submit applications through a clean, mobile-friendly form.
