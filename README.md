@@ -2,7 +2,7 @@
 
 Welcome to **JobFair**, a modern web application developed to streamline the student application process for job and internship fairs organized by **CASTO**. Built for performance and simplicity, this platform empowers admins and applicants with an intuitive, real-time, and fully digital experience — eliminating paper-based bottlenecks for good.
 
-🌐 **Live Preview**: [job-fair-lilac.vercel.app](https://job-fair-lilac.vercel.app)
+🌐 **Live Preview**: [job-fair-control.vercel.app](https://job-fair-control.vercel.app/)
 
 ---
 
@@ -21,8 +21,8 @@ Welcome to **JobFair**, a modern web application developed to streamline the stu
 
 | Layer        | Tech Used                            |
 |--------------|--------------------------------------|
-| **Frontend** | React, Tailwind CSS, Socket.io-client |
-| **Backend**  | Node.js, Express, Socket.io           |
+| **Frontend** | React, Tailwind CSS                   |
+| **Backend**  | Node.js, Express                      |
 | **Database** | MongoDB (Mongoose)                    |
 | **Other**    | Nodemailer, QRCode, Vercel (frontend), Render (backend)
 
@@ -105,7 +105,7 @@ npm run dev
 Open http://localhost:5173 in your browser.
 
 📊 Key Features (Admin Side)
-🔄 Live applicant list with real-time Socket.io updates
+🔄 Live applicant list with real-time updates
 
 🔍 Search and filter applicants instantly
 
@@ -117,29 +117,6 @@ Open http://localhost:5173 in your browser.
 
 🧪 Demo Credentials (for testing)
 Use these credentials on the live demo for a quick tour.
-
-bash
-Copy
-Edit
-Email: demo.admin@jobfair.com
-Password: Demo@123
-🤝 Contributing
-We welcome PRs and collaboration!
-
-bash
-Copy
-Edit
-# 1. Fork this repo
-# 2. Create your branch
-git checkout -b feature/amazing-feature
-
-# 3. Make your changes & commit
-git commit -m "✨ Added amazing feature"
-
-# 4. Push and open a PR
-git push origin feature/amazing-feature
-📝 License
-This project is licensed under the MIT License. See the LICENSE file for details.
 
 🙌 Acknowledgements
 Big thanks to:
