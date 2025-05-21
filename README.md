@@ -1,6 +1,7 @@
 <div align="center">
 🏢 Job Fair Portal
-<img src="https://your-logo-url-here.png" alt="Job Fair Portal Logo" width="200"/>
+Show Image
+Show Image
 Show Image
 Show Image
 Show Image
@@ -9,152 +10,157 @@ Show Image
 A specialized platform for University of Sharjah's job fair events
 Features •
 Tech Stack •
-Installation •
 Usage •
+Project Structure •
 License •
 Contact
 </div>
-<p align="center">
-  <img src="https://your-screenshot-url-here.png" alt="Job Fair Portal Dashboard" width="80%"/>
-</p>
 📋 Overview
-Job Fair Portal streamlines the University of Sharjah's job fair experience for the CASTO office and participating companies. The platform features an innovative QR ticketing system for efficient candidate registration and comprehensive management tools.
-
+Job Fair Portal streamlines the University of Sharjah's job fair experience for the CASTO office and participating companies. The platform facilitates efficient management of company registrations, positions, and candidate interactions through an innovative QR ticketing system. Built specifically for the University of Sharjah's career events, this application serves as a centralized hub for employers participating in campus recruitment activities.
 ✨ Features
-<table>
-  <tr>
-    <td width="50%">
-      <h3 align="center">🔐 Company Authentication</h3>
-      <p align="center">
-        <img src="https://your-feature-image1.png" alt="Authentication" width="100%"/>
-      </p>
-      <p align="center">Secure login and registration for company representatives</p>
-    </td>
-    <td width="50%">
-      <h3 align="center">📱 QR Ticketing System</h3>
-      <p align="center">
-        <img src="https://your-feature-image2.png" alt="QR System" width="100%"/>
-      </p>
-      <p align="center">Scan candidate QR codes for quick registration</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3 align="center">👔 Company Profiles</h3>
-      <p align="center">
-        <img src="https://your-feature-image3.png" alt="Company Profiles" width="100%"/>
-      </p>
-      <p align="center">Dedicated profiles for participating companies</p>
-    </td>
-    <td width="50%">
-      <h3 align="center">👥 Candidate Management</h3>
-      <p align="center">
-        <img src="https://your-feature-image4.png" alt="Candidate Management" width="100%"/>
-      </p>
-      <p align="center">Tools to organize and track potential candidates</p>
-    </td>
-  </tr>
-</table>
-Additional Features:
+🔐 Company Authentication
+Secure company registration and login system using JWT (JSON Web Tokens) authentication, ensuring that only authorized company representatives can access their respective dashboards. The authentication system features role-based access control to differentiate between company users and CASTO office administrators.
+📱 QR Ticketing System
+An advanced QR code scanning functionality allowing company representatives to instantly register candidates they meet at the job fair. When a company representative scans a candidate's QR code, the system automatically logs their information to the company's dashboard for later review and follow-up.
+👔 Company Profiles
+Companies can create comprehensive profiles showcasing their:
 
-📊 Responsive Design: Seamless experience across devices
-🏫 CASTO Office Integration: Special features for CASTO office management
+Organization details and industry information
+Available job positions and internship opportunities
+Required qualifications and skills
+Company culture and values
+Contact information for interested candidates
 
+These profiles serve as a digital representation of the company at the job fair and help streamline the candidate registration process.
+👥 Candidate Management
+A robust candidate tracking system enabling companies to:
+
+View all scanned candidate information in one dashboard
+Sort and filter candidates by qualifications, positions of interest, or academic background
+Add notes and status updates for each candidate
+Export candidate data for integration with company ATS (Applicant Tracking Systems)
+Track candidate engagement metrics
+
+📊 Data Analytics & Reporting
+CASTO office administrators can access comprehensive analytics including:
+
+Total companies registered and participation metrics
+Popular positions and fields of interest
+Real-time attendance tracking
+Candidate interaction statistics
+Custom report generation for event effectiveness evaluation
+
+🏫 CASTO Office Administration
+Special administrative features for the University of Sharjah's CASTO office including:
+
+Company registration approval system
+Master dashboard for monitoring all job fair activities
+System configuration and access control management
+Communication tools for announcements and updates
+Event scheduling and coordination capabilities
+
+📱 Responsive Design
+The application is fully responsive with adaptive layouts optimized for:
+
+Desktop workstations for administrative tasks
+Tablets for company representatives at job fair booths
+Mobile devices for on-the-go access and QR scanning
 
 🛠️ Tech Stack
-<p align="center">
-  <img src="https://cdn.worldvectorlogo.com/logos/next-js.svg" alt="Next.js" width="50" height="50"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.worldvectorlogo.com/logos/react-2.svg" alt="React" width="50" height="50"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg" alt="Tailwind CSS" width="50" height="50"/>
-  &nbsp;&nbsp;&nbsp;
-  <img src="https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg" alt="MongoDB" width="50" height="50"/>
-</p>
-TechnologyDescriptionFrontendNext.js, React, TailwindCSSBackendNext.js API RoutesDatabaseMongoDB (with Mongoose)AuthenticationNextAuth.jsDeploymentVercel
-
-📋 Prerequisites
-Before you begin, ensure you have the following installed:
-
-Node.js (v14.x or higher)
-npm (v6.x or higher) or yarn (v1.22.x or higher)
-Git
-
-
+TechnologyDescriptionFrontendReact - Component-based UI library for building the interactive user interface with reusable components, state management, and responsive designBackendNode.js & Express - Server-side JavaScript runtime and web application framework handling API endpoints, business logic, authentication, and database communicationDatabaseMongoDB with Mongoose - NoSQL database storing company profiles, candidate information, and system data with Mongoose ODM for data modeling and validationAuthenticationJWT (JSON Web Tokens) - Secure authentication implementation for protected routes and user sessions with role-based access controlDevelopment & DeploymentVercel - Platform for frontend and backend deployment with continuous integration, preview deployments, and serverless functionsOther ToolsQR code generation and scanning libraries, data visualization tools, PDF generation for reports, and responsive design framework
 📖 Usage
-<details>
-<summary><b>🏢 For Participating Companies</b></summary>
-<br>
+🏢 For Participating Companies
+Initial Setup
 
-Login with provided credentials
-Access the platform with company credentials from CASTO office
+Receive login credentials from the CASTO office before the job fair
+Log in to the Job Fair Portal using the provided credentials
+Complete your company profile with detailed information about:
 
-Set up company profile
-Add company information, available positions and requirements
-
-Scan candidate QR codes
-Use the built-in QR scanner to register interested candidates
-
-Manage candidates
-Review information and maintain records for each candidate
+Company background and industry
+Available positions and required qualifications
+Recruitment process and contact details
 
 
-</details>
-<details>
-<summary><b>🏫 For CASTO Office</b></summary>
-<br>
 
-System administration
-Manage all aspects of the job fair platform
+During the Job Fair
 
-Company registration monitoring
-Track participating companies and their activity
+Use the integrated QR scanner in the application to scan candidate QR codes
+View captured candidate information immediately on your dashboard
+Add notes or tags to prioritize candidates of interest
+Track the number of interactions throughout the event
 
-Analytics and reporting
-Generate comprehensive reports on job fair participation
+Post-Fair Activities
 
-Company support
-Provide assistance to participating companies
+Access your company dashboard to view all registered candidates
+Filter and sort candidates based on qualifications or interests
+Export candidate data for integration with your recruitment systems
+Generate reports on job fair participation and candidate engagement
 
-System configuration
-Configure access controls and platform settings
+🏫 For CASTO Office Administrators
+System Setup
+
+Configure job fair event details including date, location, and participating departments
+Create company accounts and generate login credentials
+Set up system preferences and access control permissions
+
+Management Functions
+
+Monitor real-time company registrations and participation
+Track overall event metrics and attendance
+Generate comprehensive reports on job fair effectiveness
+Provide support to participating companies through the integrated messaging system
+Configure system settings including:
+
+Access permissions and role assignments
+Notification preferences
+Data retention policies
+Branding and customization options
 
 
-</details>
 
 📁 Project Structure
+The repository follows a modular architecture separating frontend and backend components:
 jobFair/
-├── components/        # Reusable UI components
-├── pages/             # Application pages and API routes
-│   ├── api/           # Backend API endpoints
-│   └── ...            # Frontend pages
-├── public/            # Static assets
-├── styles/            # CSS and styling files
-├── models/            # Database models
-├── lib/               # Utility functions and helpers
-├── middleware/        # Custom middleware
-└── ...
-
+│
+├── client/                     # Frontend React application
+│   ├── public/                 # Static assets and index.html
+│   ├── src/                    # Source files
+│   │   ├── components/         # Reusable UI components
+│   │   │   ├── auth/           # Authentication components
+│   │   │   ├── company/        # Company profile components
+│   │   │   ├── dashboard/      # Dashboard elements
+│   │   │   ├── layout/         # Layout components (header, footer, etc.)
+│   │   │   └── qr/             # QR code scanning components
+│   │   ├── contexts/           # React contexts for state management
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── pages/              # Main application pages
+│   │   ├── services/           # API service integrations
+│   │   ├── utils/              # Utility functions
+│   │   ├── App.js              # Main application component
+│   │   └── index.js            # Application entry point
+│   └── package.json            # Frontend dependencies
+│
+├── server/                     # Backend Node.js/Express application
+│   ├── config/                 # Configuration files
+│   ├── controllers/            # Request handlers
+│   ├── middleware/             # Custom middleware (auth, validation, etc.)
+│   ├── models/                 # Mongoose models for MongoDB
+│   ├── routes/                 # API route definitions
+│   ├── services/               # Business logic services
+│   ├── utils/                  # Utility functions
+│   ├── app.js                  # Express application setup
+│   ├── server.js               # Server entry point
+│   └── package.json            # Backend dependencies
+│
+├── .gitignore                  # Git ignore file
+├── package.json                # Root package.json for scripts
+└── README.md                   # Project documentation
 📝 License
 This project is licensed under the MIT License - see the LICENSE file for details.
-
 📞 Contact
-<div align="center">
-<a href="https://github.com/amxr21">
-  <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="40" height="40"/>
-</a>&nbsp;&nbsp;&nbsp;
-<a href="mailto:your-email@example.com">
-  <img src="https://cdn-icons-png.flaticon.com/512/281/281769.png" alt="Email" width="40" height="40"/>
-</a>&nbsp;&nbsp;&nbsp;
-<a href="https://www.linkedin.com/">
-  <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="40" height="40"/>
-</a>
 Amaar Shamsi - GitHub Profile
-</div>
+Project Link: https://github.com/amxr21/jobFair
 
-🙏 Acknowledgments
 <div align="center">
-</div>
-<div align="center">
-  <sub>Built with ❤️ by amxr21</sub>
+  <sub>Built for the University of Sharjah CASTO Office</sub>
 </div>
