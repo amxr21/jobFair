@@ -1,48 +1,128 @@
-Job Fair Portal
-Job Fair Portal is a specialized web application designed for the University of Sharjah's job fair events, primarily serving the CASTO office and participating companies. This platform streamlines employer participation and candidate management through an innovative QR ticketing system.
+<div align="center">
+🏢 Job Fair Portal
+<img src="https://your-logo-url-here.png" alt="Job Fair Portal Logo" width="200"/>
 Show Image
-Features
+Show Image
+Show Image
+Show Image
+Show Image
+A specialized platform for University of Sharjah's job fair events
+Features •
+Tech Stack •
+Installation •
+Usage •
+License •
+Contact
+</div>
+<p align="center">
+  <img src="https://your-screenshot-url-here.png" alt="Job Fair Portal Dashboard" width="80%"/>
+</p>
+📋 Overview
+Job Fair Portal streamlines the University of Sharjah's job fair experience for the CASTO office and participating companies. The platform features an innovative QR ticketing system for efficient candidate registration and comprehensive management tools.
 
-Company Authentication: Secure login and registration for company representatives
-QR Ticketing System: Allows company managers to scan candidate QR codes for quick registration
-Company Profiles: Dedicated profiles for companies participating in the University of Sharjah job fair
-Candidate Management: Tools to organize and track potential candidates
-Responsive Design: Seamless experience across devices
-CASTO Office Integration: Special features for CASTO office management and oversight
+✨ Features
+<table>
+  <tr>
+    <td width="50%">
+      <h3 align="center">🔐 Company Authentication</h3>
+      <p align="center">
+        <img src="https://your-feature-image1.png" alt="Authentication" width="100%"/>
+      </p>
+      <p align="center">Secure login and registration for company representatives</p>
+    </td>
+    <td width="50%">
+      <h3 align="center">📱 QR Ticketing System</h3>
+      <p align="center">
+        <img src="https://your-feature-image2.png" alt="QR System" width="100%"/>
+      </p>
+      <p align="center">Scan candidate QR codes for quick registration</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3 align="center">👔 Company Profiles</h3>
+      <p align="center">
+        <img src="https://your-feature-image3.png" alt="Company Profiles" width="100%"/>
+      </p>
+      <p align="center">Dedicated profiles for participating companies</p>
+    </td>
+    <td width="50%">
+      <h3 align="center">👥 Candidate Management</h3>
+      <p align="center">
+        <img src="https://your-feature-image4.png" alt="Candidate Management" width="100%"/>
+      </p>
+      <p align="center">Tools to organize and track potential candidates</p>
+    </td>
+  </tr>
+</table>
+Additional Features:
 
-Prerequisites
+📊 Responsive Design: Seamless experience across devices
+🏫 CASTO Office Integration: Special features for CASTO office management
+
+
+🛠️ Tech Stack
+<p align="center">
+  <img src="https://cdn.worldvectorlogo.com/logos/next-js.svg" alt="Next.js" width="50" height="50"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://cdn.worldvectorlogo.com/logos/react-2.svg" alt="React" width="50" height="50"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://cdn.worldvectorlogo.com/logos/tailwind-css-2.svg" alt="Tailwind CSS" width="50" height="50"/>
+  &nbsp;&nbsp;&nbsp;
+  <img src="https://cdn.worldvectorlogo.com/logos/mongodb-icon-1.svg" alt="MongoDB" width="50" height="50"/>
+</p>
+TechnologyDescriptionFrontendNext.js, React, TailwindCSSBackendNext.js API RoutesDatabaseMongoDB (with Mongoose)AuthenticationNextAuth.jsDeploymentVercel
+
+📋 Prerequisites
 Before you begin, ensure you have the following installed:
 
 Node.js (v14.x or higher)
 npm (v6.x or higher) or yarn (v1.22.x or higher)
 Git
 
-Tech Stack
 
-Frontend: React, TailwindCSS
-Backend: nodeJS, Express
-Database: MongoDB (with Mongoose)
-Authentication: JWT
-Deployment: Vercel
+📖 Usage
+<details>
+<summary><b>🏢 For Participating Companies</b></summary>
+<br>
 
-Usage
-For Participating Companies
+Login with provided credentials
+Access the platform with company credentials from CASTO office
 
-Access the platform with company credentials provided by CASTO office
-Set up your company profile with available positions and requirements
-Use the QR scanner functionality to register interested candidates
-Review candidate information
-Manage candidate records and notes
+Set up company profile
+Add company information, available positions and requirements
 
-For CASTO Office
+Scan candidate QR codes
+Use the built-in QR scanner to register interested candidates
 
-Administer the entire job fair system
-Monitor company registrations
-Generate reports and analytics on job fair participation
-Provide support to participating companies
-Configure system settings and access controls
+Manage candidates
+Review information and maintain records for each candidate
 
-Project Structure
+
+</details>
+<details>
+<summary><b>🏫 For CASTO Office</b></summary>
+<br>
+
+System administration
+Manage all aspects of the job fair platform
+
+Company registration monitoring
+Track participating companies and their activity
+
+Analytics and reporting
+Generate comprehensive reports on job fair participation
+
+Company support
+Provide assistance to participating companies
+
+System configuration
+Configure access controls and platform settings
+
+
+</details>
+
+📁 Project Structure
 jobFair/
 ├── components/        # Reusable UI components
 ├── pages/             # Application pages and API routes
@@ -54,7 +134,27 @@ jobFair/
 ├── lib/               # Utility functions and helpers
 ├── middleware/        # Custom middleware
 └── ...
-License
+
+📝 License
 This project is licensed under the MIT License - see the LICENSE file for details.
-Contact
-Project Link: https://github.com/amxr21/jobFair
+
+📞 Contact
+<div align="center">
+<a href="https://github.com/amxr21">
+  <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" width="40" height="40"/>
+</a>&nbsp;&nbsp;&nbsp;
+<a href="mailto:your-email@example.com">
+  <img src="https://cdn-icons-png.flaticon.com/512/281/281769.png" alt="Email" width="40" height="40"/>
+</a>&nbsp;&nbsp;&nbsp;
+<a href="https://www.linkedin.com/">
+  <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="40" height="40"/>
+</a>
+Amaar Shamsi - GitHub Profile
+</div>
+
+🙏 Acknowledgments
+<div align="center">
+</div>
+<div align="center">
+  <sub>Built with ❤️ by amxr21</sub>
+</div>
