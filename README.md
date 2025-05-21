@@ -1,147 +1,150 @@
-🎯 JobFair – Streamlining Job Applications for CASTO
-JobFair is an interactive web application developed to assist the CASTO office in organizing the process of applying and receiving student and graduate applications through more paperless and efficient procedures. 
-GitHub
-+1
-GitHub
-+1
+# 🎓 JobFair – Smart, Paperless Career Fair Platform
 
-🌐 Live Demo
+Welcome to **JobFair**, a modern web application developed to streamline the student application process for job and internship fairs organized by **CASTO**. Built for performance and simplicity, this platform empowers admins and applicants with an intuitive, real-time, and fully digital experience — eliminating paper-based bottlenecks for good.
 
-🚀 Features
-User-Friendly Interface: Intuitive design for both applicants and administrators.
+🌐 **Live Preview**: [job-fair-lilac.vercel.app](https://job-fair-lilac.vercel.app)
 
-Application Management: Efficient handling of student and graduate applications.
+---
 
-Paperless Process: Reduces the need for physical documentation.
+## ✨ Highlights
 
-Real-Time Updates: Immediate reflection of application statuses and updates.
+✅ Paperless digital system to manage student & graduate applications  
+✅ Admin dashboard with real-time updates and live applicant tracking  
+✅ Seamless QR-based check-in system (scanner-ready)  
+✅ Built-in email notification support for confirmations & alerts  
+✅ Clean, responsive UI with a smooth user experience  
+✅ Built on the **MERN** stack (MongoDB, Express, React, Node.js)
 
-Secure Data Handling: Ensures confidentiality and integrity of applicant information.
+---
 
-🛠️ Tech Stack
-Frontend: React.js, CSS, HTML
+## 🚀 Tech Stack
 
-Backend: Node.js, Express.js
+| Layer        | Tech Used                            |
+|--------------|--------------------------------------|
+| **Frontend** | React, Tailwind CSS, Socket.io-client |
+| **Backend**  | Node.js, Express, Socket.io           |
+| **Database** | MongoDB (Mongoose)                    |
+| **Other**    | Nodemailer, QRCode, Vercel (frontend), Render (backend)
 
-Database: MongoDB
+---
 
-Deployment: Vercel
-GitHub
-GitHub
-+3
-GitHub
-+3
-GitHub
-+3
+## 📂 Project Structure
 
-📦 Installation
-Prerequisites
-Node.js (v16 or higher)
+```bash
+jobFair/
+├── client/             # React Frontend (Vite-based)
+├── server/             # Express Backend with APIs and WebSocket
+├── .env.example        # Environment Variables Sample
+├── vercel.json         # Vercel Deployment Config
+└── README.md           # You're reading it!
+🧑‍💻 Roles & Flows
+🎓 Applicants
+Fill in and submit applications through a clean, mobile-friendly form.
 
-npm or Yarn
+Receive confirmation via email upon submission.
 
-MongoDB
-GitHub
+QR Code is auto-generated for scanning at booths.
 
-Steps
-Clone the Repository
+🧑‍💼 Admins (Managers)
+Log in securely to the admin dashboard.
+
+View live applicant data as it’s submitted.
+
+Scan QR codes to instantly pull applicant records.
+
+Track and manage statistics & metrics for reporting.
+
+⚙️ Getting Started
+🛠️ Prerequisites
+Node.js ≥ 16.x
+
+MongoDB Atlas or local instance
+
+Yarn or npm
+
+📥 Installation
+Clone the repository
 
 bash
 Copy
 Edit
 git clone https://github.com/amxr21/jobFair.git
 cd jobFair
-Install Dependencies
+Install dependencies
 
 bash
 Copy
 Edit
+cd client
 npm install
-Configure Environment Variables
+cd ../server
+npm install
+Configure environment variables
 
-Create a .env file in the root directory and add the following:
+Duplicate .env.example into .env in the server folder and update the values:
 
 env
 Copy
 Edit
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-PORT=3000
-Run the Application
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_secret
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_password
+Run the development servers
 
 bash
 Copy
 Edit
-npm start
-Access the Application
+# Terminal 1 - Backend
+cd server
+npm run dev
 
-Open your browser and navigate to http://localhost:3000
+# Terminal 2 - Frontend
+cd client
+npm run dev
+Open http://localhost:5173 in your browser.
 
-👥 User Roles
-Applicants: Submit applications and track their status.
+📊 Key Features (Admin Side)
+🔄 Live applicant list with real-time Socket.io updates
 
-Administrators: Manage and review applications, communicate with applicants.
-GitHub
-+1
-GitHub
-+1
-GitHub
+🔍 Search and filter applicants instantly
 
-📁 Project Structure
-plaintext
+📩 Integrated email feedback system
+
+📸 QR Code scanning to pull applicant info on the spot
+
+📈 Statistics dashboard with top applicants and booth data
+
+🧪 Demo Credentials (for testing)
+Use these credentials on the live demo for a quick tour.
+
+bash
 Copy
 Edit
-jobFair/
-├── backend/            # Backend source code
-├── frontend/           # Frontend source code
-├── .vscode/            # Visual Studio Code settings
-├── .gitignore          # Git ignore file
-├── README.md           # Project documentation
-├── package.json        # Project metadata and scripts
-├── vercel.json         # Vercel deployment configuration
+Email: demo.admin@jobfair.com
+Password: Demo@123
 🤝 Contributing
-We welcome contributions! Please follow these steps:
-GitHub
-
-Fork the Repository
-
-Create a New Branch
+We welcome PRs and collaboration!
 
 bash
 Copy
 Edit
-git checkout -b feature/your-feature-name
-Commit Your Changes
+# 1. Fork this repo
+# 2. Create your branch
+git checkout -b feature/amazing-feature
 
-bash
-Copy
-Edit
-git commit -m "Add your message here"
-Push to Your Fork
+# 3. Make your changes & commit
+git commit -m "✨ Added amazing feature"
 
-bash
-Copy
-Edit
-git push origin feature/your-feature-name
-Open a Pull Request
+# 4. Push and open a PR
+git push origin feature/amazing-feature
+📝 License
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-📄 License
-This project is licensed under the MIT License.
+🙌 Acknowledgements
+Big thanks to:
 
-📬 Contact
-Author: Ammar
+The CASTO Office, University of Sharjah, for their support and collaboration.
 
-Email: [Your Email]
+All testers and contributors who helped refine the platform.
 
-Website: ammarobad.info
-GitHub
-+1
-Instagram
-+1
-
-📌 Acknowledgements
-Special thanks to the CASTO office for their support and collaboration.
-GitHub
-+1
-GitHub
-+1
