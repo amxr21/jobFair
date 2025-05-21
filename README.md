@@ -54,39 +54,32 @@ jobFair/
 ├── vercel.json         # Vercel deployment configuration
 └── ...                 # Other configuration files
 ```
-🧑‍💻 Roles & Flows
-🎓 Applicants
-Fill in and submit applications through a clean, mobile-friendly form.
 
-Receive confirmation via email upon submission.
+## 🧑‍💻 Roles & Flows
 
-QR Code is auto-generated for scanning at booths.
+### 🧑‍💼 **Companies (Managers)**
 
-🧑‍💼 Admins (Managers)
-Log in securely to the admin dashboard.
+- 🔐 **Secure login** to access the control dashboard  
+- 👁️ **View live applicant data** in real-time as it’s submitted  
+- 📷 **Scan QR codes** to instantly pull applicant profiles  
+- 📊 **Track statistics and booth performance** with integrated analytics  
 
-View live applicant data as it’s submitted.
+---
 
-Scan QR codes to instantly pull applicant records.
+## 📊 Key Features – **Admin Dashboard**
 
-Track and manage statistics & metrics for reporting.
+- 🔄 **Real-time applicant list** updates via Socket.io  
+- 🔍 **Instant search and filter** functionality  
+- 📩 **Email feedback system** for confirmations and messages  
+- 📸 **QR Code scanning** to access applicant details on the spot  
+- 📈 **Analytics dashboard** with top applicants and booth insights  
 
+---
 
-📊 Key Features (Admin Side)
-🔄 Live applicant list with real-time updates
+## 🙌 Acknowledgements
 
-🔍 Search and filter applicants instantly
+- 💼 **CASTO Office – University of Sharjah**  
+  For supporting and enabling this digital transformation of the career fair process  
 
-📩 Integrated email feedback system
-
-📸 QR Code scanning to pull applicant info on the spot
-
-📈 Statistics dashboard with top applicants and booth data
-
-🙌 Acknowledgements
-Big thanks to:
-
-The CASTO Office, University of Sharjah, for their support and collaboration.
-
-All testers and contributors who helped refine the platform.
-
+- 🤝 **All testers, users, and contributors**  
+  Your feedback, ideas, and time made this project better at every step  
