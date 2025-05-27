@@ -7,13 +7,13 @@ import { Applicants, Managers, Statistics } from "./Icons"
 
 const PageLink = ({title, icon, link}) => {
     
-    const path = String(useLocation().pathname).replace(/[^a-zA-Z0-0]/g,'')
+    const path = String(useLocation().pathname).replace(/[^a-zA-Z0-0]/g,'').toLowerCase()
 
     const linkRef = useRef()
 
 
     useEffect(() =>  {
-        if(path == link){
+        if(path == link.replace(/[^a-zA-Z0-0]/g,'').toLowerCase()){
             linkRef.current.classList.replace('bg-white', 'bg-[#0E7F41]')
             linkRef.current.firstElementChild.classList.replace('stroke-gray-200', 'stroke-white')
             linkRef.current.parentElement.lastElementChild.classList.replace('text-gray-200', 'text-black')
@@ -24,7 +24,7 @@ const PageLink = ({title, icon, link}) => {
             linkRef.current.parentElement.lastElementChild.classList.replace('text-black', 'text-gray-200')
         }
         
-        
+
 
     }, [path])
 
@@ -34,7 +34,7 @@ const PageLink = ({title, icon, link}) => {
             <div className={`page-link cursor-pointer page-link flex gap-x-4 items-center`} >
                 <div ref={linkRef} className={`p-2 bg-white rounded-xl`}>
                     {
-                        icon == 'applicants' ? <Applicants/> : icon == 'managers' ? <Managers/> : <Statistics/>
+                        icon == 'applicants' ? <Applicants/> : icon == 'managers' ? <Managers/> : icon == 'survey' ? <Statistics/> : <Statistics/>
                     }
                 </div>
                 <h2 className={`title text-gray-200`}>{title}</h2>
