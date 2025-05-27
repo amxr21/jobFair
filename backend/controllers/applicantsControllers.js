@@ -284,7 +284,35 @@ const rejectApplicant = async (req, res) => {
 }
 
 
+const submitSurvey = async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        if(!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({error: "No such id for an applicant"})
+        
+
+        let updateData = {}
+        if(req.body.hasOwnProperty('surveyResult')){
+            updateData.$addToSet = { surveyResult: req.body.surveyResult }
+
+            // console.log(req.body);
+            
+        }
+        
+        const applicant = await UserModel.findByIdAndUpdate({_id: id}, 
+            updateData,
+            {new: false}
+        )
+
+        res.status(200).json(applicant)
+
+
+
+
+    } catch (error) {
+        console.log({error: error.message});
+    }
+}
 
 
 
@@ -532,4 +560,4 @@ const confirmAttendant = async (req, res) => {
 
 
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant}
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey}

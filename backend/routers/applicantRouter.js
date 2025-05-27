@@ -12,7 +12,7 @@ const { ObjectId } = mongoose.Types;
 const requireAuth = require("../middlewares/requireAuth")
 
 
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
 
@@ -152,6 +152,8 @@ router.patch("/applicants/shortlist/:id", shortlistApplicant);
 router.patch("/applicants/reject/:id", rejectApplicant);
 
 router.patch("/applicants/confirm/:id", confirmAttendant);
+
+router.patch("/applicants/survey/:id", submitSurvey)
 
 
 router.post("/applicants",upload.single("cvfile") , addApplicant)
