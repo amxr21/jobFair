@@ -1,3 +1,4 @@
+
 @font-face {
     font-family: '29LTBukra';
     src: url('./assets/fonts/29LTBUKRAREGULAR.TTF') format('truetype');
@@ -138,4 +139,9 @@
 .brief-info{
     transition: all ease-in-out 0.3s !important;
 
+}
+
+
+.sections::-webkit-scrollbar{
+  height: 0;
 }
