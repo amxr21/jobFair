@@ -151,7 +151,7 @@ const MainBanner = ({link}) => {
     
     useEffect(() => {
         const el = scrollableRef?.current;
-        console.log(el);
+        // console.log(el);
         
     
         const handleScroll = () => {
