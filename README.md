@@ -2,7 +2,7 @@
 
 An interactive, real-time web application designed to streamline and digitize the internship and job application process at the University of Sharjah's **CASTO Office**. This system facilitates a **paperless**, **efficient**, and **automated** experience for students, graduates, and participating companies during career and internship fairs.
 
-**Live Preview:** [job-fair-lilac.vercel.app](https://job-fair-lilac.vercel.app)  
+**Live Preview:** [Job Fair Web App](https://job-fair-control.vercel.app)  
 **Repository:** [GitHub - amxr21/jobFair](https://github.com/amxr21/jobFair)
 
 ---
@@ -59,7 +59,6 @@ This system enables quick interactions at booths, instant access to applications
 ### Frontend
 - **React.js**
 - **Tailwind CSS**
-- **Socket.io Client**
 - **React Router DOM**
 - **Axios**
 
@@ -67,7 +66,6 @@ This system enables quick interactions at booths, instant access to applications
 - **Node.js**
 - **Express.js**
 - **MongoDB** (via Mongoose)
-- **Socket.io Server**
 - **Nodemailer** (for transactional emails)
 - **QR Code Generator**
 
@@ -80,11 +78,9 @@ This system enables quick interactions at booths, instant access to applications
 ## System Architecture
 
 ```
-Client (React)
+Frontend (React)
    |
    |---> REST API (Express)
-   |
-   |---> WebSocket (Socket.io)
    |
    |---> MongoDB (Applications, Managers, Tickets)
    |
@@ -111,7 +107,7 @@ Client (React)
 2. **Install dependencies for both client and server**
    ```bash
    # Frontend
-   cd client
+   cd frontend
    npm install
 
    # Backend
@@ -140,8 +136,8 @@ In two separate terminals:
 cd server
 npm run dev
 
-# Terminal 2 - Client
-cd client
+# Terminal 2 - Frontend
+cd frontend
 npm run dev
 ```
 
@@ -165,7 +161,7 @@ The app should be running on:
 ```
 jobFair/
 │
-├── client/               # Frontend (React)
+├── frontend/               # Frontend (React)
 │   ├── public/
 │   ├── src/
 │   │   ├── components/
