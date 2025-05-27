@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { Link, useLocation } from "react-router-dom"
 
-import { Applicants, Managers, Statistics } from "./Icons"
+import { Applicants, Managers, Statistics, SurveyStatsticsIcon } from "./Icons"
 
 
 
@@ -34,7 +34,7 @@ const PageLink = ({title, icon, link}) => {
             <div className={`page-link cursor-pointer page-link flex gap-x-4 items-center`} >
                 <div ref={linkRef} className={`p-2 bg-white rounded-xl`}>
                     {
-                        icon == 'applicants' ? <Applicants/> : icon == 'managers' ? <Managers/> : icon == 'survey' ? <Statistics/> : <Statistics/>
+                        icon == 'applicants' ? <Applicants/> : icon == 'managers' ? <Managers/> : icon == 'statistics' ? <Statistics/> : icon == "surveyResults" ? <SurveyStatsticsIcon/> : ""
                     }
                 </div>
                 <h2 className={`title text-gray-200`}>{title}</h2>
