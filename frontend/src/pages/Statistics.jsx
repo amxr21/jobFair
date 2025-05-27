@@ -2,10 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 
-import { BarChartElement, StatisticsElement, TopBar, PieChartElement, TopStatistic } from "../components/index";
+import { BarChartElement, StatisticsElement, TopBar, PieChartElement, TopStatistic, FieldFilter } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
+
+import { StatsticTypeContext, StatsticTypeProvider } from "../Context/StatsticTypeContext"
+
 import { StarIcon, LightningIcon, TrendIcon } from "../components/Icons";
+import ChartWithFilter from "../components/ChartWithFilter";
 
 const Statistics = ({ link }) => {
   const path = useLocation();
@@ -32,8 +36,6 @@ const Statistics = ({ link }) => {
     }
     return false
     });
-
-
 
 
   const pieData = [
@@ -117,9 +119,15 @@ const Statistics = ({ link }) => {
 
   return (
     <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[100vh] overflow-hidden">
+      
+
+      {/* <ChartWithFilter /> */}
+
+
+
       {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
 
-      <div id="Statistics" className="bg-[#F3F6FF] min-h-full h-full overflow-y-auto grow rounded-xl px-6 py-4 col-span-10   mx-auto">
+      <div id="Statistics" className="bg-[#F3F6FF] min-h-full h-full overflow-y-auto grow rounded-xl p-6 col-span-10 mx-auto">
         <div className="flex flex-col w-full gap-3">
           <div className="grid grid-cols-12 gap-x-5 rounded-lg overflow-hidden">
             {titles.map((type, i) => (
@@ -128,8 +136,23 @@ const Statistics = ({ link }) => {
           </div>
 
           <div className="grid grid-cols-12 gap-x-5">
-            <PieChartElement dataset={pieData} title="Applicants" colorsPair={["#0066CC", "#E5F0FF"]} />
-            <PieChartElement dataset={pieData2} title="Managers" colorsPair={["#0E7F41", "#E5FFE5"]} />
+
+
+
+
+  
+            <StatsticTypeProvider>
+              <PieChartElement dataset={[pieData, pieData2]} title="Applicants" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
+              {/* <PieChartElement dataset={[pieData, pieData2]} title="Applicants" colorsPair={["#0066CC", "#E5F0FF"]} /> */}
+            </StatsticTypeProvider>
+
+
+
+
+
+
+
+
             <BarChartElement dataset={sectors} />
           </div>
 
