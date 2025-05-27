@@ -78,7 +78,7 @@ const TopBar = ({user}) => {
             </div>
             <div className="hidden md:block time text-right">
                 <h4 className="time text-4xl font-bold">{time}</h4>
-                <p className="date text-sm font-extralight text-gray-400">{`${day},. ${date[0]} ${date[1]}, ${date[2]}`}</p>
+                <p className="date text-sm font-extralight text-gray-400">{`${day},. ${date[0]} ${date[1]} ${date[2]}`}</p>
             </div>
         </div>
     )
