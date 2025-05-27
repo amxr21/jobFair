@@ -1,0 +1,6 @@
+export { default as Managers } from "../pages/Managers"
+export { default as Survey } from "../pages/Survey"
+export { default as Statistics } from "../pages/Statistics"
+export { default as MainBanner } from "../components/MainBanner"
+export { default as NavBar } from "../components/NavBar"
+export { default as SurveyResults } from "../pages/SurveyResults"
