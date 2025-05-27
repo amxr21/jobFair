@@ -38,6 +38,12 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    surveyResult: {
+        type: Array
+    }
+
+
+
 })
 
 userSchema.statics.signup = async function(email, password, fields, representitives, companyName, sector, city, noOfPositions ) {
