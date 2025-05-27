@@ -1,4 +1,3 @@
-```markdown
 # Job Fair Web Application
 
 An interactive, real-time web application designed to streamline and digitize the internship and job application process at the University of Sharjah's **CASTO Office**. This system facilitates a **paperless**, **efficient**, and **automated** experience for students, graduates, and participating companies during career and internship fairs.
