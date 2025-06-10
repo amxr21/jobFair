@@ -18,7 +18,7 @@ const ResponsesPieChart = ({data}) => {
         <div className="bg-white rounded-xl py-0 flex items-center border min-w-[30rem]">
             <PieChart
                 height={240}
-                 
+                width={240}
                 colors={colors}
                 className="min-w-64 flex items-start"
                 series={[
