@@ -23,7 +23,7 @@
     "flowbite-react": "^0.8.0",
     "html5-qrcode": "^2.3.8",
     "lucide-react": "^0.486.0",
-    "primereact": "^10.9.4",
+    "primereact": "^10.9.6",
     "qrcode.react": "^3.1.0",
     "react": "^16.8.0 || ^17.0.0 || ^18.0.0",
     "react-chartjs-2": "^5.3.0",
