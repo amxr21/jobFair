@@ -11,7 +11,8 @@ import { BriefSurveyStatstics, ResponsesPieChart } from "./index";
 
 
 
-const link = "http://localhost:2000"
+// const link = "http://localhost:2000"
+const link = "https://jobfair-production.up.railway.app"
 
 
 const QuestionsContainer = () => {
