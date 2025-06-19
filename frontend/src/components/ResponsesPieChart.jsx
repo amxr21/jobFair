@@ -25,7 +25,7 @@ const ResponsesPieChart = ({data}) => {
                 {
                     data: [
                         { id: 0, value: companiesResponded, label: 'Option 1' },
-                        { id: 1, value: companiesNumber, label: 'Option 2' }, 
+                        { id: 1, value: companiesNumber - companiesResponded, label: 'Option 2' }, 
                     ],
                     innerRadius: 40,
                     outerRadius: 100,
