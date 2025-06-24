@@ -16,7 +16,7 @@ const SurveyResults = () => {
         <AnswersContextProvider>
             <SurveyContextProvider>
                 <div id="SurveyResults" className="col-span-10 flex flex-col gap-8 overflow-hidden">
-                    <TopBar user={user}/>
+                    {/* <TopBar user={user}/> */}
                     <QuestionsContainer />
                 </div>
             </SurveyContextProvider>
