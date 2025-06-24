@@ -11,8 +11,16 @@ const link = "http://localhost:2000"
 
 
 
-const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, section, pageType, surveyResponsesData}) => {
+const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, section, pageType, surveyResponsesData, QuestionResponse}) => {
     
+    if(QuestionResponse){
+        // console.log('====================================');
+        // console.log(QuestionResponse[0].responses);
+        // console.log('====================================');
+
+    }
+
+
     const [ selectedBtn, setSelectedBtn ] = useState()
 
     const { surveyAnswers, updateSurvey } = useContext(SurveyContext)
@@ -128,6 +136,85 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
     
         }
     }
+
+    else if(pageType == 'surveyResults'){
+        if((Id == 8 || Id == 9) && section == 0){
+            return (
+                <div key={Id} className="survey-question flex flex-col gap-y-3">
+                    <h2 className={`text-lg ${QuestionType}`} >{`${Id}. ${QuestionText}`}</h2>
+        
+                    <div className="options flex w-full gap-x-3">
+        
+                        {
+                            
+                            // QuestionOptions? 
+                            QuestionType == "multiple_choice"
+                            ?
+                            QuestionOptions.map((option, index) => {                                
+                                return (
+                                    <SurveyOption
+                                        key={index}
+                                        label={option}
+                                        selected={selectedBtn == index} 
+                                        handleClick={(e) => {handleClickFunc(e); setSelectedBtn(index) }}
+                                        type={'multiple_choice'}
+                                        page={pageType}
+                                    />
+                                )
+                            })
+                            :
+                            <SurveyOption handleChange={handleChangeFunc} label={QuestionText} page={pageType}/>
+                        }
+        
+                    </div>
+        
+        
+                </div>
+            )
+    
+        }
+        else{
+            return (
+                <div key={Id} className="survey-question flex flex-col gap-y-3 col-span-2">
+                    <h2 className={`text-lg ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
+        
+                    <div className="options flex w-full gap-x-3">
+        
+                        {
+                            
+                            // QuestionOptions? 
+                            QuestionType == "multiple_choice"
+                            ?
+                            QuestionOptions.map((option, index) => {
+                                // console.log(option, QuestionResponse[0].responses, option == QuestionResponse[0].responses);
+
+                                return (
+                                    <SurveyOption
+                                        key={index}
+                                        optionIndex = {index}
+                                        label={option}
+                                        selected={option == QuestionResponse[0].responses} 
+                                        handleClick={(e) => {handleClickFunc(e); setSelectedBtn(index) }}
+                                        // selected={surveyAnswers.find(a => a.text == QuestionText)?.responses == option} 
+                                        // handleClick={(e) => handleClickFunc(e) }
+                                        type={'multiple_choice'} page={pageType}
+                                    />
+                                )
+                            })
+                            :
+                            <SurveyOption handleChange={handleChangeFunc} label={QuestionText} page={pageType} />
+                        }
+        
+                    </div>
+        
+        
+                </div>
+            )
+    
+        }
+    }
+
+
     else{
         return (
             <div key={Id} className="survey-question flex flex-col gap-y-3  ">
