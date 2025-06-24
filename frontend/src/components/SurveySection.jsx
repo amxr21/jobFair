@@ -7,10 +7,10 @@ import SubmitSurveyButton from "./SubmitSurveyButton"
 import SubmittingCover from "./SubmittingCover"
 import { BarChart } from '@mui/x-charts/BarChart';
 import { SurveyContext } from "../Context/SurveyContext"
-import { OpenEndedResponse } from "./index"
+import { NoAnswer, OpenEndedResponse } from "./index"
 
 
-const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey', surveyResponsesData }) => {
+const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey', surveyResponsesData, surveyResponsesDataForCompany }) => {
     
     const nextSectionBtn = useRef()
     const prevSectionBtn = useRef()
@@ -18,7 +18,10 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
     const { allResponses } = useContext(SurveyContext)
 
     // console.log(surveyResponsesData);
-    
+    if(surveyResponsesDataForCompany){
+        console.log(surveyResponsesDataForCompany[0]);
+
+    }
     
 
 
@@ -52,8 +55,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
     'q22': [],
     }
     if(allResponses && allResponses.length > 0){
-
-        allResponses.forEach((response) => {
+        allResponses?.flatMap(d => d.results).forEach((response) => {
             return response.forEach((question) => {
                 // console.log(openEndedQuestions);
                 
@@ -89,7 +91,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
             })
         })
     
-        console.log(currentQuestionResponses);
+        // console.log(currentQuestionResponses);
     }
     
 
@@ -97,7 +99,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
 
     return (
         // <div className="section bg-red-500 min-h-[100%]">
-        <div className={`${page == 'results' ? ' ' : 'min-w-[100%] min-h-[100%] overflow-y-scroll'} relative section py-2 pr-4 flex flex-col ${section == 0 ? 'items-end' : 'items-start'} gap-6`}>
+        <div className={`${page == 'results' ? ' ' : 'min-w-[100%] h-[100%] overflow-y-auto'} relative section py-2 pr-4 flex flex-col ${section == 0 ? 'items-end' : 'items-start'} gap-6`}>
             <h3 className="w-full text-2xl font-semibold">{sectionHeader}</h3>
             <div className="w-full questions flex flex-col gap-y-10">
                 {
@@ -106,6 +108,10 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                             <h2 className="text-xl underline">{subsection.title}</h2>
                             {
                                 subsection.questions?.map((question) => {
+                                    // console.log(surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)[0].responses);
+                                    // console.log(question);
+                                    
+                                    
                                     counter++
                                     // console.log(question);
                                     
@@ -120,9 +126,10 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                     QuestionType={question.type}
                                                     QuestionOptions={question.options || ''}
                                                     pageType={page}
+                                                    QuestionResponse={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0].filter((q) => {return q.text.toLowerCase() == question.text.toLowerCase()}) : ''}
                                                 />
                                                 {
-                                                    page != 'survey' &&
+                                                    page == 'results' &&
                                                     <BarChart
                                                         xAxis={[{
                                                             scaleType:'band', data: question.options
@@ -137,6 +144,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                         width={600}
                                                     />
                                                 }
+                                                 
                                             </div>
                                         )
                                         : (
@@ -160,9 +168,30 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                         //     )
                                                         // })
                                                         // : ''
-                                                        openEndedQuestions[question.id]?.map((ans, i) => (
-                                                            ans.responses?.trim() != "" ?<OpenEndedResponse key={i} response={ans.responses} /> : ""
-                                                        ))
+                                                        
+                                                        
+
+                                                        page == 'results'
+                                                        ?
+                                                        openEndedQuestions[question.id]?.map((ans, i) => 
+                                                            (
+                                                                    ans.responses?.trim() != "" 
+                                                                    ?
+                                                                    <OpenEndedResponse key={i} response={ans.responses} />
+                                                                    : ""
+                                                            )
+                                                        )
+                                                        :
+                                                        surveyResponsesDataForCompany ? 
+                                                        surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)?.map((ans, i) => 
+                                                            (   
+                                                                ans.responses?.trim() != "" 
+                                                                ?
+                                                                <OpenEndedResponse key={i} response={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)[0].responses: null} />
+                                                                : <NoAnswer />
+                                                                
+                                                            )
+                                                        ):""
                                                     }
                                                 </div>
                                             </>
@@ -175,24 +204,35 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                 }
             </div>
 
-                {
-                    section == 0
-                    ?
-                    page == 'survey' && <button ref={nextSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
-                        <NextSectionIcon />
-                    </button>
-                    :
-                    page == 'survey' &&<>
-                        <div className={`flex w-full justify-between`}>
-                            <button ref={prevSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
-                                <PrevSectionIcon />
-                            </button>
-                            <SubmitSurveyButton />
 
-                        </div>
- 
-                    </>
-                }
+
+
+
+
+
+
+
+
+
+
+            {
+                section == 0
+                ?
+                page == 'survey' && <button ref={nextSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
+                    <NextSectionIcon />
+                </button>
+                :
+                page == 'survey' &&<>
+                    <div className={`flex w-full justify-between`}>
+                        <button ref={prevSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
+                            <PrevSectionIcon />
+                        </button>
+                        <SubmitSurveyButton />
+
+                    </div>
+
+                </>
+            }
         </div>
     )
 }
