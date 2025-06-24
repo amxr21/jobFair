@@ -4,9 +4,12 @@ import { useContext, useEffect, useState } from "react";
 import { SurveyContext, SurveyContextProvider } from "../Context/SurveyContext";
 import { AnswersContext } from "../Context/AnswersContext";
 
+import { useAuthContext } from "../Hooks/useAuthContext"
+
+
 import axios from "axios";
 
-import { BriefSurveyStatstics, ResponsesPieChart } from "./index";
+import { BriefSurveyStatstics, CurrentCompanyBar, ResponsesPieChart, SummaryDetailModeBar } from "./index";
 
 
 
@@ -17,11 +20,22 @@ const link = "https://jobfair-production.up.railway.app"
 
 const QuestionsContainer = () => {
 
+    const { user } = useAuthContext()
+
+
+
   const { allResponses, setAllResponses } = useContext(SurveyContext)
   const { answers, updateAnswers } = useContext(AnswersContext)
   
   const [ list, setList ] = useState([])
   const [ companies, setCompanies ] = useState(null)
+
+  const [ allResponsesData, setAllResponsesData ] = useState([])
+
+  const [ mode, setMode ] = useState("summary");
+
+  const [ currentCompanyData, setCurrentCompanyData ] = useState(0)
+
 
       const surveyData = [
       {
@@ -199,8 +213,8 @@ const QuestionsContainer = () => {
         try {
             const response = await axios.get(`${link}/companies`) 
 
-            if(response && response.data){
-              setAllResponses(response.data.flatMap((comp) => comp.surveyResult));
+            if(response && response.data){              
+              setAllResponses(response.data.flatMap((comp) => ({'name': comp.companyName, 'results': comp.surveyResult})));
               setCompanies(response.data);
               
             }
@@ -216,13 +230,12 @@ const QuestionsContainer = () => {
 
 
 
-    //  console.log(allresponses);
+    // console.log(allResponses);
     // console.log(questionsList);
  
     
     useEffect(() => {      
-
-      allResponses?.forEach((result) => {
+      allResponsesData?.forEach((result) => {
 
         if(Array.isArray(result)){
           result.forEach((q) => {
@@ -247,48 +260,80 @@ const QuestionsContainer = () => {
         
       })
 
-      if(allResponses.length > 0){
+      if(allResponsesData.length > 0){
         setList(questionsList) 
+      }
+    }, [allResponses, allResponsesData])
+ 
+
+
+    useEffect(()=>{
+      
+      if(allResponses){
+        setAllResponsesData(allResponses.flatMap((a) => a.results))
       }
     }, [allResponses])
 
+    
 
+    // console.log(allResponses);
+    // let a = allResponses.flatMap((d) => {return d.results.length > 0 ? d.name : null}).filter(d=>d)
+    let a = allResponses.flatMap((d) => {return d.results.length > 0 ? d.name: null}).filter(d=>d) 
+    
 
     return (
-        <div id="QuestionsContainer" className="bg-[#F3F6FF] grow overflow-hidden rounded-xl">
-          {/* <h2 className="text-2xl px-8 pt-8 pb-4">Questions</h2> */}
+      <div className="flex flex-col gap-3 overflow-y-auto">
+        <SummaryDetailModeBar func={setMode} currentMode={mode} />
+        {
+          mode == "summary" && 
+          
+          <div id="QuestionsContainer" className="bg-[#F3F6FF] grow rounded-xl overflow-y-auto">
+            <div className="sections relative flex flex-col rounded-xl gap-4 grow p-6 ">
+              <div className="brief-statstics flex gap-4">
+                <ResponsesPieChart data={companies} />
+                <BriefSurveyStatstics number={companies?.length} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />  
+                <div className=" flex flex-col justify-between gap-4 ">
+                  <BriefSurveyStatstics number={allResponsesData?.length < 10 ? '0' + allResponsesData?.length : allResponsesData?.length} text={"Companies interacted & answered the published survey"} />
+                  <BriefSurveyStatstics number={companies?.length && allResponsesData?.length >= 0 ? companies?.length - allResponsesData?.length  : 'XX'} text={"Companies did not respond yet to the survey"} />
+                </div>
+                
 
-
-          <div className="sections relative flex flex-col rounded-xl gap-4 grow overflow-y-auto p-6 h-[95%]">
-
-            <div className="brief-statstics flex gap-4">
-              <ResponsesPieChart data={companies} />
-              <BriefSurveyStatstics number={companies?.length} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />  
-              <div className=" flex flex-col justify-between gap-4 ">
-                <BriefSurveyStatstics number={allResponses?.length < 10 ? '0' + allResponses?.length : allResponses?.length} text={"Companies interacted & answered the published survey"} />
-                <BriefSurveyStatstics number={companies?.length && allResponses?.length >= 0 ? companies?.length - allResponses?.length  : 'XX'} text={"Companies did not respond yet to the survey"} />
               </div>
-              
 
+              <div className="bg-white p-8 border rounded-xl">
+                {
+                  surveyData?.map((data, index) => 
+                    { 
+                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} page={'results'} surveyResponsesData={list} />
+                    }
+
+                  )
+                } 
+              </div>
             </div>
-
-            <div className="bg-white p-8 border rounded-xl">
-              {
-                surveyData?.map((data, index) => 
-                  { 
-                    return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} page={'results'} surveyResponsesData={list} />
-                  }
-
-                )
-              } 
-            </div>
-
               
           </div>
+        }
 
+        {
+          mode == "details" && 
+          <div className="bg-[#F3F6FF] grow rounded-xl overflow-auto">
+            <div className="sections relative flex flex-col rounded-xl gap-4 grow overflow-y-auto p-6 ">
+              <div className="bg-white p-8 border rounded-xl ">
+                <CurrentCompanyBar CompanyName={a[currentCompanyData]} length={a.length} func={setCurrentCompanyData}/>
+                {
+                  surveyData?.map((data, index) => 
+                    { 
+                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} surveyResponsesData={list} surveyResponsesDataForCompany={allResponses?.filter((data) => data.name == a[currentCompanyData])[0].results} page="surveyResults" />
+                    }
 
-            
-        </div>
+                  )
+                } 
+            </div>
+            </div>
+          </div>
+        }
+      </div>
     )
 }
 
