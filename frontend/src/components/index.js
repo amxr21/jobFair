@@ -53,3 +53,8 @@ export {default as OpenEndedResponse} from "./OpenEndedResponse";
 export {default as ResponsesPieChart} from "./ResponsesPieChart";
 export {default as LegendLabel} from "./LegendLabel";
 export {default as BriefSurveyStatstics} from "./BriefSurveyStatstics";
+export {default as SummaryDetailModeBar} from "./SummaryDetailModeBar";
+export {default as ModeButton} from "./ModeButton";
+export {default as NextPrevCompanyButton} from "./NextPrevCompanyButton";
+export {default as CurrentCompanyBar} from "./CurrentCompanyBar";
+export {default as NoAnswer} from "./NoAnswer";
