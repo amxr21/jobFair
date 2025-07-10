@@ -126,7 +126,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                     QuestionType={question.type}
                                                     QuestionOptions={question.options || ''}
                                                     pageType={page}
-                                                    QuestionResponse={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0].filter((q) => {return q.text.toLowerCase() == question.text.toLowerCase()}) : ''}
+                                                    QuestionResponse={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0]?.filter((q) => {return q.text.toLowerCase() == question.text.toLowerCase()}) : ''}
                                                 />
                                                 {
                                                     page == 'results' &&
@@ -183,12 +183,12 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                         )
                                                         :
                                                         surveyResponsesDataForCompany ? 
-                                                        surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)?.map((ans, i) => 
+                                                        surveyResponsesDataForCompany[0]?.filter((q) => q.text == question.text)?.map((ans, i) => 
                                                             (   
                                                                 ans.responses?.trim() != "" 
                                                                 ?
-                                                                <OpenEndedResponse key={i} response={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)[0].responses: null} />
-                                                                : <NoAnswer />
+                                                                <OpenEndedResponse key={i} response={surveyResponsesDataForCompany ? surveyResponsesDataForCompany[0]?.filter((q) => q.text == question.text)[0].responses: null} />
+                                                                : <NoAnswer key={i} />
                                                                 
                                                             )
                                                         ):""
