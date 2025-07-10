@@ -193,7 +193,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
                                         key={index}
                                         optionIndex = {index}
                                         label={option}
-                                        selected={option == QuestionResponse[0].responses} 
+                                        selected={option == QuestionResponse?.[0]?.responses} 
                                         handleClick={(e) => {handleClickFunc(e); setSelectedBtn(index) }}
                                         // selected={surveyAnswers.find(a => a.text == QuestionText)?.responses == option} 
                                         // handleClick={(e) => handleClickFunc(e) }

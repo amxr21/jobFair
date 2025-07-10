@@ -270,7 +270,7 @@ const QuestionsContainer = () => {
     useEffect(()=>{
       
       if(allResponses){
-        setAllResponsesData(allResponses.flatMap((a) => a.results))
+        setAllResponsesData(allResponses.flatMap((a) => a?.results))
       }
     }, [allResponses])
 
@@ -278,7 +278,7 @@ const QuestionsContainer = () => {
 
     // console.log(allResponses);
     // let a = allResponses.flatMap((d) => {return d.results.length > 0 ? d.name : null}).filter(d=>d)
-    let a = allResponses.flatMap((d) => {return d.results.length > 0 ? d.name: null}).filter(d=>d) 
+    let a = allResponses.flatMap((d) => {return d?.results?.length > 0 ? d.name: null}).filter(d=>d) 
     
 
     return (
@@ -324,7 +324,7 @@ const QuestionsContainer = () => {
                 {
                   surveyData?.map((data, index) => 
                     { 
-                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} surveyResponsesData={list} surveyResponsesDataForCompany={allResponses?.filter((data) => data.name == a[currentCompanyData])[0].results} page="surveyResults" />
+                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} surveyResponsesData={list} surveyResponsesDataForCompany={allResponses?.filter((data) => data.name == a[currentCompanyData])[0]?.results} page="surveyResults" />
                     }
 
                   )
