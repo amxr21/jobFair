@@ -270,6 +270,8 @@ const QuestionsContainer = () => {
     useEffect(()=>{
       
       if(allResponses){
+        console.log(allResponses.flatMap((a) => a?.results));
+        
         setAllResponsesData(allResponses.flatMap((a) => a?.results))
       }
     }, [allResponses])
@@ -281,6 +283,7 @@ const QuestionsContainer = () => {
     let a = allResponses.flatMap((d) => {return d?.results?.length > 0 ? d.name: null}).filter(d=>d) 
     
 
+
     return (
       <div className="flex flex-col gap-3 overflow-y-auto">
         <SummaryDetailModeBar func={setMode} currentMode={mode} />
@@ -290,11 +293,11 @@ const QuestionsContainer = () => {
           <div id="QuestionsContainer" className="bg-[#F3F6FF] grow rounded-xl overflow-y-auto">
             <div className="sections relative flex flex-col rounded-xl gap-4 grow p-6 ">
               <div className="brief-statstics flex gap-4">
-                <ResponsesPieChart data={companies} />
-                <BriefSurveyStatstics number={companies?.length} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />  
+                <ResponsesPieChart data={companies} res={allResponsesData?.length} unres={companies?.length - 1 - allResponsesData?.length} />
+                <BriefSurveyStatstics number={companies?.length-1} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />  
                 <div className=" flex flex-col justify-between gap-4 ">
                   <BriefSurveyStatstics number={allResponsesData?.length < 10 ? '0' + allResponsesData?.length : allResponsesData?.length} text={"Companies interacted & answered the published survey"} />
-                  <BriefSurveyStatstics number={companies?.length && allResponsesData?.length >= 0 ? companies?.length - allResponsesData?.length  : 'XX'} text={"Companies did not respond yet to the survey"} />
+                  <BriefSurveyStatstics number={companies?.length && allResponsesData?.length >= 0 ? companies?.length - 1 - allResponsesData?.length  : 'XX'} text={"Companies did not respond yet to the survey"} />
                 </div>
                 
 

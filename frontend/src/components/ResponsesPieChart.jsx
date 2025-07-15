@@ -3,14 +3,14 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { LegendLabel } from "./index"
 import { useRef } from 'react';
 
-const ResponsesPieChart = ({data}) => {
+const ResponsesPieChart = ({data, res, unres}) => {
     
     const companiesNumber = data ? useRef(data?.length)?.current : []
  
     const companiesResponded = data ? useRef(data?.filter((comp) => comp.surveyResult.length != 0))?.current.length : []
     
 
-    console.log(companiesNumber,companiesResponded);
+    // console.log(companiesNumber,companiesResponded);
     
 
     let colors = ["#0E7F41", "#E5FFE5"]
@@ -24,8 +24,8 @@ const ResponsesPieChart = ({data}) => {
                 series={[
                 {
                     data: [
-                        { id: 0, value: companiesResponded, label: 'Option 1' },
-                        { id: 1, value: companiesNumber - companiesResponded, label: 'Option 2' }, 
+                        { id: 0, value: res, label: 'Option 1' },
+                        { id: 1, value: unres, label: 'Option 2' }, 
                     ],
                     innerRadius: 40,
                     outerRadius: 100,
