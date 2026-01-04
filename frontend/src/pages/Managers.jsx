@@ -1,86 +1,69 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 
-import { AccessButtons, Row, TableHeader, TopBar, BarButtons } from "../components/index";
+import { Row, TableHeader, PageContainer } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
-
-import { CircularProgress } from "@mui/material"
+import { CircularProgress } from "@mui/material";
 
 
 const Managers = ({link}) => {
-
-    const path = useLocation()
 
     const [companies, setCompanies ] = useState([]); // State to store the list of companies
     const { user } = useAuthContext(); // Access the authenticated user context
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
+    const [isAscending, setIsAscending] = useState(true)
+    const [filterSelected, setFilterSelected] = useState('')
 
     const [ applicantsList, setApplicantsList ] = useState([])
     const [ numberOfApplicants, setNumberOfApplicants ] = useState()
 
 
-    const filter = (e) => {
-        if(['Company Name', 'Company Email', 'Representatives', 'Fields of interest', 'No of App', 'City', 'Sector', 'Status'].includes(e.target.parentElement.innerText)){
-            console.log('====================================');
-            console.log(e.target.parentElement.innerText);
-            console.log('====================================');
-            setFilterCriteria(e.target.parentElement.innerText);
-            // console.log(e.target.parentElement.innerText);
+    const handleSort = useCallback((columnName) => {
+        console.log('handleSort called:', columnName, 'current filterSelected:', filterSelected);
+        if(filterSelected === columnName) {
+            setIsAscending(prev => !prev);
+        } else {
+            setFilterCriteria(columnName);
+            setFilterSelected(columnName);
+            setIsAscending(true);
         }
-    } 
+    }, [filterSelected]) 
  
     
 
-    // Sorting function to arrange applicants by specified criteria
-    const sortedCompanies = (filterCriteria) => {
-
+    // Sorting function to arrange companies by specified criteria
+    const sortedCompanies = (filterCriteria, ascending) => {
         let sortedArray = [...companies]
-        
-            switch (filterCriteria) {
-                case "Company Name": 
-                    return sortedArray.sort((a, b) => a.companyName?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.companyName.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
-                case "Company Email":
-                        return sortedArray.sort((a, b) =>a.email.localeCompare(b.email)); 
-                case "Representatives":
-                        return sortedArray.sort((a, b) => a.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.representitives.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
-                case "Sector":
-                        return sortedArray.sort((a, b) => a.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.sector.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
-                case "City":
-                        return sortedArray.sort((a, b) => a.city?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.city.replace(/[^a-zA-Z]/g, '').toLowerCase())); 
-                case "Fields of interest":
-                    return sortedArray.sort((a, b) => a.fields.localeCompare(b.fields));
-                case "No of App":
-                    return sortedArray.sort((a, b) => b.numberOfApplicants - a.numberOfApplicants); 
-                // case "Status":
-                //     return sortedArray.sort((a, b) => {
-                //         console.log((2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0]));
-                //         return (2024 - a.applicantDetails.birthdate.split("-")[0]) - (2024 - b.applicantDetails.birthdate.split("-")[0])
-    
-                //     });
-    
-                default:
-                    return sortedArray.sort((a, b) => b.createdAt - a.createdAt);
-            }
+        const direction = ascending ? 1 : -1;
 
-
-
-        
-        
-
+        switch (filterCriteria) {
+            case "Company Name":
+                return sortedArray.sort((a, b) => direction * (a.companyName?.replace(/[^a-zA-Z]/g, '').toLowerCase().localeCompare(b.companyName?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '')));
+            case "Company Email":
+                return sortedArray.sort((a, b) => direction * (a.email || '').localeCompare(b.email || ''));
+            case "Representatives":
+                // Note: 'representitives' is the field name in the database (kept for backward compatibility)
+                return sortedArray.sort((a, b) => direction * (a.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
+            case "Sector":
+                return sortedArray.sort((a, b) => direction * (a.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
+            case "City":
+                return sortedArray.sort((a, b) => direction * (a.city?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.city?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
+            case "No of App":
+                return sortedArray.sort((a, b) => direction * ((b.numberOfApplicants || 0) - (a.numberOfApplicants || 0)));
+            case "Status":
+                return sortedArray.sort((a, b) => direction * (a.status || '').localeCompare(b.status || ''));
+            default:
+                return sortedArray.sort((a, b) => b.createdAt - a.createdAt);
+        }
     };
 
 
     useEffect(() => {
-        if(companies.length != 0) setFinalList(sortedCompanies(filterCriteriaa));
-
-        console.log(finalList);
-        
-
-    }, [filterCriteriaa, companies, path.pathname]);
+        if(companies.length != 0) setFinalList(sortedCompanies(filterCriteriaa, isAscending));
+    }, [filterCriteriaa, companies, isAscending]);
 
     let counter = 0;
 
@@ -182,20 +165,23 @@ const Managers = ({link}) => {
         const fetchData = async () => {
             try {
                 setIsLoading(true);
-    
-                // 1. Fetch applicants (if casto)
+
+                // 1. Fetch applicants (if casto) - use high limit to get all for counting
                 let applicants = [];
                 if (user?.email === "casto@sharjah.ac.ae") {
-                    const applicantsResponse = await axios.get(`${link}/applicants`);
-                    applicants = applicantsResponse.data;
+                    const applicantsResponse = await axios.get(`${link}/applicants?limit=10000`, {
+                        headers: user ? { Authorization: `Bearer ${user.token}` } : {},
+                    });
+                    // Handle new paginated response format
+                    applicants = applicantsResponse.data.applicants || applicantsResponse.data;
                     setApplicantsList(applicants);
                 }
-    
+
                 // 2. Fetch companies
                 const companiesResponse = await axios.get(`${link}/companies`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
                 });
-    
+
                 const companiesData = companiesResponse.data;
     
                 if (user) {
@@ -229,8 +215,8 @@ const Managers = ({link}) => {
         };
     
         if (user) fetchData();
-    
-    }, [user, path.pathname]);
+
+    }, [user, link]);
     
 
 
@@ -246,109 +232,53 @@ const Managers = ({link}) => {
 
 
     return (
-        <div className="flex flex-col gap-y-8 col-span-10 w-full mx-auto max-h-[92vh]">
-            <TopBar user={user} />
-            <div id="Hero" className="bg-[#F3F6FF] flex flex-col grow overflow-y-hidden rounded-xl p-8 col-span-10 w-full mx-auto">
-                
-                <div className="flex md:flex-row flex-col justify-between items-center px-2 border-b border-b-gray-400 pb-5">
-                    <h2 className="text-center text-3xl font-bold md:my-0 mb-7">Companies & Cooperations</h2>
-                </div>
+        <PageContainer
+            user={user}
+            title="Companies & Cooperations"
+        >
+            <div className="grow h-40 overflow-hidden text-xs md:text-base">
+                <TableHeader userType={'manager'} sortColumn={filterSelected} isAscending={isAscending} onSort={handleSort} />
+                <div className="list h-[40rem] overflow-y-auto w-full pt-2 pb-6">
+                    {finalList.length != 0 ?  finalList.map((company) => {
+                        counter += 1;
 
-
-
-                {/* <ControlBar
-                    numberOfApplicants={sortedCompanies(filterCriteriaa).length}
-                    attendancePercentageNum={
-                    applicants.length != 0
-                    ?
-                    Math.floor((applicants.filter((applicant) => {return applicant.attended == true}).length / applicants.length) *100) + ("%")
+                        return (
+                            <Row
+                                key={company._id}
+                                number={counter}
+                                userType={'manager'}
+                                companyName={company.companyName}
+                                companyEmail={company.email}
+                                companyRepresentatives={company.representitives}
+                                companyFields={company.fields}
+                                companyStatus={company?.status}
+                                companySector={company.sector}
+                                companyCity={company.city}
+                                numberOfPositions={company.noOfPositions}
+                                numebrOfApplicants={company.numberOfApplicants}
+                                preferredMajors={company.preferredMajors}
+                                opportunityTypes={company.opportunityTypes}
+                                preferredQualities={company.preferredQualities}
+                            />
+                        );
+                    })
                     :
-                    <CircularProgress size={20}/>
-                }
-                /> */}
-
-
-
-
-                <div className="grow h-40 overflow-hidden text-xs md:text-lg" onClick={filter}>
-                    <TableHeader userType={'manager'}/>
-                    <div className="list h-96 pr-3 overflow-y-auto w-full pt-2 pb-8">
-                        {finalList.length != 0 ?  finalList.map((company) => {
-                            counter += 1;   console.log();
-                            
-
-                            return (
-                                <Row
-                                    key={company._id}
-                                    number={counter}
-                                    userType={'manager'}
-                                    // ticketId={applicant._id}
-                                    // name={applicant.applicantDetails.fullName}
-                                    // uniId={applicant.applicantDetails.uniId}
-                                    // email={applicant.applicantDetails.email}
-                                    // phoneNumber={applicant.applicantDetails.phoneNumber}
-                                    // studyLevel={applicant.applicantDetails.studyLevel}
-                                    // major={applicant.applicantDetails.major}
-                                    // gpa={applicant.applicantDetails.cgpa}
-                                    // nationality={applicant.applicantDetails.nationality}
-                                    // experience={applicant.applicantDetails.experience}
-                                    // attended={applicant.attended ? "Confirmed" : "No"}
-                                    // age={2024 - parseInt(String(applicant.applicantDetails.birthdate).slice(0, 4))}
-                                    // languages={String(applicant.applicantDetails.languages)}
-                                    // portfolio={applicant.applicantDetails.portfolio}
-                                    // file={applicant.cv}
-                                    // qrCode={applicant._id}
-                                    // status={applicant?.attended}
-
-                                    companyName={company.companyName}
-                                    companyEmail={company.email}
-                                    companyRepresentitives={company.representitives}
-                                    companyFields={company.fields}
-                                    companyStatus={company?.status}
-                                    companySector={company.sector}
-                                    companyCity={company.city}
-                                    numberOfPositions={company.noOfPositions}
-
-                                    numebrOfApplicants={company.numberOfApplicants}
-
-
-                                />
-                            );
-                        }) 
-                        :
-                        isLoading
-                        ?
-                        <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <CircularProgress size={20}/>
-                            <p className="text-sm">Loading applicants...</p>
-                        </div>
-                        :
-                        <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                            <p className="text-sm">No listed Companies</p>
-                        </div>
-
-                            }
+                    isLoading
+                    ?
+                    <div className="flex items-center w-48 justify-between mx-auto mt-4">
+                        <CircularProgress size={18}/>
+                        <p className="text-sm">Loading companies...</p>
                     </div>
+                    :
+                    <div className="flex items-center w-48 justify-between mx-auto mt-4">
+                        <p className="text-sm">No listed Companies</p>
+                    </div>
+
+                        }
                 </div>
             </div>
-        </div>
+        </PageContainer>
     );
 };
 
 export default Managers;
-
-
-
-
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
-//REVIEW THE WHOLE CODE LINE BY LINE TO UNDERSTAND WHAT WAS WRONG
