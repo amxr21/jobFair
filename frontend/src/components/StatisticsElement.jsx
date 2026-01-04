@@ -30,9 +30,31 @@ const StatisticsElement = ({ data = {}, type }) => {
   const [subheader, setSubheader] = useState(sample[0].subheader);
 
   const managers = Array.isArray(data.managers) ? data.managers : [];
-  const applicants = Array.isArray(data.applicants) ? data.applicants : [];
+  const applicantsRaw = Array.isArray(data.applicants) ? data.applicants : [];
 
-  const managersNumber = managers.reduce((acc, manager) => {
+  // Get unique applicants by uniId, keeping only the latest submission
+  const getUniqueLatestApplicants = (applicantsList) => {
+    if (applicantsList.length === 0) return [];
+    // Sort by createdAt descending (newest first)
+    const sorted = [...applicantsList].sort((a, b) =>
+      new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    // Keep only the first occurrence of each uniId
+    const seenIds = new Set();
+    return sorted.filter((applicant) => {
+      const uniId = applicant.applicantDetails?.uniId;
+      if (uniId && !seenIds.has(uniId)) {
+        seenIds.add(uniId);
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const applicants = getUniqueLatestApplicants(applicantsRaw);
+
+  // Note: 'representitives' is the field name in the database (kept for backward compatibility)
+  const representativesCount = managers.reduce((acc, manager) => {
     if (typeof manager.representitives === "string") {
       return acc + manager.representitives.split(",").length;
     }
@@ -63,9 +85,9 @@ const StatisticsElement = ({ data = {}, type }) => {
   useEffect(() => {
     switch (type) {
       case "students":
-        let students = new Set(applicants.map(a => a.applicantDetails.uniId))
+        // applicants is already filtered to unique latest entries
         setIcon(StudentIcon);
-        setHeader(students.size);
+        setHeader(applicants.length);
         setSubheader("Registered Students");
         break;
 
@@ -77,8 +99,8 @@ const StatisticsElement = ({ data = {}, type }) => {
 
       case "seekers":
         setIcon(SeekerIcon);
-        setHeader(managersNumber);
-        setSubheader("CEO’s & Talent seekers");
+        setHeader(representativesCount);
+        setSubheader("CEO's & Talent seekers");
         break;
 
       case "fields":
@@ -93,7 +115,7 @@ const StatisticsElement = ({ data = {}, type }) => {
         setHeader(sample[0].header);
         setSubheader(sample[0].subheader);
     }
-  }, [type, managers, applicants, managersNumber, fieldsNumber]);
+  }, [type, managers, applicants, representativesCount, fieldsNumber]);
 
   return (
     <div className="statistics-element col-span-3 flex gap-3 bg-white p-3 h-fit rounded-xl">
