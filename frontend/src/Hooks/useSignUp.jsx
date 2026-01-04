@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
-import QRCode from "qrcode.react";
 
-
-// const link = "https://jobfair-7zaa.onrender.com"
-// const link = "http://localhost:2000"
-const link = "https://jobfair-production.up.railway.app"
+const link = import.meta.env.VITE_API_URL || "http://localhost:2000";
 
 const capitalize = (str) => {
     if(!str) return ""
@@ -18,18 +14,34 @@ export const useSignUp = () => {
     const [ error, setError ] = useState(null);
     const [ isLoading, setIsLoading ] = useState(null)
     const { dispatch } = useAuthContext();
-    const [ QRCodeSrc, setQRCodeSrc ] = useState("");
 
-    const signup = async (email, password, fields, representitives, companyName, sector, city, noOfPositions) => {
+    const signup = async (email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors = [], opportunityTypes = [], preferredQualities = '') => {
         setIsLoading(true)
         setError(null);
+
+        // Validate student preferences (required for companies)
+        if (!preferredMajors || preferredMajors.length === 0) {
+            setError("Please select at least one preferred major");
+            setIsLoading(false);
+            return false;
+        }
+        if (!opportunityTypes || opportunityTypes.length === 0) {
+            setError("Please select at least one opportunity type");
+            setIsLoading(false);
+            return false;
+        }
+        if (!preferredQualities || preferredQualities.trim() === '') {
+            setError("Please describe your ideal candidate qualities");
+            setIsLoading(false);
+            return false;
+        }
 
         let capitalizedName = representitives.split(' ').map((word) => capitalize(word)).join(' ')
 
         const response = await fetch(`${link}/user/signup`, {
             method: "POST",
             headers: { "Content-Type" : "application/json" },
-            body: JSON.stringify({email, password, fields, representitives: capitalizedName, companyName, sector, city, noOfPositions})
+            body: JSON.stringify({email, password, fields, representitives: capitalizedName, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities})
         })
 
         const json = await response.json();
@@ -41,13 +53,11 @@ export const useSignUp = () => {
         if(response.ok){
             localStorage.setItem("user", JSON.stringify(json));
             dispatch({type: "LOGIN", payload: json})
-            
-            //generate a QR code for each company once it signs up and account is create
-            setQRCodeSrc(json.user_id);
-            
 
             setIsLoading(false)
+            return true;
         }
+        return false;
     }
 
 
