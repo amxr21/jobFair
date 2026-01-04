@@ -2,76 +2,56 @@ import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
 import axios from "axios";
 
-
-// const link = "https://jobfair-7zaa.onrender.com"
-// const link = "http://localhost:2000"
-const link = "https://jobfair-production.up.railway.app"
+const link = import.meta.env.VITE_API_URL || "http://localhost:2000";
 
 export const useLogin = () => {
-    const [ error, setError ] = useState(null);
-    const [ isLoading, setIsLoading ] = useState(null)
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(null)
     const { dispatch } = useAuthContext();
-
-    const [selected, setSelected] = useState(null)
-
-    const [fields, setFields] = useState('')
-    const [representitives, setRepresentitives] = useState('')
-    const [companyName, setCompanyName] = useState('')
 
     const login = async (email, password) => {
         setIsLoading(true);
         setError(null);
-        
-        let selected = null;
+
         let fields = "";
-        let representitives = "";
+        let representatives = "";
         let companyName = "";
 
-
-        
-        
         try {
             const response = await axios.get(`${link}/companies`);
             const companies = response.data;
-            
             const selected = companies.find(company => company.email?.trim() === email?.trim());
-          
+
             if (selected) {
-              fields = selected.fields;
-              representitives = selected.representitives;
-              companyName = selected.companyName;
+                fields = selected.fields;
+                representatives = selected.representitives;
+                companyName = selected.companyName;
             }
-          } catch (err) {
-            console.error("Error fetching companies:", err);
-          }
+        } catch (err) {
+            // Continue with login even if company fetch fails
+        }
 
-
-
-
-        setIsLoading(true);
-        setError(null);
-
-
-        
         const response = await fetch(`${link}/user/login`, {
             method: "POST",
-            headers: { "Content-Type" : "application/json" },
-            body: JSON.stringify({email, password, fields, representitives, companyName})
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password, fields, representitives: representatives, companyName })
         })
 
         const json = await response.json();
 
-        if(!response.ok){
+        if (!response.ok) {
             setError(json.error);
             setIsLoading(false)
+            return false;
         }
-        if(response.ok){
+        if (response.ok) {
             localStorage.setItem("user", JSON.stringify(json));
-            dispatch({type: "LOGIN", payload: json})
+            dispatch({ type: "LOGIN", payload: json })
             setIsLoading(false)
+            return true;
         }
+        return false;
     }
-
 
     return { login, isLoading, error };
 }
