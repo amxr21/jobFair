@@ -1,51 +1,49 @@
 import { PieChart } from '@mui/x-charts/PieChart';
 
-import { LegendLabel } from "./index"
 import { useRef } from 'react';
 
 const ResponsesPieChart = ({data, res, unres}) => {
-    
-    const companiesNumber = data ? useRef(data?.length)?.current : []
- 
-    const companiesResponded = data ? useRef(data?.filter((comp) => comp.surveyResult.length != 0))?.current.length : []
-    
 
-    // console.log(companiesNumber,companiesResponded);
-    
+    const companiesNumber = data ? useRef(data?.length)?.current : []
+
+    const companiesResponded = data ? useRef(data?.filter((comp) => comp.surveyResult.length != 0))?.current.length : []
+
 
     let colors = ["#0E7F41", "#E5FFE5"]
     return (
-        <div className="bg-white rounded-xl py-0 flex items-center border min-w-[30rem]">
+        <div className="bg-white rounded-xl px-4 py-4 flex flex-row items-center gap-4 border h-full">
             <PieChart
-                height={240}
-                width={240}
+                height={180}
+                width={180}
                 colors={colors}
-                className="min-w-64 flex items-start"
                 series={[
                 {
                     data: [
-                        { id: 0, value: res, label: 'Option 1' },
-                        { id: 1, value: unres, label: 'Option 2' }, 
+                        { id: 0, value: res, label: 'Responded' },
+                        { id: 1, value: unres, label: "Didn't respond" },
                     ],
-                    innerRadius: 40,
-                    outerRadius: 100,
+                    innerRadius: 35,
+                    outerRadius: 75,
                     paddingAngle: 4,
                     cornerRadius: 4,
                     startAngle: 0,
                     endAngle: 360,
-                    color: 'red',
-                    cx: 120, cy : 110,
-                    
+                    cx: 90, cy: 90,
+
                 }
             ]}
             legend={{ hidden: true }}
             />
-            <div className='flex flex-col gap-2 w-full pr-6'>
-                <LegendLabel legendText={"Responded"} colors={colors[0]} />
-                <LegendLabel legendText={"Didn't respond"} colors={colors[1]} />
-
+            <div className='flex flex-col gap-3'>
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: colors[0] }}></div>
+                    <span className="text-sm font-medium">Responded</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: colors[1] }}></div>
+                    <span className="text-sm font-medium">Didn't respond</span>
+                </div>
             </div>
-
         </div>
     )
 }

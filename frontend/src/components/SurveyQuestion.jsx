@@ -66,7 +66,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
         if((Id == 8 || Id == 9) && section == 0){
             return (
                 yesAnswer && <div key={Id} className="survey-question flex flex-col gap-y-3  ">
-                    <h2 className={`text-lg ${QuestionType}`} >{`${Id}. ${QuestionText}`}</h2>
+                    <h2 className={`text-base ${QuestionType}`} >{`${Id}. ${QuestionText}`}</h2>
         
                     <div className="options flex w-full gap-x-3">
         
@@ -79,8 +79,9 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
                                 return (
                                     <SurveyOption
                                         key={index}
+                                        optionIndex={index}
                                         label={option}
-                                        selected={selectedBtn == index} 
+                                        selected={selectedBtn == index}
                                         handleClick={(e) => {handleClickFunc(e); setSelectedBtn(index) }}
                                         type={'multiple_choice'}
                                         page={pageType}
@@ -101,7 +102,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
         else{
             return (
                 <div key={Id} className="survey-question flex flex-col gap-y-3 col-span-2">
-                    <h2 className={`text-lg ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
+                    <h2 className={`text-base ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
         
                     <div className="options flex w-full gap-x-3">
         
@@ -141,7 +142,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
         if((Id == 8 || Id == 9) && section == 0){
             return (
                 <div key={Id} className="survey-question flex flex-col gap-y-3">
-                    <h2 className={`text-lg ${QuestionType}`} >{`${Id}. ${QuestionText}`}</h2>
+                    <h2 className={`text-base ${QuestionType}`} >{`${Id}. ${QuestionText}`}</h2>
         
                     <div className="options flex w-full gap-x-3">
         
@@ -150,12 +151,13 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
                             // QuestionOptions? 
                             QuestionType == "multiple_choice"
                             ?
-                            QuestionOptions.map((option, index) => {                                
+                            QuestionOptions.map((option, index) => {
                                 return (
                                     <SurveyOption
                                         key={index}
+                                        optionIndex={index}
                                         label={option}
-                                        selected={selectedBtn == index} 
+                                        selected={selectedBtn == index}
                                         handleClick={(e) => {handleClickFunc(e); setSelectedBtn(index) }}
                                         type={'multiple_choice'}
                                         page={pageType}
@@ -176,7 +178,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
         else{
             return (
                 <div key={Id} className="survey-question flex flex-col gap-y-3 col-span-2">
-                    <h2 className={`text-lg ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
+                    <h2 className={`text-base ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
         
                     <div className="options flex w-full gap-x-3">
         
@@ -218,7 +220,7 @@ const SurveyQuestion = ({Id, QuestionText, QuestionType, QuestionOptions, sectio
     else{
         return (
             <div key={Id} className="survey-question flex flex-col gap-y-3  ">
-                <h2 className={`text-lg ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
+                <h2 className={`text-base ${QuestionType}`} >{`${!yesAnswer && Id > 7 ? Id-2 : Id}. ${QuestionText}`}</h2>
     
                 <div className="options flex w-full gap-x-3">
     

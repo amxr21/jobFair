@@ -38,11 +38,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     const applicant_id = tickedIdRef.current?.textContent.trim()
     
     const flagApplicant = async (e) => {
-        
-        console.log('====================================');
-        console.log(e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent);
         const ticketId = e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
-        console.log('====================================');
         document.getElementById(ticketId).classList.add('border')
         document.getElementById(ticketId).classList.add('border-2')
         document.getElementById(ticketId).classList.add('border-green-500')
@@ -65,8 +61,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
             
 
         } catch (error) {
-            console.log('Failed to flag the applicant', error);
-            
+            // Error flagging applicant
         }
         finally{
             setIsFlagged(true)
@@ -201,8 +196,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
     const shortListApplicant = async (e) => {
         const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent;
-        console.log(ticketId);
-    
+
         try {
             setIsProcessing(true);
             const shortlistResponse = await axios.patch(link + '/applicants/shortlist/' + ticketId?.replace(/[^a-zA-Z0-9]/g, ''), {
@@ -210,21 +204,15 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
             });
     
         } catch (error) {
-            console.log('Failed to shortlist the applicant', error);
+            // Error shortlisting applicant
         } finally {
             setIsProcessing(false);
-    
-            console.log(e.target.parentElement.parentElement);
-    
+
             nextAction.current.firstElementChild.lastElementChild.classList.replace('flex', 'hidden');
-            // nextAction.current.firstElementChild.lastElementChild.firstElementChild.classList.add('hidden')
             nextAction.current.firstElementChild.firstElementChild.lastElementChild.textContent = 'Shortlisted';
-    
+
             document.getElementById(ticketId).classList.add('border-2')
             document.getElementById(ticketId).classList.add('border-blue-400')
-
-
-            console.log(ticketId, 'is Shortlisted');
         }
     };
     
@@ -235,8 +223,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
     const rejectApplicant = async (e) => {
         const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent
-        console.log(ticketId);
-        
+
         try {
             setIsProcessing(true)
             const rejectResponse = await axios.patch(link+'/applicants/reject/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
@@ -246,19 +233,14 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
 
         } catch (error) {
-            console.log('Failed to shortlist the applicant', error);
+            // Error rejecting applicant
         }
 
         finally{
             setIsProcessing(false)
-            console.log(e.target.parentElement.parentElement)
-            
-            nextAction.current.firstElementChild.firstElementChild.classList.replace('flex', 'hidden')
-            // nextAction.current.firstElementChild.lastElementChild.firstElementChild.classList.add('hidden')
-            nextAction.current.firstElementChild.lastElementChild.lastElementChild.textContent = 'Rejected'
 
-            console.log(ticketId, 'is rejected');
-            
+            nextAction.current.firstElementChild.firstElementChild.classList.replace('flex', 'hidden')
+            nextAction.current.firstElementChild.lastElementChild.lastElementChild.textContent = 'Rejected'
         }
 
 
@@ -271,109 +253,74 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
 
     return (
-        <div className="brief-info flex flex-col gap-y-5 text-left w-full md:px-8">
+        <div className="brief-info flex flex-col gap-y-4 text-left w-full md:px-4 sticky top-0 self-start">
 
-            <div className='relative flex flex-col items-center gap-4 px-5 pt-14 pb-10 text-center border bg-white shadow-md shadow-gray-200 hover:shadow-xl rounded-xl overflow-hidden'>
-                <div className="qr-code w-full  flex flex-col items-center">
-                    {/* <img src={qrCodeSrc} className="w-full" alt="" /> */}
-                    {ticketQrCodeSrc && <QRCode value={ticketQrCodeSrc} />}
+            <div className='relative flex flex-col items-center gap-4 px-5 py-6 text-center border bg-white shadow-md shadow-gray-200 rounded-xl overflow-hidden'>
+                <div className="qr-code w-full flex flex-col items-center">
+                    {ticketQrCodeSrc && <QRCode value={ticketQrCodeSrc} size={140} />}
                     {!ticketQrCodeSrc && <h2>Loading the QR code...</h2>}
                 </div>
 
-
                 <div className="applicant-id max-w-full">
-                    <h6 className="text-lg font-bold  underline">Ticket no:</h6>
-                    <h6 ref={tickedIdRef} className='break-words whitespace-normal overflow-hidden text-ellipsis w-full max-w-full'>{ticketId}</h6>
+                    <h6 className="text-xs font-semibold text-gray-500 uppercase">Ticket ID</h6>
+                    <h6 ref={tickedIdRef} className='text-xs break-words whitespace-normal overflow-hidden text-ellipsis w-full max-w-full'>{ticketId}</h6>
                 </div>
 
                 <div className="flag flex items-center justify-center gap-2">
                     {
                         flag.includes(user?.companyName)
                         ?
-                        <>
-                            {/* <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4' type="checkbox" name="" id="" /> */}
-                            <Flagged />
-                        </>
-                        
+                        <Flagged />
                         :
                         isFlagging
                             ?
-                            <>
-                                <p>Flagging...</p>
-                            </>
+                            <p className="text-sm">Flagging...</p>
                             :
-                                isFlagged 
+                                isFlagged
                                 ?
-                                <>
-                                    <Flagged />
-                                </>
+                                <Flagged />
                                 :
                                 <div id='FlagCheckboxContainer' className='flex gap-2 items-center z-[9999]'>
                                     <input checked={isFlagged} onChange={flagApplicant} className='w-4 h-4 flag-checkbox' type="checkbox" name="flag-checkbox" id="FlagCheckbox" />
-                                    <label className='' htmlFor="FlagCheckbox">Flag Applicant</label>
+                                    <label className='text-sm' htmlFor="FlagCheckbox">Flag Applicant</label>
                                 </div>
                     }
                 </div>
+
                 <CardInfo infoHeader={''} infoText={status ? `Confirmed` : `Registered`} />
 
                 <div ref={nextAction} className="next-action flex w-full">
-                    {/* rejectedByStatus */}
                     {
                         isProcessing
                         ?
-                        <h2>Processing</h2>
+                        <h2 className="text-sm">Processing</h2>
                         :
                             shortlistedByStatus?.includes(user?.companyName)
                             ?
                             <ApplicantStatus
                                 type="shortlisted"
-                                status={shortlistedByStatus.length} 
+                                status={shortlistedByStatus.length}
                             />
                             :
                             rejectedByStatus?.includes(user?.companyName)
                             ?
                             <ApplicantStatus
                                 type="rejected"
-                                status={rejectedByStatus.length} 
+                                status={rejectedByStatus.length}
                             />
                             :
                             <div className='w-full flex justify-between items-center gap-2'>
                                 <Action type='shortlist' handleClick={shortListApplicant} />
                                 <Action type='reject' handleClick={rejectApplicant} />
                             </div>
-                            
-                            
-                            
-                            
-                            // (shortlistedByStatus?.includes(user?.companyName) || rejectedByStatus?.includes(user?.companyName)) && !isProcessing
-                            // ?
-                            // <ApplicantStatus
-                            //     status={[shortlistedByStatus, rejectedByStatus]} 
-                            // />
-                            // :
-                            // <div className='flex justify-between items-center gap-2'>
-                            //     <Action type='shortlist' handleClick={shortListApplicant} />
-                            //     <Action type='reject' handleClick={rejectApplicant} />
-                            // </div>
-                        
                     }
                 </div>
-
-
             </div>
 
-
-            <div className='flex flex-col gap-y-4'>
-                <div>
-                    {/* <h2 className="text-2xl font-bold font-uppercase">
-                        {shortName}
-                    </h2> */}
-                    <h6 className="text-base font-regular font-uppercase mb-2">Educational Status: <span className='font-bold'>{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</span></h6>
-                </div>
-                
+            <div className='bg-gray-50 rounded-lg p-3'>
+                <h6 className="text-xs font-semibold text-gray-500 uppercase mb-1">Educational Status</h6>
+                <p className='text-sm font-medium'>{graduationYear && graduationYear != '' && parseInt(graduationYear?.split('-')[0]) >= 2025 ? `Expected to graduate by ${graduationYear}` : "Graduated"}</p>
             </div>
-            
-           
         </div>
     )
 }

@@ -1,3 +1,41 @@
+@import "tailwindcss";
+
+/* Custom Theme Colors */
+@theme {
+  /* Primary - Green */
+  --color-primary: #0E7F41;
+  --color-primary-light: #E5FFE5;
+  --color-primary-dark: #0a5f31;
+
+  /* Secondary - Blue */
+  --color-secondary: #2959A6;
+  --color-secondary-light: #E5F0FF;
+  --color-secondary-dark: #0066CC;
+
+  /* Background */
+  --color-surface: #F3F6FF;
+
+  /* Status Colors */
+  --color-success: #0E7F41;
+  --color-success-light: #E5FFE5;
+  --color-warning: #EBC600;
+  --color-warning-light: #FFFACD;
+  --color-error: #CC0000;
+  --color-error-light: #FFE5E5;
+  --color-info: #0066CC;
+  --color-info-light: #E5F0FF;
+
+  /* Chart Colors */
+  --color-chart-green-1: #0E7F41;
+  --color-chart-green-2: #22A05B;
+  --color-chart-green-3: #34C775;
+  --color-chart-green-4: #5DD993;
+  --color-chart-green-5: #8FE7B5;
+  --color-chart-blue-1: #0066CC;
+  --color-chart-blue-2: #3388DD;
+  --color-chart-blue-3: #66AAEE;
+  --color-chart-blue-4: #99CCFF;
+}
 
 @font-face {
     font-family: '29LTBukra';
@@ -62,14 +100,67 @@
   
 
 *{
-    font-family: 'Inter';
-    /* font-family: "29LT bukra"; */
+    font-family: '29LTBukra', 'Inter', sans-serif !important;
     scroll-behavior: smooth !important;
 }
 
 
-.expandDetails{
-    transition: all ease-in-out 0.3s !important;
+/* Modal slide-up animation */
+@keyframes modalSlideUp {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -30%);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes modalSlideDown {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -40%) scale(0.95);
+    }
+}
+
+@keyframes backdropFadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@keyframes backdropFadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.expandDetails {
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
+
+.expandDetails.modal-open {
+    animation: modalSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.expandDetails.modal-close {
+    animation: modalSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.expandDetails-backdrop {
+    opacity: 0;
+}
+
+.expandDetails-backdrop.backdrop-open {
+    animation: backdropFadeIn 0.5s ease-out forwards;
+}
+
+.expandDetails-backdrop.backdrop-close {
+    animation: backdropFadeOut 0.4s ease-out forwards;
 }
 
 
@@ -92,15 +183,19 @@
     background-color: rgba(255, 255, 255, 0.435);
 }
 
-.row{
-    column-gap: 1rem;
-    /* grid-template-columns: 0.25fr 1fr .75fr .75fr .5fr .5fr 1fr 0.5fr 0.15fr ; */
-    grid-template-columns: 0.25fr 0.6fr .6fr .75fr .3fr 1fr 0.5fr 0.5fr 0.15fr !important;
+/* Unified grid columns for applicant rows - synced with TableHeader */
+/* Columns: # | Name | UniID | Nationality | CGPA | Major | CV | Status | Expand */
+.row {
+    column-gap: 0.75rem;
+    grid-template-columns: 0.1fr 0.7fr 0.5fr 0.7fr 0.3fr 1fr 0.35fr 0.35fr 0.12fr !important;
     overflow-x: hidden !important;
 }
-.row-manager{
-    column-gap: 1rem;
-    grid-template-columns: .15fr 0.95fr 1.1fr 1.2fr 0.6fr 0.5fr .5fr .5fr  !important;
+
+/* Unified grid columns for manager rows - synced with TableHeader */
+/* Columns: # | Company Name | Email | Representatives | City | Sector | No of App | Status | Expand */
+.row-manager {
+    column-gap: 0.75rem;
+    grid-template-columns: 0.1fr 0.8fr 1fr 1fr 0.5fr 0.5fr 0.35fr 0.35fr 0.12fr !important;
 }
 
 .qrcode::before {
@@ -114,12 +209,12 @@
     top: 38%; right: -10%; 
 }
 .list {
-    overflow-y: auto; /* Show scrollbar only when necessary */ 
+    overflow-y: auto; /* Show scrollbar only when necessary */
 }
 
 /* Hide scrollbar when not needed */
 .list::-webkit-scrollbar {
-    width: 10px; /* Adjust width */
+    width: 8px; /* Unified scrollbar width */
 }
 
 .list::-webkit-scrollbar-thumb {
@@ -144,4 +239,134 @@
 
 .sections::-webkit-scrollbar{
   height: 0;
+}
+
+/* ========== SMOOTH ANIMATIONS ========== */
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Animation classes */
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s ease-out forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Progress bar animation for redirect overlay */
+@keyframes progressBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progressBar {
+  animation: progressBar 1.5s ease-in-out forwards;
+}
+
+/* Staggered animation delays for list items */
+.animate-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.animate-stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.animate-stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.animate-stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.animate-stagger > *:nth-child(5) { animation-delay: 0.25s; }
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Page container animation */
+.page-container {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+
+/* Button and interactive element transitions */
+button, a, .clickable {
+  transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, border-color 0.15s ease-in-out, opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+/* Modal backdrop animation */
+.modal-backdrop {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Smooth scrollbar appearance */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
 }

@@ -15,7 +15,7 @@ const SurveyResults = () => {
     return (
         <AnswersContextProvider>
             <SurveyContextProvider>
-                <div id="SurveyResults" className="col-span-10 flex flex-col gap-8 overflow-hidden">
+                <div id="SurveyResults" className="flex-1 flex flex-col gap-4 overflow-hidden min-w-0 h-full">
                     {/* <TopBar user={user}/> */}
                     <QuestionsContainer />
                 </div>
