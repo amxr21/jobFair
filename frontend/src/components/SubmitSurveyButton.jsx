@@ -25,40 +25,27 @@ const SubmitSurveyButton = () => {
         const successCover = document.getElementById('Success')
 
         try {
-
-            console.log(surveyButtonRef.current.parentElement.parentElement.parentElement.lastElementChild);
-            
-            
-
             if(userId){
-
                 submittingCover.classList.replace('opacity-0', 'opacity-100')
                 submittingCover.classList.replace('h-0', 'h-full')
-                
-                console.log(userId.replace(/[^A-Za-z0-9]/g,''),);
-                
+
                 const patchResponse = await axios.patch(link + '/applicants/survey/' + userId.replace(/[^A-Za-z0-9]/g,''), {
                     surveyResult: surveyAnswers
                 })
-
-                console.log(patchResponse.data);
             }
             
         
             
         } catch (error) {
-            console.log(error, 'Failed to update user survey results');
-            
+            // Error submitting survey
         }
         finally{
             setTimeout(() => {
                 submittingCover.classList.replace('opacity-100', 'opacity-0')
                 submittingCover.classList.replace('h-full', 'h-0')
-                console.log('It is DONE mf');
 
                 successCover.classList.replace('opacity-0', 'opacity-100')
                 successCover.classList.replace('h-0', 'h-full')
-
             }, 2000)
 
 

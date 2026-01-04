@@ -17,11 +17,6 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
 
     const { allResponses } = useContext(SurveyContext)
 
-    // console.log(surveyResponsesData);
-    if(surveyResponsesDataForCompany){
-        console.log(surveyResponsesDataForCompany[0]);
-
-    }
     
 
 
@@ -55,43 +50,43 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
     'q22': [],
     }
     if(allResponses && allResponses.length > 0){
-        allResponses?.flatMap(d => d.results).forEach((response) => {
-            return response.forEach((question) => {
-                // console.log(openEndedQuestions);
-                
-                switch (question.id) {
-                    case "q12":
-                        openEndedQuestions["q12"].push(question);
-                        
-                        currentQuestionResponses = Object.entries(openEndedQuestions)[0][1]
-                        // console.log(currentQuestionResponses);
-                        break;
-                    case "q19":
-                        openEndedQuestions["q19"].push(question);
-                        currentQuestionResponses = Object.entries(openEndedQuestions)[1][1]
-                        break;
-                    case "q20":
-                        openEndedQuestions["q20"].push(question);
-                        currentQuestionResponses = Object.entries(openEndedQuestions)[2][1]
-                        break;
-                    case "q21":
-                        openEndedQuestions["q21"].push(question);
-                        currentQuestionResponses = Object.entries(openEndedQuestions)[3][1]
-                        break;
-                    case "q22":
-                        openEndedQuestions["q22"].push(question);
-                        currentQuestionResponses = Object.entries(openEndedQuestions)[4][1]
-                        break;
-                    default:
-                        break
-                        // Optionally handle unknown question IDs
-                        console.warn(`Unhandled question ID: ${question.id}`)
+        allResponses?.forEach((company) => {
+            const companyName = company.name;
+            const results = company.results;
+            if(results && Array.isArray(results)){
+                results.forEach((response) => {
+                    if(Array.isArray(response)){
+                        response.forEach((question) => {
+                            const questionWithCompany = { ...question, companyName };
+                            switch (question.id) {
+                                case "q12":
+                                    openEndedQuestions["q12"].push(questionWithCompany);
+                                    currentQuestionResponses = Object.entries(openEndedQuestions)[0][1]
+                                    break;
+                                case "q19":
+                                    openEndedQuestions["q19"].push(questionWithCompany);
+                                    currentQuestionResponses = Object.entries(openEndedQuestions)[1][1]
+                                    break;
+                                case "q20":
+                                    openEndedQuestions["q20"].push(questionWithCompany);
+                                    currentQuestionResponses = Object.entries(openEndedQuestions)[2][1]
+                                    break;
+                                case "q21":
+                                    openEndedQuestions["q21"].push(questionWithCompany);
+                                    currentQuestionResponses = Object.entries(openEndedQuestions)[3][1]
+                                    break;
+                                case "q22":
+                                    openEndedQuestions["q22"].push(questionWithCompany);
+                                    currentQuestionResponses = Object.entries(openEndedQuestions)[4][1]
+                                    break;
+                                default:
+                                    break
+                            }
+                        })
                     }
-    
-            })
+                })
+            }
         })
-    
-        // console.log(currentQuestionResponses);
     }
     
 
@@ -100,12 +95,12 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
     return (
         // <div className="section bg-red-500 min-h-[100%]">
         <div className={`${page == 'results' ? ' ' : 'min-w-[100%] h-[100%] overflow-y-auto'} relative section py-2 pr-4 flex flex-col ${section == 0 ? 'items-end' : 'items-start'} gap-6`}>
-            <h3 className="w-full text-2xl font-semibold">{sectionHeader}</h3>
-            <div className="w-full questions flex flex-col gap-y-10">
+            <h3 className="w-full text-xl font-semibold">{sectionHeader}</h3>
+            <div className="w-full questions flex flex-col gap-y-8">
                 {
                     subsectionData.map((subsection, index) => (
-                        <div key={index } className="flex flex-col gap-y-5">
-                            <h2 className="text-xl underline">{subsection.title}</h2>
+                        <div key={index } className="flex flex-col gap-y-4">
+                            <h2 className="text-lg underline">{subsection.title}</h2>
                             {
                                 subsection.questions?.map((question) => {
                                     // console.log(surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)[0].responses);
@@ -173,11 +168,11 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
 
                                                         page == 'results'
                                                         ?
-                                                        openEndedQuestions[question.id]?.map((ans, i) => 
+                                                        openEndedQuestions[question.id]?.map((ans, i) =>
                                                             (
-                                                                    ans.responses?.trim() != "" 
+                                                                    ans.responses?.trim() != ""
                                                                     ?
-                                                                    <OpenEndedResponse key={i} response={ans.responses} />
+                                                                    <OpenEndedResponse key={i} response={ans.responses} companyName={ans.companyName} />
                                                                     : ""
                                                             )
                                                         )

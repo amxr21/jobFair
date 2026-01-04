@@ -5,8 +5,6 @@ const ListHeader = ({headerText, type}) => {
 
     const hanndleCollapse = (e) => {
         let othersList = e.target.parentElement.parentElement.parentElement.lastElementChild.firstElementChild
-        
-        console.log(expandOtherApplicantsIcon.current);
 
         if(othersList.classList.contains('expanded')){
             othersList.classList.replace('max-h-80', 'max-h-0') 

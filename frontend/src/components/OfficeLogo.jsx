@@ -1,9 +1,9 @@
 import OfficeLogoImage from "../assets/images/casto-logo.jpg"
 
 
-const OfficeLogo = ({height = 14}) => {
+const OfficeLogo = ({width}) => {
     return (
-        <div className={`unilogo w-full h-auto md:w-56 md:h-${height} w-auto`}>
+        <div className={`unilogo h-auto ${width ? '' : 'w-full'}`} style={width ? {width: `${width}rem`} : {}}>
             <a href="/">
                 <img className="w-full" src={OfficeLogoImage} alt="" />
             </a>

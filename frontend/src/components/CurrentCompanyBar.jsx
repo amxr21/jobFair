@@ -1,9 +1,6 @@
 import { NextPrevCompanyButton } from "./index";
 
 const CurrentCompanyBar = ({CompanyName, func, length}) => {
-    console.log(length);
-    
-
     const handleClick = (type) => {
         if(type == 'next'){
             func((p) => {
@@ -30,12 +27,17 @@ const CurrentCompanyBar = ({CompanyName, func, length}) => {
 
 
     return (
-        <div className="flex items-center gap-5 p-4 rounded-xl border mb-5">
-            <div className="buttons flex gap-2">
-                <NextPrevCompanyButton handleClick={() => {handleClick('prev')}} type="prev" />
-                <NextPrevCompanyButton handleClick={() => {handleClick('next')}} type="next" />
+        <div className="bg-white flex items-center justify-between gap-4 p-4">
+            <div className="flex items-center gap-4">
+                <div className="buttons flex gap-2">
+                    <NextPrevCompanyButton handleClick={() => {handleClick('prev')}} type="prev" />
+                    <NextPrevCompanyButton handleClick={() => {handleClick('next')}} type="next" />
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-xs text-gray-500">Company Response</span>
+                    <h2 className="text-lg font-semibold">{CompanyName}</h2>
+                </div>
             </div>
-            <h2 className="text-xl">{CompanyName}</h2>
         </div>
     )
 }

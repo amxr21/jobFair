@@ -27,7 +27,7 @@ const NavBar = ({link}) => {
                     throw Error("Unfound")
                 }
             } catch (error) {
-                console.log(error, 'error in fetching company id');
+                // Error fetching company data
             }
             finally{
                 
@@ -42,7 +42,7 @@ const NavBar = ({link}) => {
 
 
     return (
-        <nav className="col-span-0 md:col-span-2 hidden md:flex flex-col py-4 justify-between gap-y-16 h-full overflow-hidden ">
+        <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-4 justify-between gap-y-16 h-full overflow-hidden">
 
             <OfficeLogo />
 
@@ -51,8 +51,8 @@ const NavBar = ({link}) => {
                     {user?.companyName == "CASTO Office" && <ApplicationFormButton />}
                     <div className="flex flex-col gap-y-4">
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
-                        { 
-                            userData?.surveyResult?.length == 0 && user?.companyName != "CASTO Office" && <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
+                        {
+                            (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" && <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
                         {
                             user?.email == "casto@sharjah.ac.ae" && 
                             <div className="flex flex-col gap-y-4">

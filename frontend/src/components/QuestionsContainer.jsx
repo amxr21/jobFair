@@ -14,8 +14,8 @@ import { BriefSurveyStatstics, CurrentCompanyBar, ResponsesPieChart, SummaryDeta
 
 
 
-// const link = "http://localhost:2000"
-const link = "https://jobfair-production.up.railway.app"
+const link = "http://localhost:2000"
+// const link = "https://jobfair-production.up.railway.app"
 
 
 const QuestionsContainer = () => {
@@ -33,6 +33,7 @@ const QuestionsContainer = () => {
   const [ allResponsesData, setAllResponsesData ] = useState([])
 
   const [ mode, setMode ] = useState("summary");
+  const [ surveyPart, setSurveyPart ] = useState(0);
 
   const [ currentCompanyData, setCurrentCompanyData ] = useState(0)
 
@@ -220,7 +221,7 @@ const QuestionsContainer = () => {
             }
          
         } catch (error) {
-            console.log('Error in fetching data');
+            // Error fetching survey data
         }
       }
     
@@ -268,10 +269,7 @@ const QuestionsContainer = () => {
 
 
     useEffect(()=>{
-      
       if(allResponses){
-        console.log(allResponses.flatMap((a) => a?.results));
-        
         setAllResponsesData(allResponses.flatMap((a) => a?.results))
       }
     }, [allResponses])
@@ -285,54 +283,89 @@ const QuestionsContainer = () => {
 
 
     return (
-      <div className="flex flex-col gap-3 overflow-y-auto">
+      <div className="flex flex-col gap-3 flex-1 h-full overflow-hidden">
         <SummaryDetailModeBar func={setMode} currentMode={mode} />
         {
-          mode == "summary" && 
-          
-          <div id="QuestionsContainer" className="bg-[#F3F6FF] grow rounded-xl overflow-y-auto">
-            <div className="sections relative flex flex-col rounded-xl gap-4 grow p-6 ">
-              <div className="brief-statstics flex gap-4">
-                <ResponsesPieChart data={companies} res={allResponsesData?.length} unres={companies?.length - 1 - allResponsesData?.length} />
-                <BriefSurveyStatstics number={companies?.length-1} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />  
-                <div className=" flex flex-col justify-between gap-4 ">
-                  <BriefSurveyStatstics number={allResponsesData?.length < 10 ? '0' + allResponsesData?.length : allResponsesData?.length} text={"Companies interacted & answered the published survey"} />
-                  <BriefSurveyStatstics number={companies?.length && allResponsesData?.length >= 0 ? companies?.length - 1 - allResponsesData?.length  : 'XX'} text={"Companies did not respond yet to the survey"} />
-                </div>
-                
+          mode == "summary" &&
 
+          <div id="QuestionsContainer" className="bg-[#F3F6FF] flex-1 rounded-xl overflow-y-auto">
+            <div className="sections relative flex flex-col rounded-xl gap-4 grow p-6 ">
+              <div className="brief-statstics flex gap-4 h-fit min-h-48">
+                <ResponsesPieChart data={companies} res={allResponsesData?.length} unres={companies?.length - 1 - allResponsesData?.length} />
+                <BriefSurveyStatstics number={companies?.length-1} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />
+                <div className="flex gap-2 min-h-full">
+                  <BriefSurveyStatstics number={allResponsesData?.length < 10 ? '0' + allResponsesData?.length : allResponsesData?.length} text={"Answered survey"} />
+                  <BriefSurveyStatstics number={companies?.length && allResponsesData?.length >= 0 ? companies?.length - 1 - allResponsesData?.length  : 'XX'} text={"No response yet"} />
+                </div>
               </div>
 
-              <div className="bg-white p-8 border rounded-xl">
-                {
-                  surveyData?.map((data, index) => 
-                    { 
-                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} page={'results'} surveyResponsesData={list} />
-                    }
+              {/* Survey Part Tabs */}
+              <div className="flex gap-2 border-b">
+                <button
+                  onClick={() => setSurveyPart(0)}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Part 1: Event Experience
+                </button>
+                <button
+                  onClick={() => setSurveyPart(1)}
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Part 2: Recruitment & Follow-Up
+                </button>
+              </div>
 
-                  )
-                } 
+              <div className="bg-white p-6 border rounded-xl">
+                <SurveySection
+                  key={surveyPart}
+                  section={surveyPart}
+                  sectionHeader={surveyData[surveyPart]['title']}
+                  subsectionData={surveyData[surveyPart]['subsections']}
+                  page={'results'}
+                  surveyResponsesData={list}
+                />
               </div>
             </div>
-              
+
           </div>
         }
 
         {
-          mode == "details" && 
-          <div className="bg-[#F3F6FF] grow rounded-xl overflow-auto">
-            <div className="sections relative flex flex-col rounded-xl gap-4 grow overflow-y-auto p-6 ">
-              <div className="bg-white p-8 border rounded-xl ">
+          mode == "details" &&
+          <div className="bg-[#F3F6FF] flex-1 rounded-xl overflow-auto">
+            <div className="sections relative flex flex-col rounded-xl gap-4 p-6">
+              {/* Company selector and tabs in one card */}
+              <div className="sticky top-0 z-10 bg-white rounded-xl border overflow-hidden">
                 <CurrentCompanyBar CompanyName={a[currentCompanyData]} length={a.length} func={setCurrentCompanyData}/>
-                {
-                  surveyData?.map((data, index) => 
-                    { 
-                      return <SurveySection key={index} section={index} sectionHeader={data['title']} subsectionData={data['subsections']} surveyResponsesData={list} surveyResponsesDataForCompany={allResponses?.filter((data) => data.name == a[currentCompanyData])[0]?.results} page="surveyResults" />
-                    }
 
-                  )
-                } 
-            </div>
+                {/* Survey Part Tabs */}
+                <div className="flex gap-2 border-t px-4">
+                  <button
+                    onClick={() => setSurveyPart(0)}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Part 1: Event Experience
+                  </button>
+                  <button
+                    onClick={() => setSurveyPart(1)}
+                    className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Part 2: Recruitment & Follow-Up
+                  </button>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 border rounded-xl">
+                <SurveySection
+                  key={`${currentCompanyData}-${surveyPart}`}
+                  section={surveyPart}
+                  sectionHeader={surveyData[surveyPart]['title']}
+                  subsectionData={surveyData[surveyPart]['subsections']}
+                  surveyResponsesData={list}
+                  surveyResponsesDataForCompany={allResponses?.filter((data) => data.name == a[currentCompanyData])[0]?.results}
+                  page="surveyResults"
+                />
+              </div>
             </div>
           </div>
         }

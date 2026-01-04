@@ -12,31 +12,31 @@ const SurveyOption = ({ label, selected, handleClick, handleChange, type, page, 
     
 
     if(page == 'survey'){
-        return type == 'multiple_choice' 
+        return type == 'multiple_choice'
         ? (
-            <div onClick={handleClick} className={`survey-option cursor-pointer flex justify-between border rounded-xl p-4 w-full ${selected ? "border-2 border-gray-300" : ""}`}>
-                <p>{label}</p>
-                <button  ref={selectOptionRef} onClick={handleClick} className="option-btn border min-w-8 max-w-8 min-h-8 max-h-8 p-1 rounded-xl">
-                    <div className={`option-btn-dot ${selected ? optionIndex == 0 ? 'bg-green-600 text-green-600' : optionIndex == 1 ?  'bg-yellow-500 text-yellow-500' : 'bg-red-500 text-red-500' : 'bg-gray-200 text-gray-200'} w-full h-full rounded-xl`}>.</div>
+            <div onClick={handleClick} className={`survey-option cursor-pointer flex items-center justify-between border rounded-xl px-4 py-3 w-full ${selected ? "border-2 border-gray-300" : ""}`}>
+                <p className="text-sm">{label}</p>
+                <button ref={selectOptionRef} onClick={handleClick} className="option-btn border w-6 h-6 p-1 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className={`option-btn-dot ${selected ? optionIndex == 0 ? 'bg-green-600' : optionIndex == 1 ? 'bg-yellow-500' : 'bg-red-500' : 'bg-gray-200'} w-full h-full rounded-full`}></div>
                 </button>
             </div>
         )
-    
+
         : (
             <textarea onChange={handleChange} placeholder={label} name="" id="" className="border rounded-xl px-4 py-2 h-28 w-full bg-transparent outline-none border"></textarea>
         )
     }
     else if(page == 'surveyResults'){
-        return type == 'multiple_choice' 
+        return type == 'multiple_choice'
         ? (
-            <div onClick={handleClick} className={`survey-option flex justify-between border rounded-xl p-4 w-full ${selected ? "border-2 border-gray-300" : ""}`}>
-                <p>{label}</p>
-                <button  ref={selectOptionRef} onClick={handleClick} className="option-btn cursor-default border min-w-8 max-w-8 min-h-8 max-h-8 p-1 rounded-xl">
-                    <div className={`option-btn-dot ${selected ? optionIndex == 0 ? 'bg-green-600 text-green-600' : optionIndex == 1 ?  'bg-yellow-500 text-yellow-500' : 'bg-red-500 text-red-500' : 'bg-gray-200 text-gray-200'} w-full h-full rounded-xl`}>.</div>
+            <div onClick={handleClick} className={`survey-option flex items-center justify-between border rounded-xl px-4 py-3 w-full ${selected ? "border-2 border-gray-300" : ""}`}>
+                <p className="text-sm">{label}</p>
+                <button ref={selectOptionRef} onClick={handleClick} className="option-btn cursor-default border w-6 h-6 p-1 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className={`option-btn-dot ${selected ? optionIndex == 0 ? 'bg-green-600' : optionIndex == 1 ? 'bg-yellow-500' : 'bg-red-500' : 'bg-gray-200'} w-full h-full rounded-full`}></div>
                 </button>
             </div>
         )
-    
+
         : ""
         // (
         //     <textarea onChange={handleChange} placeholder={label} name="" id="" className="border rounded-xl px-4 py-2 h-28 w-full bg-transparent outline-none border"></textarea>

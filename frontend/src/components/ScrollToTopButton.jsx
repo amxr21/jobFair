@@ -5,7 +5,7 @@ const ScrollToTopButton = ({ scrollableRefC, isAtTop }) => {
 
   return (
     <button
-      className={`absolute flex items-center justify-center bottom-8 right-12 scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
+      className={`absolute flex items-center justify-center bottom-4 right-4 scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
         isAtTop ? 'opacity-0' : 'opacity-100'}`}
       onClick={handleScrollToTop}
     >
