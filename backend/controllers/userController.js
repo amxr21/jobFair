@@ -36,15 +36,15 @@ const loginUser = async (req, res) => {
 
 
 const signupUser = async (req, res) => {
-    const { email, password, fields, representitives, companyName, sector, city, noOfPositions } = req.body;
+    const { email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities } = req.body;
     try{
         //modify the path later
-        const user = await User.signup(email, password, fields, representitives, companyName, sector, city, noOfPositions);
+        const user = await User.signup(email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities);
         const user_id = user._id;
         const token = createToken(user._id);
-        
-        
-        res.status(200).json({user_id, email, token, fields, representitives, companyName, sector, city, noOfPositions})
+
+
+        res.status(200).json({user_id, email, token, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities})
 
     } catch(error){
         console.log("ERROR....");

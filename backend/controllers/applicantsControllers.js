@@ -43,58 +43,86 @@ const testFunc =  async (req, res) => {
 }
 
 const getAllApplicants = async (req, res) => {
-    try{
-        const filteredUserIds = await ApplicantModel?.find({})
+    try {
+        // Pagination parameters
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const skip = (page - 1) * limit;
 
-        const a = filteredUserIds?.map((aa) => aa?.user_id)[0][0];
-        console.log(a);
+        // Search/filter parameters
+        const search = req.query.search || '';
+        const companyFilter = req.query.company || '';
 
+        // Build query - only get applicants with valid applicantDetails
+        let query = { applicantDetails: { $exists: true, $ne: null } };
 
-        if(filteredUserIds.length > 0){
-            const a = filteredUserIds.map((aa) => aa?.user_id)[0][0];
-            console.log(a);
-        
-
-            const allApplicants = (await ApplicantModel.find({}))
-            // .filter((app)=> {
-            //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
-            //     return app.user_id[0], a.equals(app.user_id[0])
-            // })
-            // console.log(req.user._id, );
-            res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
+        // Add search filter if provided
+        if (search) {
+            query.$or = [
+                { 'applicantDetails.firstName': { $regex: search, $options: 'i' } },
+                { 'applicantDetails.lastName': { $regex: search, $options: 'i' } },
+                { 'applicantDetails.uniId': { $regex: search, $options: 'i' } },
+                { 'applicantDetails.email': { $regex: search, $options: 'i' } }
+            ];
         }
-        else{
-            res.status(200).json([])
+
+        // Add company filter if provided
+        if (companyFilter) {
+            query.user_id = companyFilter;
         }
-        
-        // const allApplicants = (await ApplicantModel.find({}))
-        // if(addApplicant.length == 0) res.status(200).json([])
-        // // .filter((app)=> {
-        // //     console.log(a, app.user_id[0], a.equals(app.user_id[0]));
-        // //     return app.user_id[0], a.equals(app.user_id[0])
-        // // })
-        // // console.log(req.user._id, );
-        // res.status(200).json(allApplicants.filter((applicant)=>applicant.applicantDetails != undefined).sort(() => {return -1}))
+
+        // Get total count for pagination info
+        const total = await ApplicantModel.countDocuments(query);
+
+        // Get unique student count (by uniId) - this excludes duplicate submissions
+        const uniqueCountResult = await ApplicantModel.aggregate([
+            { $match: query },
+            { $group: { _id: "$applicantDetails.uniId" } },
+            { $count: "uniqueCount" }
+        ]);
+        const uniqueStudentCount = uniqueCountResult[0]?.uniqueCount || 0;
+
+        // Fetch paginated results
+        const applicants = await ApplicantModel.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            applicants,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(total / limit),
+                totalItems: total,
+                uniqueStudentCount: uniqueStudentCount,
+                itemsPerPage: limit,
+                hasNextPage: page < Math.ceil(total / limit),
+                hasPrevPage: page > 1
+            }
+        });
 
     } catch(error) {
         res.status(500).json({error: error.message})
-        // console.log({error: error.message});
     }
 };
 
 
 const addApplicant =  async (req, res) => {
     const userId = !req.user ? "662d20b4754626de2c3ac2b7" : req.user._id;
-    console.log("\n\n\n\n\n\n",req,"\n\n\n\n\n\n");
     try{
-        // const { uniId, name, birthdate, nationality, gender, email, college, major, cgpa, phoneNumber, studyLevel, experience, languages, skills, linkedIn, portfolio, brief } = req.body;
         console.log("Recieved POST request to /applicants");
         console.log("Request body: ",req.body);
         console.log("Uploaded applicant CV: ", req.file);
-        console.log("\n\n\n\n\n\n\n");
+
+        // Cloudinary file info - store URL and public_id
+        const cvData = req.file ? {
+            url: req.file.path,           // Cloudinary URL
+            public_id: req.file.filename, // Cloudinary public_id for deletion
+            originalname: req.file.originalname
+        } : null;
 
         const applicantProfile = await ApplicantModel.create({
-            cv: req.file,
+            cv: cvData,
             applicantDetails: req.body,
             user_id: userId
         })
@@ -349,9 +377,15 @@ const getApplicantFlag = async (req, res) => {
 
 const addApplicantPublic = async (req, res) => {
     try{
-        
+        // Cloudinary file info - store URL and public_id
+        const cvData = req.file ? {
+            url: req.file.path,           // Cloudinary URL
+            public_id: req.file.filename, // Cloudinary public_id for deletion
+            originalname: req.file.originalname
+        } : null;
+
         const applicantProfile = await ApplicantModel.create({
-            cv: req.file,
+            cv: cvData,
             applicantDetails: req.body,
             user_id: [],
             attended: false
@@ -560,4 +594,30 @@ const confirmAttendant = async (req, res) => {
 
 
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey}
+// Delete applicant
+const deleteApplicant = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ error: "No such id for an applicant" });
+        }
+
+        const applicant = await ApplicantModel.findByIdAndDelete(id);
+
+        if (!applicant) {
+            return res.status(404).json({ error: "Applicant not found" });
+        }
+
+        // If applicant had a CV on Cloudinary, optionally delete it
+        // (requires cloudinary import if you want to clean up storage)
+
+        res.status(200).json({ message: "Applicant deleted successfully", applicant });
+
+    } catch (error) {
+        console.log({ error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant}
