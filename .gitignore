@@ -1,22 +1,44 @@
-# dependencies
-node_modules
+# Dependencies
+node_modules/
 .pnp
 .pnp.js
 
-# testing
-coverage
-
-# production
-build
-
-# misc
+# Environment variables (NEVER commit these!)
 .env
-.DS_Store
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+backend/.env
+frontend/.env
 
+# Testing
+coverage/
+
+# Production builds
+build/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+
+# Sample/test data with credentials
+sampleData.json
+
+# Temporary files
+*.tmp
+*.temp
