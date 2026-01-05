@@ -325,8 +325,8 @@ const QuestionsContainer = () => {
 
           {/* Survey Visibility Toggle - Only for CASTO admin */}
           {user?.email === "casto@sharjah.ac.ae" && (
-            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2 border shadow-sm">
-              <span className="text-sm text-gray-600">Survey Visibility:</span>
+            <div className="flex items-center gap-2 md:gap-3 bg-white rounded-xl px-3 md:px-4 py-2 border shadow-sm">
+              <span className="text-xs md:text-sm text-gray-600 hidden sm:inline">Survey:</span>
               <button
                 onClick={toggleSurveyVisibility}
                 disabled={isTogglingVisibility}
@@ -335,12 +335,12 @@ const QuestionsContainer = () => {
                 } ${isTogglingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out ${
-                    surveyPublic ? 'translate-x-[1.375rem]' : 'translate-x-1'
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition-transform duration-200 ease-in-out ${
+                    surveyPublic ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
               </button>
-              <span className={`text-sm font-medium ${surveyPublic ? 'text-[#0E7F41]' : 'text-gray-500'}`}>
+              <span className={`text-xs md:text-sm font-medium ${surveyPublic ? 'text-[#0E7F41]' : 'text-gray-500'}`}>
                 {surveyPublic ? 'Public' : 'Hidden'}
               </span>
             </div>
