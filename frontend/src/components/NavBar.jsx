@@ -6,17 +6,18 @@ import { useEffect, useState } from "react";
 import { useAuthContext } from "../Hooks/useAuthContext";
 import axios from "axios";
 
-const NavBar = ({link}) => {    
+const NavBar = ({link}) => {
 
     const { user } = useAuthContext()
-    
-    const [ userData, setUserData ] = useState() 
+
+    const [ userData, setUserData ] = useState()
+    const [ surveyPublic, setSurveyPublic ] = useState(false)
 
     const userId = JSON.parse(localStorage.getItem('user'))?.user_id
-    
+
     useEffect(() => {
         // console.log(userId);
-        
+
         const getUserData = async () => {
             try {
                 const response = await axios.get(link+'/companies/'+userId)
@@ -30,11 +31,23 @@ const NavBar = ({link}) => {
                 // Error fetching company data
             }
             finally{
-                
+
             }
         }
-        
+
+        const getSettings = async () => {
+            try {
+                const response = await axios.get(link+'/settings')
+                if(response?.data) {
+                    setSurveyPublic(response.data.surveyPublic)
+                }
+            } catch (error) {
+                // Error fetching settings
+            }
+        }
+
         getUserData()
+        getSettings()
 
 
     }, [])
@@ -51,10 +64,12 @@ const NavBar = ({link}) => {
                     {user?.companyName == "CASTO Office" && <ApplicationFormButton />}
                     <div className="flex flex-col gap-y-4">
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
+                        {/* Company Status link for non-CASTO users */}
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={'My Status'} icon={'status'} />}
                         {
-                            (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" && <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
+                            surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" && <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
                         {
-                            user?.email == "casto@sharjah.ac.ae" && 
+                            user?.email == "casto@sharjah.ac.ae" &&
                             <div className="flex flex-col gap-y-4">
                                 <PageLink link='managers' title={'Managers'} icon={'managers'} />
                                 <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />
