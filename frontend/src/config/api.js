@@ -2,7 +2,7 @@
 // Change this single value to switch between environments
 
 const API_URLS = {
-    production: "https://jobfairform-backend.onrender.com",
+    production: "https://jobfair-7zaa.onrender.com",
     local: "http://localhost:2000"
 };
 
