@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { StudentIcon, CompanyIcon, FieldIcon, SeekerIcon } from "./Icons";
+import CountUp from "./CountUp";
 
 const sample = [
   {
@@ -123,7 +124,9 @@ const StatisticsElement = ({ data = {}, type }) => {
         <img src={icon} alt="icon h-full" />
       </div>
       <div className="text flex flex-col gap-y-0">
-        <h2 className="number text-3xl font-bold">{header}+</h2>
+        <h2 className="number text-3xl font-bold">
+          <CountUp end={header} duration={1500} suffix="+" />
+        </h2>
         <h6 className="subtitle text-xs font-medium">{subheader}</h6>
       </div>
     </div>

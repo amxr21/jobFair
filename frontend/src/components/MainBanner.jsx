@@ -578,13 +578,21 @@ const MainBanner = ({link}) => {
                                             nationality={otherApplicant?.applicantDetails?.nationality}
                                             experience={otherApplicant?.applicantDetails?.experience}
                                             attended={otherApplicant?.attended ? "Confirmed" : "No"}
+                                            shortlistedBy={otherApplicant?.shortlistedBy}
+                                            rejectedBy={otherApplicant?.rejectedBy}
                                             age={2024 - parseInt(String(otherApplicant?.applicantDetails?.birthdate)?.slice(0, 4))}
                                             languages={String(otherApplicant?.applicantDetails?.languages)}
                                             portfolio={otherApplicant?.applicantDetails?.linkedIn}
                                             file={otherApplicant?.cv}
                                             qrCode={otherApplicant?._id}
                                             status={otherApplicant?.attended}
+                                            city={otherApplicant?.applicantDetails?.city}
+                                            skills={{tech: otherApplicant?.applicantDetails?.technicalSkills, nontech: otherApplicant?.applicantDetails?.nonTechnicalSkills}}
+                                            expectedToGraduate={otherApplicant?.applicantDetails?.ExpectedToGraduate}
                                             flags={otherApplicant?.flags}
+                                            user={user}
+                                            cv={otherApplicant?.cv?.fieldname}
+                                            link={link}
                                         />
                                     </div>
                                 ))}

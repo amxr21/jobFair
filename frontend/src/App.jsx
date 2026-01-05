@@ -5,8 +5,7 @@ import { Signup } from "./pages/Signup";
 import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults } from "./pages/index";
 import { useAuthContext } from "./Hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
-
-const link = import.meta.env.VITE_API_URL || "http://localhost:2000";
+import { API_URL as link } from "./config/api";
 
 function App() {
     const { user } = useAuthContext();

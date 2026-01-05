@@ -65,3 +65,4 @@ export {default as PageContainer} from "./PageContainer";
 export {default as FilterDropdown} from "./FilterDropdown";
 export {default as AdvancedAnalytics} from "./AdvancedAnalytics";
 export {default as StepTimeline} from "./StepTimeline";
+export {default as CountUp} from "./CountUp";

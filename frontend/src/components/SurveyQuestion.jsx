@@ -5,7 +5,7 @@ import { SurveyContext } from '../Context/SurveyContext'
 
 
 import axios from "axios"
-const link = "http://localhost:2000"
+import { API_URL as link } from "../config/api";
 
 
 

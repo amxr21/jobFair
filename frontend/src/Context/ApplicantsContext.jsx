@@ -12,6 +12,14 @@ export const applicantsReducer = (state, action) => {
             return {
                 applicants: [action.payload, ...state.applicants]
             };
+        case "UPDATE_APPLICANT":
+            return {
+                applicants: state.applicants?.map(applicant =>
+                    applicant._id === action.payload._id
+                        ? { ...applicant, ...action.payload }
+                        : applicant
+                ) || []
+            };
 
         default:
             return state;

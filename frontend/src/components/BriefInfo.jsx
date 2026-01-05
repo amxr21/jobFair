@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useContext } from 'react';
 import axios from 'axios';
 
 import CardInfo from './CardInfo';
@@ -6,10 +6,9 @@ import CardInfo from './CardInfo';
 
 import QRCode from 'qrcode.react';
 
-// const link = "https://jobfair-7zaa.onrender.com"
-// const link = "http://localhost:2000"
-const link = "https://jobfair-production.up.railway.app"
+import { API_URL as link } from "../config/api";
 import { useAuthContext } from "../Hooks/useAuthContext"
+import { ApplicantsContext } from '../Context/ApplicantsContext';
 import Flagged from './Flagged';
 import Action from './Action';
 import ApplicantStatus from './ApplicantStatus';
@@ -22,104 +21,63 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
     const rejectionButton = useRef();
     const otherButton = useRef();
 
-    
-    
     const [ isFlagging, setIsFlagging ] = useState(false)
-    
-    
+
     const { user } = useAuthContext();
-    
-    
+    const { dispatch } = useContext(ApplicantsContext);
+
     const nextAction = useRef()
     const tickedIdRef = useRef()
     const [ isFlagged, setIsFlagged ] = useState(false)
-    
-    
+
+    // Local state for shortlist/reject status to handle UI updates
+    const [localShortlistedBy, setLocalShortlistedBy] = useState(shortlistedByStatus || []);
+    const [localRejectedBy, setLocalRejectedBy] = useState(rejectedByStatus || []);
+    const [localFlags, setLocalFlags] = useState(flag || []);
+
     const applicant_id = tickedIdRef.current?.textContent.trim()
-    
+
     const flagApplicant = async (e) => {
-        const ticketId = e.target.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
-        document.getElementById(ticketId).classList.add('border')
-        document.getElementById(ticketId).classList.add('border-2')
-        document.getElementById(ticketId).classList.add('border-green-500')
+        e.stopPropagation(); // Prevent modal from closing
+        const cleanTicketId = ticketId.replace(/[^a-zA-Z0-9]/g, '');
 
+        // Update DOM for immediate visual feedback
+        const rowElement = document.getElementById(ticketId);
+        if (rowElement) {
+            rowElement.classList.add('border', 'border-2', 'border-green-500');
+        }
 
-
-        // e.target.parentElement.parentElement.classList.add('border')
-        // e.target.parentElement.parentElement.classList.add('border-2')
-        // e.target.parentElement.parentElement.classList.add('border-green-500')
-    
         try {
-            
-            setIsFlagging(true)
-            const flagResponse = await axios.patch(link+"/applicants/flag/"+ticketId.replace(/[^a-zA-Z0-9]/g,''), {
+            setIsFlagging(true);
+            const flagResponse = await axios.patch(link + "/applicants/flag/" + cleanTicketId, {
                 flags: [user?.companyName]
-            })
+            });
 
+            // Update local state
+            const newFlags = [...localFlags, user?.companyName];
+            setLocalFlags(newFlags);
 
-
-            
+            // Update context for persistence across re-renders
+            dispatch({
+                type: 'UPDATE_APPLICANT',
+                payload: {
+                    _id: ticketId,
+                    flags: newFlags
+                }
+            });
 
         } catch (error) {
-            // Error flagging applicant
+            console.error('Error flagging applicant:', error);
+            // Revert visual change on error
+            if (rowElement) {
+                rowElement.classList.remove('border', 'border-2', 'border-green-500');
+            }
+        } finally {
+            setIsFlagged(true);
+            setIsFlagging(false);
         }
-        finally{
-            setIsFlagged(true)
-            setIsFlagging(false)
-        }
-
-
-
-
-
-
     }
-    // useEffect(() => {
-    //     const checkFlag = async () => {
-    //         try {
-    //             setIsFlagging(true)
-    //             const flagResponse = await axios.get(link+"/applicants/flag/"+applicant_id.replace(/[^a-zA-Z0-9]/g,''))
-                
-    //             console.log(flagResponse);
 
-    //             return flagResponse.data?.flags.includes(user?.companyName)
-    
-    //         } catch (error) {
-    //             console.log('Failed to flag the applicant', error);   
-    //         }
-    //     }
-
-    //     let a = checkFlag()
-    //     setIsFlagged(a ? true : false)
-
-
-    // }, [])
-
-
-
-
-
-    // const sendInterviewEmail = () => {
-    //     const res = axios.post("http://localhost:2000/email", {
-    //             uniId:id,
-    //             ticket: ticketId,
-    //             fullName: shortName,
-    //             email: emailRec
-            
-    //     })
-
-    //     if(res){
-    //         setTimeout(()=>{
-    //             interviewButton.current.textContent = "Email sent!";
-                
-    //         }, 2000)
-    //     }
-    //     setTimeout(()=>{
-    //         interviewButton.current.textContent = "Set an interview"
-            
-    //     }, 5000)
-    // }
-    
     const email = (type) => {
         const res = axios.post(`${link}/email`, {
                 uniId:id,
@@ -142,10 +100,6 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                         otherButton.current.textContent = "Email sent!";
                         break;
                 }
-
-
-
-
             }, 2000)
         }
         setTimeout(()=>{
@@ -163,94 +117,77 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
         }, 5000)
     }
 
-
-    
-    // const shortListApplicant = async (e) => {
-    //     const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1].lastElementChild.textContent
-    //     console.log(ticketId);
-        
-    //     try {
-    //         setIsProcessing(true)
-    //         const shortlistResponse = await axios.patch(link+'/applicants/shortlist/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
-    //             shortlistedBy: [user?.companyName]
-    //         })
-            
-
-
-    //     } catch (error) {
-    //         console.log('Failed to shortlist the applicant', error);
-    //     }
-
-    //     finally{
-    //         setIsProcessing(false)
-    //         console.log(ticketId, 'is Shortlisted');
-            
-    //     }
-
-
-    // }
-
-
-    
-
-
     const shortListApplicant = async (e) => {
-        const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent;
+        e.stopPropagation(); // Prevent modal from closing
+        const cleanTicketId = ticketId.replace(/[^a-zA-Z0-9]/g, '');
 
         try {
             setIsProcessing(true);
-            const shortlistResponse = await axios.patch(link + '/applicants/shortlist/' + ticketId?.replace(/[^a-zA-Z0-9]/g, ''), {
+            const shortlistResponse = await axios.patch(link + '/applicants/shortlist/' + cleanTicketId, {
                 shortlistedBy: [user?.companyName]
             });
-    
+
+            // Update local state for immediate UI feedback
+            const newShortlistedBy = [...localShortlistedBy, user?.companyName];
+            setLocalShortlistedBy(newShortlistedBy);
+
+            // Update context for persistence
+            dispatch({
+                type: 'UPDATE_APPLICANT',
+                payload: {
+                    _id: ticketId,
+                    shortlistedBy: newShortlistedBy
+                }
+            });
+
+            // Update row visual
+            const rowElement = document.getElementById(ticketId);
+            if (rowElement) {
+                rowElement.classList.add('border-2', 'border-blue-500');
+            }
+
         } catch (error) {
-            // Error shortlisting applicant
+            console.error('Error shortlisting applicant:', error);
         } finally {
             setIsProcessing(false);
-
-            nextAction.current.firstElementChild.lastElementChild.classList.replace('flex', 'hidden');
-            nextAction.current.firstElementChild.firstElementChild.lastElementChild.textContent = 'Shortlisted';
-
-            document.getElementById(ticketId).classList.add('border-2')
-            document.getElementById(ticketId).classList.add('border-blue-400')
         }
     };
-    
-
-
-
-
 
     const rejectApplicant = async (e) => {
-        const ticketId = e.target.parentElement.parentElement.parentElement.parentElement.children[1]?.lastElementChild.textContent
+        e.stopPropagation(); // Prevent modal from closing
+        const cleanTicketId = ticketId.replace(/[^a-zA-Z0-9]/g, '');
 
         try {
-            setIsProcessing(true)
-            const rejectResponse = await axios.patch(link+'/applicants/reject/'+ticketId?.replace(/[^a-zA-Z0-9]/g,''), {
+            setIsProcessing(true);
+            const rejectResponse = await axios.patch(link + '/applicants/reject/' + cleanTicketId, {
                 rejectedBy: [user?.companyName]
-            })
-            
+            });
 
+            // Update local state for immediate UI feedback
+            const newRejectedBy = [...localRejectedBy, user?.companyName];
+            setLocalRejectedBy(newRejectedBy);
+
+            // Update context for persistence
+            dispatch({
+                type: 'UPDATE_APPLICANT',
+                payload: {
+                    _id: ticketId,
+                    rejectedBy: newRejectedBy
+                }
+            });
+
+            // Update row visual
+            const rowElement = document.getElementById(ticketId);
+            if (rowElement) {
+                rowElement.classList.add('border-2', 'border-red-600');
+            }
 
         } catch (error) {
-            // Error rejecting applicant
+            console.error('Error rejecting applicant:', error);
+        } finally {
+            setIsProcessing(false);
         }
-
-        finally{
-            setIsProcessing(false)
-
-            nextAction.current.firstElementChild.firstElementChild.classList.replace('flex', 'hidden')
-            nextAction.current.firstElementChild.lastElementChild.lastElementChild.textContent = 'Rejected'
-        }
-
-
     }
-
-
-
-
-
-
 
     return (
         <div className="brief-info flex flex-col gap-y-4 text-left w-full md:px-4 sticky top-0 self-start">
@@ -268,7 +205,7 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
 
                 <div className="flag flex items-center justify-center gap-2">
                     {
-                        flag.includes(user?.companyName)
+                        (flag.includes(user?.companyName) || localFlags.includes(user?.companyName))
                         ?
                         <Flagged />
                         :
@@ -295,18 +232,18 @@ const BriefInfo = ({ticketId, id, shortName, position="student", ticketQrCodeSrc
                         ?
                         <h2 className="text-sm">Processing</h2>
                         :
-                            shortlistedByStatus?.includes(user?.companyName)
+                            (shortlistedByStatus?.includes(user?.companyName) || localShortlistedBy?.includes(user?.companyName))
                             ?
                             <ApplicantStatus
                                 type="shortlisted"
-                                status={shortlistedByStatus.length}
+                                status={(shortlistedByStatus?.length || 0) + (localShortlistedBy?.length || 0)}
                             />
                             :
-                            rejectedByStatus?.includes(user?.companyName)
+                            (rejectedByStatus?.includes(user?.companyName) || localRejectedBy?.includes(user?.companyName))
                             ?
                             <ApplicantStatus
                                 type="rejected"
-                                status={rejectedByStatus.length}
+                                status={(rejectedByStatus?.length || 0) + (localRejectedBy?.length || 0)}
                             />
                             :
                             <div className='w-full flex justify-between items-center gap-2'>

@@ -51,7 +51,7 @@ const CardInfo = ({infoHeader, infoText, multiline = false}) => {
                     {infoText && infoText !== 'undefined' ? formatMultilineText(infoText) : <p className="text-sm text-gray-400">-</p>}
                 </div>
             ) : (
-                <p className={`text-sm font-semibold break-words ${infoText == 'Registered' || infoText == 'Confirmed' ? `mt-1 bg-[${colorCode.registerd.off}] text-[#${colorCode.registerd.active}] px-3 py-1.5 rounded-lg w-fit` : ''}`}>
+                <p className={`text-sm font-semibold break-words ${infoText == 'Confirmed' ? 'mt-1 bg-[#E5F0FF] text-[#0066CC] px-3 py-1.5 rounded-lg w-fit' : infoText == 'Registered' ? 'mt-1 bg-[#E5FFE5] text-[#0E7F41] px-3 py-1.5 rounded-lg w-fit' : ''}`}>
                 {(infoHeader == "LinkedIn" || infoHeader == "Email") && infoText != '-'
                 ?
                 <a

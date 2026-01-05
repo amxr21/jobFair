@@ -3,11 +3,7 @@ import { SubmitSurveyIcon } from "./Icons"
 import { useRef, useContext } from "react"
 import { SurveyContext } from "../Context/SurveyContext"
 import axios from "axios"
-
-
-const link = "https://jobfair-production.up.railway.app"
-// const link = "https://jobfair-7zaa.onrender.com"
-// const link = "http://localhost:2000"
+import { API_URL as link } from "../config/api";
 
 
 const SubmitSurveyButton = () => {

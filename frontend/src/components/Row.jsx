@@ -106,6 +106,16 @@ const ApplicantModal = ({visible, onClose, children}) => {
             {/* Modal */}
             <div ref={expandApplicantDiv}
                 className={`expandDetails ${animationClass} parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[42rem] max-h-[45rem] overflow-y-scroll md:overflow-y-auto absolute top-1/2 left-1/2`}>
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
+                    aria-label="Close"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-600">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
                 {children}
             </div>
         </div>,
@@ -126,35 +136,8 @@ const ApplicantModal = ({visible, onClose, children}) => {
     }, [isClicked])
 
 
-    useEffect(() => {        
-        const handleClickOutside = (e) => {
-            const dropdown = expandApplicantDiv.current;
-            const trigger = expandApplicantBtn.current;
-
-            const flagButton = document.getElementById('FlagCheckboxContainer')
-            
-
-            // console.log('====================================');
-            // console.log(e.target);
-            // console.log('====================================');
-            if (
-                dropdown &&
-                !dropdown.contains(e.target) &&
-                trigger &&
-                !trigger.contains(e.target) &&
-                !e.target.parentElement.classList.contains('action-button')
-            ) {
-                setIsVisible(false);
-                setIsClicked(false);
-            }
-        };
-    
-        window.addEventListener("click", handleClickOutside);
-
-        return () => {
-            window.removeEventListener("click", handleClickOutside);
-        };
-    }, []);
+    // Note: Click outside handling is now managed by ApplicantModal's backdrop onClick
+    // The modal handles its own closing animation when onClose is called
 
 
     if(email == 'casto@sharjah.ac.ae'){ number -= 1; return '';}

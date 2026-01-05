@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
 import axios from "axios";
-
-const link = import.meta.env.VITE_API_URL || "http://localhost:2000";
+import { API_URL as link } from "../config/api";
 
 export const useLogin = () => {
     const [error, setError] = useState(null);
