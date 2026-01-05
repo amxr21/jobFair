@@ -255,6 +255,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                         <ApplicantModal visible={isClicked} onClose={() => setIsClicked(false)} >
 
                             <div className="card-info flex flex-col md:flex-row gap-4 md:gap-6">
+                                
                                 <Brief onCloseModal={() => setIsClicked(false)}>
                                     <BriefInfo
                                         ticketId={ticketId}
@@ -270,6 +271,41 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                     />
                                 </Brief>
                                 <div className="details md:w-8/12 flex flex-col gap-2 md:gap-3 overflow-y-auto">
+
+                                    {/* Delete Applicant Section - Only show for admin users */}
+                                    {user?.email === 'casto@sharjah.ac.ae' && (
+                                        <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+                                            <h3 className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-3">Danger Zone</h3>
+                                            {!showDeleteConfirm ? (
+                                                <button
+                                                    onClick={() => setShowDeleteConfirm(true)}
+                                                    className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
+                                                >
+                                                    Delete Applicant
+                                                </button>
+                                            ) : (
+                                                <div className="flex items-center gap-3">
+                                                    <p className="text-sm text-red-600">Are you sure? This cannot be undone.</p>
+                                                    <button
+                                                        onClick={handleDelete}
+                                                        disabled={isDeleting}
+                                                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                                                    >
+                                                        {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setShowDeleteConfirm(false)}
+                                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+
+
                                     {/* Personal Information */}
                                     <div className="bg-gray-50 rounded-lg p-3 md:p-4">
                                         <h3 className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 md:mb-3">Personal Information</h3>
@@ -335,37 +371,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                         </div>
                                     </div>
 
-                                    {/* Delete Applicant Section - Only show for admin users */}
-                                    {user?.email === 'casto@sharjah.ac.ae' && (
-                                        <div className="bg-red-50 rounded-lg p-4 border border-red-200">
-                                            <h3 className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-3">Danger Zone</h3>
-                                            {!showDeleteConfirm ? (
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(true)}
-                                                    className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-colors"
-                                                >
-                                                    Delete Applicant
-                                                </button>
-                                            ) : (
-                                                <div className="flex items-center gap-3">
-                                                    <p className="text-sm text-red-600">Are you sure? This cannot be undone.</p>
-                                                    <button
-                                                        onClick={handleDelete}
-                                                        disabled={isDeleting}
-                                                        className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                                                    >
-                                                        {isDeleting ? 'Deleting...' : 'Yes, Delete'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setShowDeleteConfirm(false)}
-                                                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
+
                                 </div>
                             </div>
                             {/* <hr className="my-4" /> */}

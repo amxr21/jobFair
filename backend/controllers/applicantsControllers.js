@@ -3,7 +3,6 @@ const ApplicantModel = require("../models/applicantFormModel");
 const UserModel = require("../models/userModel");
 const SettingsModel = require("../models/settingsModel");
 const QRCode = require("qrcode");
-const { emitEvent } = require("../config/socket");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -273,14 +272,6 @@ const shortlistApplicant = async (req, res) => {
         console.log(id);
         console.log(applicant);
 
-        // Emit real-time event for shortlist action
-        const companyId = req.body.shortlistedBy[0];
-        emitEvent.toAdmin("applicant:shortlisted", {
-            applicant: applicant,
-            companyId: companyId,
-            type: "shortlist"
-        });
-
         res.status(200).json(applicant)
 
     } catch(error){
@@ -313,14 +304,6 @@ const rejectApplicant = async (req, res) => {
         );
         console.log(id);
         console.log(applicant);
-
-        // Emit real-time event for rejection action
-        const companyId = req.body.rejectedBy[0];
-        emitEvent.toAdmin("applicant:rejected", {
-            applicant: applicant,
-            companyId: companyId,
-            type: "rejection"
-        });
 
         res.status(200).json(applicant)
 
@@ -408,13 +391,6 @@ const addApplicantPublic = async (req, res) => {
             user_id: [],
             attended: false
         })
-
-        // Emit real-time event for new registration
-        emitEvent.toAdmin("applicant:new", {
-            applicant: applicantProfile,
-            type: "new_registration"
-        });
-        emitEvent.toPublic("stats:update", { type: "new_applicant" });
 
         console.log(applicantProfile,"------this is the added applicant publically-----");
 
@@ -602,13 +578,6 @@ const confirmAttendant = async (req, res) => {
         );
         console.log(id);
         console.log(applicant);
-
-        // Emit real-time event for attendance confirmation
-        emitEvent.toAdmin("applicant:attended", {
-            applicant: applicant,
-            type: "attendance_confirmed"
-        });
-        emitEvent.toPublic("stats:update", { type: "attendance_update" });
 
         res.status(200).json(applicant)
 

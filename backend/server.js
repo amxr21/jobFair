@@ -1,11 +1,9 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const http = require("http");
 const app = express();
 const cors = require("cors");
 const routers = require("./routers/applicantRouter")
 const userRoutes = require("./routers/userRoutes")
-const { initializeSocket } = require("./config/socket");
 
 const dotenv = require("dotenv");
 dotenv.config();
@@ -35,13 +33,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Create HTTP server and initialize Socket.io
-const server = http.createServer(app);
-const io = initializeSocket(server, allowedOrigins);
-
-// Make io accessible in routes/controllers via req.app.get('io')
-app.set("io", io);
-
 const connection = mongoose.connection;
 
 connection.once("open", ()=> {
@@ -50,12 +41,6 @@ connection.once("open", ()=> {
   app.use("/user", userRoutes);
 })
 
-
-
-
-
-// Use server.listen instead of app.listen for Socket.io
-server.listen(process.env.PORT, ()=>{
+app.listen(process.env.PORT, ()=>{
     console.log("Server works fine on PORT:", process.env.PORT);
-    console.log("Socket.io initialized and ready for connections");
 })
