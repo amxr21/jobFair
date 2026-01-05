@@ -42,3 +42,6 @@ sampleData.json
 # Temporary files
 *.tmp
 *.temp
+
+# Internal documentation (not for public repo)
+CHANGELOG_INTERNAL.md
