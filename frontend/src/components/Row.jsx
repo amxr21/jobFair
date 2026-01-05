@@ -291,7 +291,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                 <h2 className="flex items-center truncate">{companyCity}</h2>
                 <h2 className="flex items-center truncate">{companySector}</h2>
                 <h2 className="flex items-center truncate">{numebrOfApplicants}</h2>
-                <h2 className={`flex items-center justify-center text-[10px] xl:text-xs px-1.5 py-1 rounded-md font-semibold ${companyStatus == 'Confirmed' ? `${colorCode.Confirmed}` : `${colorCode.Canceled}`}`}>{companyStatus == 'Confirmed' ? 'Confirmed' : 'Canceled'}</h2>
+                <h2 className={`flex items-center justify-center text-[10px] xl:text-xs px-1.5 py-1 rounded-md font-semibold ${companyStatus === 'Confirmed' ? colorCode.Confirmed : companyStatus === 'Pending' ? colorCode.Pending : colorCode.Canceled}`}>{companyStatus || 'Pending'}</h2>
 
                 <div className="flex items-center justify-end">
                     <button className="flex items-center justify-center w-5 h-5" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}}>

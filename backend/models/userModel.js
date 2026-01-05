@@ -53,6 +53,25 @@ const userSchema = new Schema({
     },
     surveyResult: {
         type: Array
+    },
+    // Company attendance status
+    status: {
+        type: String,
+        enum: ['Pending', 'Confirmed', 'Canceled'],
+        default: 'Pending'
+    },
+    // Confirmation tracking
+    confirmationToken: {
+        type: String,
+        default: null
+    },
+    confirmationTokenExpiry: {
+        type: Date,
+        default: null
+    },
+    reminderSentAt: {
+        type: Date,
+        default: null
     }
 
 

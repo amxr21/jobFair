@@ -8,7 +8,7 @@ const requireAuth = require("../middlewares/requireAuth");
 // Cloudinary configuration
 const { cloudinary, upload } = require("../config/cloudinary");
 
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
 
@@ -61,7 +61,14 @@ router.post("/email", emailRequest);
 
 router.post("/applicants", upload.single("cvfile"), addApplicantPublic);
 
+// Company confirmation route (public - no auth required)
+router.get("/confirm-attendance/:token", confirmCompanyAttendance);
+
 router.use(requireAuth);
+
+// Company reminder routes (requires auth - admin only)
+router.post("/companies/send-reminders", sendCompanyReminders);
+router.patch("/companies/:id/status", updateCompanyStatus);
 
 router.get("/", testFunc);
 

@@ -2,7 +2,7 @@ import "./style.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults } from "./pages/index";
+import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance } from "./pages/index";
 import { useAuthContext } from "./Hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
@@ -23,6 +23,7 @@ function App() {
                         <Route path="/statistics" element={<Statistics link={link} />} />
                         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
+                        <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
                     </Routes>
                 </BrowserRouter>
             </div>
