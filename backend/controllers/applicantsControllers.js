@@ -620,4 +620,187 @@ const deleteApplicant = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant}
+// Generate random token for confirmation
+const crypto = require('crypto');
+
+const generateConfirmationToken = () => {
+    return crypto.randomBytes(32).toString('hex');
+};
+
+// Send confirmation reminder email to companies
+const sendCompanyReminders = async (req, res) => {
+    try {
+        const { companyIds, frontendUrl } = req.body;
+
+        if (!companyIds || !Array.isArray(companyIds) || companyIds.length === 0) {
+            return res.status(400).json({ error: "No companies selected" });
+        }
+
+        const results = [];
+        const errors = [];
+
+        for (const companyId of companyIds) {
+            try {
+                if (!mongoose.Types.ObjectId.isValid(companyId)) {
+                    errors.push({ companyId, error: "Invalid company ID" });
+                    continue;
+                }
+
+                const company = await UserModel.findById(companyId);
+                if (!company) {
+                    errors.push({ companyId, error: "Company not found" });
+                    continue;
+                }
+
+                // Generate confirmation token
+                const token = generateConfirmationToken();
+                const tokenExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+                // Update company with token
+                await UserModel.findByIdAndUpdate(companyId, {
+                    confirmationToken: token,
+                    confirmationTokenExpiry: tokenExpiry,
+                    reminderSentAt: new Date()
+                });
+
+                // Generate confirmation URL
+                const confirmUrl = `${frontendUrl || 'https://job-fair-control.vercel.app'}/confirm-attendance/${token}`;
+
+                // Email content
+                const emailHtml = `
+                    <div style="max-width:600px; margin:0 auto; padding:30px; background-color:#ffffff; border-radius:10px; box-shadow:0 0 20px rgba(0,0,0,0.1); font-family:Arial, sans-serif;">
+                        <div style="text-align:center; margin-bottom:30px;">
+                            <h1 style="color:#0E7F41; margin-bottom:10px;">Job Fair Attendance Confirmation</h1>
+                            <p style="color:#666; font-size:14px;">University of Sharjah Career Services</p>
+                        </div>
+
+                        <p style="color:#333; font-size:16px; line-height:1.6;">Dear <strong>${company.companyName}</strong>,</p>
+
+                        <p style="color:#555; line-height:1.8;">
+                            We are excited to have you participate in our upcoming Job Fair! To finalize your attendance, please confirm your participation by clicking the button below.
+                        </p>
+
+                        <div style="background-color:#f5f5f5; padding:20px; border-radius:8px; margin:20px 0;">
+                            <h3 style="color:#333; margin-bottom:15px;">Your Account Details:</h3>
+                            <p style="margin:5px 0;"><strong>Company:</strong> ${company.companyName}</p>
+                            <p style="margin:5px 0;"><strong>Email:</strong> ${company.email}</p>
+                            <p style="margin:5px 0;"><strong>Representatives:</strong> ${company.representitives}</p>
+                            <p style="margin:5px 0;"><strong>City:</strong> ${company.city}</p>
+                        </div>
+
+                        <div style="text-align:center; margin:30px 0;">
+                            <a href="${confirmUrl}" style="display:inline-block; padding:15px 40px; background-color:#0E7F41; color:#ffffff; text-decoration:none; border-radius:8px; font-weight:bold; font-size:16px;">
+                                Confirm Attendance
+                            </a>
+                        </div>
+
+                        <p style="color:#888; font-size:12px; text-align:center;">
+                            This confirmation link will expire in 7 days.<br>
+                            If you did not register for this event, please ignore this email.
+                        </p>
+
+                        <hr style="border:none; border-top:1px solid #eee; margin:30px 0;">
+
+                        <footer style="text-align:center;">
+                            <p style="color:#999; font-size:12px;">Best Regards,</p>
+                            <p style="color:#0E7F41; font-weight:bold;">CASTO Office</p>
+                            <p style="color:#999; font-size:11px;">University of Sharjah</p>
+                        </footer>
+                    </div>
+                `;
+
+                // Send email
+                await sendEmail(
+                    `Job Fair Attendance Confirmation - ${company.companyName}`,
+                    emailHtml,
+                    company.email,
+                    `CASTO Office <${process.env.EMAIL_USER}>`
+                );
+
+                results.push({ companyId, companyName: company.companyName, status: "sent" });
+
+            } catch (err) {
+                errors.push({ companyId, error: err.message });
+            }
+        }
+
+        res.status(200).json({
+            message: `Sent ${results.length} reminder(s)`,
+            results,
+            errors
+        });
+
+    } catch (error) {
+        console.error("Error sending reminders:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Confirm company attendance via token
+const confirmCompanyAttendance = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        if (!token) {
+            return res.status(400).json({ error: "Token is required" });
+        }
+
+        const company = await UserModel.findOne({
+            confirmationToken: token,
+            confirmationTokenExpiry: { $gt: new Date() }
+        });
+
+        if (!company) {
+            return res.status(400).json({ error: "Invalid or expired confirmation link" });
+        }
+
+        // Update company status to Confirmed
+        await UserModel.findByIdAndUpdate(company._id, {
+            status: 'Confirmed',
+            confirmationToken: null,
+            confirmationTokenExpiry: null
+        });
+
+        res.status(200).json({
+            message: "Attendance confirmed successfully!",
+            companyName: company.companyName
+        });
+
+    } catch (error) {
+        console.error("Error confirming attendance:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Update company status manually (for admin)
+const updateCompanyStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid company ID" });
+        }
+
+        if (!['Pending', 'Confirmed', 'Canceled'].includes(status)) {
+            return res.status(400).json({ error: "Invalid status value" });
+        }
+
+        const company = await UserModel.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        res.status(200).json({ message: "Status updated", company });
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus}
