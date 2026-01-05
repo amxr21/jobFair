@@ -66,3 +66,5 @@ export {default as FilterDropdown} from "./FilterDropdown";
 export {default as AdvancedAnalytics} from "./AdvancedAnalytics";
 export {default as StepTimeline} from "./StepTimeline";
 export {default as CountUp} from "./CountUp";
+export {default as MobileNav} from "./MobileNav";
+export {default as MobileRegisterFAB} from "./MobileRegisterFAB";

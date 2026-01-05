@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus } from "./pages/index";
+import { MobileNav, MobileRegisterFAB } from "./components/index";
 import { useAuthContext } from "./Hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
@@ -27,7 +28,7 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <div className="App flex relative gap-x-6 xl:gap-x-8 p-0 md:p-6 h-[100vh] overflow-hidden">
+            <div className="App flex relative gap-x-6 xl:gap-x-8 p-0 md:p-6 h-[100vh] pb-14 md:pb-0 overflow-hidden">
                 <BrowserRouter>
                     <ConditionalNavBar link={link} />
                     <Routes>
@@ -41,6 +42,9 @@ function App() {
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
                         <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
                     </Routes>
+                    {/* Mobile Navigation */}
+                    <MobileNav />
+                    <MobileRegisterFAB />
                 </BrowserRouter>
             </div>
         </PrimeReactProvider>

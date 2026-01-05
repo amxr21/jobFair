@@ -330,11 +330,15 @@ const QuestionsContainer = () => {
               <button
                 onClick={toggleSurveyVisibility}
                 disabled={isTogglingVisibility}
-                className={`flex h-6 w-11 flex-shrink-0 items-center rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:ring-offset-2 ${
-                  surveyPublic ? 'bg-[#0E7F41] justify-end' : 'bg-gray-300 justify-start'
+                className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:ring-offset-2 ${
+                  surveyPublic ? 'bg-[#0E7F41]' : 'bg-gray-300'
                 } ${isTogglingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
-                <span className="pointer-events-none h-5 w-5 rounded-full bg-white shadow-md transition-all duration-200 ease-in-out" />
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300 ease-in-out ${
+                    surveyPublic ? 'left-[1.375rem]' : 'left-0.5'
+                  }`}
+                />
               </button>
               <span className={`text-xs md:text-sm font-medium ${surveyPublic ? 'text-[#0E7F41]' : 'text-gray-500'}`}>
                 {surveyPublic ? 'Public' : 'Hidden'}
