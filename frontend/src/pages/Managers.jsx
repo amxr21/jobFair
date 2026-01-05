@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { createPortal } from "react-dom";
 
@@ -6,6 +6,211 @@ import { Row, TableHeader, PageContainer } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
 import { CircularProgress } from "@mui/material";
+
+
+// Company Filter Dropdown Component
+const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [activeFilters, setActiveFilters] = useState({});
+    const [expandedCategories, setExpandedCategories] = useState({});
+    const dropdownRef = useRef(null);
+
+    // Get unique values for each filter category from companies
+    const getUniqueValues = (category) => {
+        const values = new Set();
+        companies?.forEach(company => {
+            let value;
+            switch(category) {
+                case 'status':
+                    value = company.status || 'Pending';
+                    break;
+                case 'sector':
+                    value = company.sector;
+                    break;
+                case 'city':
+                    value = company.city;
+                    break;
+                case 'fields':
+                    // Handle array of fields
+                    const fields = Array.isArray(company.fields) ? company.fields : company.fields?.split(',');
+                    fields?.forEach(field => {
+                        const trimmed = typeof field === 'string' ? field.trim() : field;
+                        if (trimmed) values.add(trimmed);
+                    });
+                    return; // Skip the normal add
+                case 'hasApplicants':
+                    value = (company.numberOfApplicants || 0) > 0 ? 'Has Applicants' : 'No Applicants';
+                    break;
+                case 'reminderSent':
+                    value = company.reminderSentAt ? 'Reminder Sent' : 'Not Sent';
+                    break;
+                default:
+                    value = null;
+            }
+            if (value) values.add(value);
+        });
+        return Array.from(values).sort();
+    };
+
+    const filterCategories = [
+        { id: 'status', label: 'Attendance Status' },
+        { id: 'sector', label: 'Sector' },
+        { id: 'city', label: 'City' },
+        { id: 'fields', label: 'Industry Fields' },
+        { id: 'hasApplicants', label: 'Applicants' },
+        { id: 'reminderSent', label: 'Reminder Status' },
+    ];
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const toggleCategory = (categoryId) => {
+        setExpandedCategories(prev => ({
+            ...prev,
+            [categoryId]: !prev[categoryId]
+        }));
+    };
+
+    const handleFilterSelect = (category, value) => {
+        const newFilters = { ...activeFilters };
+
+        if (!newFilters[category]) {
+            newFilters[category] = [];
+        }
+
+        const index = newFilters[category].indexOf(value);
+        if (index > -1) {
+            newFilters[category].splice(index, 1);
+            if (newFilters[category].length === 0) {
+                delete newFilters[category];
+            }
+        } else {
+            newFilters[category].push(value);
+        }
+
+        setActiveFilters(newFilters);
+        onFilterChange(newFilters);
+    };
+
+    const clearAllFilters = () => {
+        setActiveFilters({});
+        onFilterChange({});
+    };
+
+    const activeFilterCount = Object.values(activeFilters).flat().length;
+
+    const getSelectedCount = (categoryId) => {
+        return activeFilters[categoryId]?.length || 0;
+    };
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={`border rounded-xl w-10 h-10 flex items-center justify-center transition-all duration-200 ${
+                    activeFilterCount > 0
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                }`}
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="size-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
+                </svg>
+                {activeFilterCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                        {activeFilterCount}
+                    </span>
+                )}
+            </button>
+
+            {isOpen && (
+                <div className="absolute top-12 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
+                    <div className="p-3 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                        <h3 className="font-semibold text-sm">Filter Companies</h3>
+                        {activeFilterCount > 0 && (
+                            <button
+                                onClick={clearAllFilters}
+                                className="text-xs text-red-500 hover:text-red-700"
+                            >
+                                Clear all
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="overflow-y-auto max-h-[390px]">
+                        {filterCategories.map(category => {
+                            const values = getUniqueValues(category.id);
+                            if (values.length === 0) return null;
+
+                            const isExpanded = expandedCategories[category.id];
+                            const selectedCount = getSelectedCount(category.id);
+
+                            return (
+                                <div key={category.id} className="border-b border-gray-50 last:border-b-0">
+                                    <button
+                                        onClick={() => toggleCategory(category.id)}
+                                        className="w-full px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-medium text-gray-700 flex items-center justify-between transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span>{category.label}</span>
+                                            <span className="text-gray-400 text-xs">({values.length})</span>
+                                            {selectedCount > 0 && (
+                                                <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                                    {selectedCount}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <svg
+                                            className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+
+                                    <div
+                                        className={`overflow-hidden transition-all duration-200 ${
+                                            isExpanded ? 'max-h-[250px] opacity-100' : 'max-h-0 opacity-0'
+                                        }`}
+                                    >
+                                        <div className="p-2 flex flex-wrap gap-1 bg-white max-h-[200px] overflow-y-auto">
+                                            {values.map(value => {
+                                                const isSelected = activeFilters[category.id]?.includes(value);
+                                                return (
+                                                    <button
+                                                        key={value}
+                                                        onClick={() => handleFilterSelect(category.id, value)}
+                                                        className={`px-2 py-1 text-xs rounded-md transition-all duration-150 ${
+                                                            isSelected
+                                                                ? 'bg-blue-500 text-white'
+                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                        }`}
+                                                    >
+                                                        {value}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 
 // Reminder Modal Component
@@ -68,7 +273,7 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
             <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden mx-4">
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[80vh] max-h-[90vh] overflow-hidden mx-4">
                 {/* Header */}
                 <div className="bg-[#0E7F41] text-white px-6 py-4 flex items-center justify-between">
                     <div>
@@ -213,6 +418,8 @@ const Managers = ({link}) => {
     const [isAscending, setIsAscending] = useState(true)
     const [filterSelected, setFilterSelected] = useState('')
     const [showReminderModal, setShowReminderModal] = useState(false)
+    const [activeFilters, setActiveFilters] = useState({})
+    const [searchQuery, setSearchQuery] = useState('')
 
     const [ applicantsList, setApplicantsList ] = useState([])
     const [ numberOfApplicants, setNumberOfApplicants ] = useState()
@@ -230,6 +437,59 @@ const Managers = ({link}) => {
     }, [filterSelected]) 
  
     
+
+    // Apply dropdown filters to companies
+    const applyDropdownFilters = (list, filters) => {
+        if (Object.keys(filters).length === 0) return list;
+
+        return list.filter(company => {
+            return Object.entries(filters).every(([category, values]) => {
+                if (values.length === 0) return true;
+
+                let companyValue;
+                switch(category) {
+                    case 'status':
+                        companyValue = company.status || 'Pending';
+                        return values.includes(companyValue);
+                    case 'sector':
+                        companyValue = company.sector;
+                        return values.includes(companyValue);
+                    case 'city':
+                        companyValue = company.city;
+                        return values.includes(companyValue);
+                    case 'fields':
+                        // Check if any of the company's fields match any selected filter
+                        const fields = Array.isArray(company.fields) ? company.fields : company.fields?.split(',');
+                        if (!fields) return false;
+                        return values.some(v => fields.map(f => typeof f === 'string' ? f.trim() : f).includes(v));
+                    case 'hasApplicants':
+                        companyValue = (company.numberOfApplicants || 0) > 0 ? 'Has Applicants' : 'No Applicants';
+                        return values.includes(companyValue);
+                    case 'reminderSent':
+                        companyValue = company.reminderSentAt ? 'Reminder Sent' : 'Not Sent';
+                        return values.includes(companyValue);
+                    default:
+                        return true;
+                }
+            });
+        });
+    };
+
+    // Apply search filter to companies
+    const applySearchFilter = (list, query) => {
+        if (!query || query.trim() === '') return list;
+
+        const searchLower = query.toLowerCase().trim();
+        return list.filter(company => {
+            const companyName = company.companyName?.toLowerCase() || '';
+            const email = company.email?.toLowerCase() || '';
+            const representatives = company.representitives?.toLowerCase() || '';
+
+            return companyName.includes(searchLower) ||
+                   email.includes(searchLower) ||
+                   representatives.includes(searchLower);
+        });
+    };
 
     // Sorting function to arrange companies by specified criteria
     const sortedCompanies = (filterCriteria, ascending) => {
@@ -257,10 +517,18 @@ const Managers = ({link}) => {
         }
     };
 
+    const handleFilterChange = (filters) => {
+        setActiveFilters(filters);
+    };
 
     useEffect(() => {
-        if(companies.length != 0) setFinalList(sortedCompanies(filterCriteriaa, isAscending));
-    }, [filterCriteriaa, companies, isAscending]);
+        if(companies.length != 0) {
+            let result = sortedCompanies(filterCriteriaa, isAscending);
+            result = applyDropdownFilters(result, activeFilters);
+            result = applySearchFilter(result, searchQuery);
+            setFinalList(result);
+        }
+    }, [filterCriteriaa, companies, isAscending, activeFilters, searchQuery]);
 
     let counter = 0;
 
@@ -433,15 +701,43 @@ const Managers = ({link}) => {
             user={user}
             title="Companies & Cooperations"
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
-                <button
-                    onClick={() => setShowReminderModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Send Reminders
-                </button>
+                <div className="flex gap-2 items-center">
+                    {/* Search Input */}
+                    <div className="relative flex items-center">
+                        <input
+                            type="text"
+                            placeholder="Search companies..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className={`pl-9 pr-3 h-10 text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-52 transition-all duration-200 ${
+                                searchQuery
+                                    ? 'border-blue-500 bg-blue-50'
+                                    : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                            }`}
+                        />
+                        <svg className="absolute left-3 w-4 h-4 text-gray-400" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+
+                    {/* Filter Dropdown */}
+                    <CompanyFilterDropdown
+                        filters={activeFilters}
+                        onFilterChange={handleFilterChange}
+                        companies={companies}
+                    />
+
+                    {/* Send Reminders Button */}
+                    <button
+                        onClick={() => setShowReminderModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        Send Reminders
+                    </button>
+                </div>
             )}
         >
             {/* Reminder Modal */}
@@ -469,6 +765,7 @@ const Managers = ({link}) => {
                                 key={company._id}
                                 number={counter}
                                 userType={'manager'}
+                                companyId={company._id}
                                 companyName={company.companyName}
                                 companyEmail={company.email}
                                 companyRepresentatives={company.representitives}
@@ -482,6 +779,13 @@ const Managers = ({link}) => {
                                 opportunityTypes={company.opportunityTypes}
                                 preferredQualities={company.preferredQualities}
                                 companyApplicants={companyApplicants}
+                                link={link}
+                                user={user}
+                                onStatusChange={(id, newStatus) => {
+                                    setCompanies(prev => prev.map(c =>
+                                        c._id === id ? { ...c, status: newStatus } : c
+                                    ));
+                                }}
                             />
                         );
                     })
