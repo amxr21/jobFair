@@ -16,21 +16,20 @@ const MobileRegisterFAB = () => {
     const [isClosing, setIsClosing] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
 
-    let scanner;
-
     // Hide on certain routes
     const hideRoutes = ['/login', '/signup', '/confirm-attendance', '/survey'];
     const shouldHide = hideRoutes.some(route =>
         location.pathname === route || location.pathname.startsWith(route + '/')
     );
 
-    if (shouldHide || !user) return null;
-
     const isCASTO = user?.email === "casto@sharjah.ac.ae";
 
     // Register applicant scanner
     useEffect(() => {
+        if (!user || shouldHide) return; // Don't run if hidden
+
         let timeout;
+        let scanner;
         if (isCameraOn) {
             timeout = setTimeout(() => {
                 scanner = new Html5QrcodeScanner("mobile-reader", {
@@ -62,11 +61,14 @@ const MobileRegisterFAB = () => {
         return () => {
             if (timeout) clearTimeout(timeout);
         };
-    }, [isCameraOn]);
+    }, [isCameraOn, user, shouldHide]);
 
     // Confirm attendance scanner
     useEffect(() => {
+        if (!user || shouldHide) return; // Don't run if hidden
+
         let timeout;
+        let scanner;
         if (isCameraOn2) {
             timeout = setTimeout(() => {
                 scanner = new Html5QrcodeScanner("mobile-reader2", {
@@ -95,7 +97,7 @@ const MobileRegisterFAB = () => {
         return () => {
             if (timeout) clearTimeout(timeout);
         };
-    }, [isCameraOn2]);
+    }, [isCameraOn2, user, shouldHide]);
 
     const isModalVisible = isCameraOn || isCameraOn2 || isClosing;
 
@@ -120,6 +122,9 @@ const MobileRegisterFAB = () => {
         setScannerResult(null);
         setIsCameraOn2(true);
     };
+
+    // Hide component on certain routes or when not logged in
+    if (shouldHide || !user) return null;
 
     return (
         <>
