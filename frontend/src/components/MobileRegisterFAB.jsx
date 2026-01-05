@@ -161,7 +161,7 @@ const MobileRegisterFAB = () => {
 
             {/* Floating Action Button Menu */}
             {showMenu && (
-                <div className="md:hidden fixed bottom-20 right-4 z-[9998] flex flex-col gap-2 animate-fadeIn">
+                <div className="md:hidden fixed bottom-32 right-4 z-[9998] flex flex-col gap-2 animate-fadeIn">
                     <button
                         onClick={handleRegister}
                         className="flex items-center gap-2 bg-white text-[#0E7F41] border border-[#0E7F41] px-4 py-2.5 rounded-full shadow-lg text-sm font-medium"
@@ -196,7 +196,7 @@ const MobileRegisterFAB = () => {
             {/* Main FAB Button */}
             <button
                 onClick={() => setShowMenu(!showMenu)}
-                className={`md:hidden fixed bottom-[4.5rem] right-4 z-[9998] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
+                className={`md:hidden fixed bottom-20 right-4 z-[9998] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 ${
                     showMenu
                         ? 'bg-gray-600 rotate-45'
                         : 'bg-[#0E7F41]'

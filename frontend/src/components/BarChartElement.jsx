@@ -42,7 +42,7 @@ const BarChartElement = ({dataset}) => {
       ]
 
     return(
-        <div ref={containerRef} className="col-span-6 bg-white rounded-xl p-5 flex flex-col gap-x-0 w-full h-full overflow-hidden">
+        <div ref={containerRef} className="col-span-1 lg:col-span-6 bg-white rounded-xl p-3 md:p-5 flex flex-col gap-x-0 w-full h-full overflow-hidden min-h-[280px]">
             <BarChart
                 width={dimensions.width}
                 xAxis=

@@ -116,18 +116,20 @@ const CompanyStatus = () => {
     const applicantsCount = companyData?.applicants?.length || 0;
 
     return (
-        <div className="flex-1 flex flex-col gap-6 overflow-auto p-2">
+        <div className="flex-1 flex flex-col gap-4 md:gap-6 overflow-auto p-3 md:p-4">
             {/* Header */}
-            <div className="bg-white rounded-xl p-5 shadow-sm border">
-                <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] rounded-xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                        {companyData?.companyName?.charAt(0)?.toUpperCase()}
+            <div className="bg-white rounded-xl p-3 md:p-5 shadow-sm border">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] rounded-xl flex items-center justify-center text-white text-lg md:text-xl font-bold shadow-lg shrink-0">
+                            {companyData?.companyName?.charAt(0)?.toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-lg md:text-xl font-bold text-gray-800 truncate">{companyData?.companyName}</h1>
+                            <p className="text-xs md:text-sm text-gray-500 truncate">{companyData?.sector} • {companyData?.city}</p>
+                        </div>
                     </div>
-                    <div className="flex-1">
-                        <h1 className="text-xl font-bold text-gray-800">{companyData?.companyName}</h1>
-                        <p className="text-sm text-gray-500">{companyData?.sector} • {companyData?.city}</p>
-                    </div>
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm ${getStatusColor(status)}`}>
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs md:text-sm shrink-0 ${getStatusColor(status)}`}>
                         {getStatusIcon(status)}
                         <span className="font-semibold">{status}</span>
                     </div>
@@ -135,8 +137,8 @@ const CompanyStatus = () => {
             </div>
 
             {/* Status Card */}
-            <div className={`rounded-xl p-5 border-2 ${status === 'Confirmed' ? 'bg-blue-50 border-blue-200' : status === 'Canceled' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}`}>
-                <div className="flex items-start gap-4">
+            <div className={`rounded-xl p-3 md:p-5 border-2 ${status === 'Confirmed' ? 'bg-blue-50 border-blue-200' : status === 'Canceled' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200'}`}>
+                <div className="flex items-start gap-3 md:gap-4">
                     <div className={`p-2.5 rounded-full ${status === 'Confirmed' ? 'bg-blue-100 text-blue-600' : status === 'Canceled' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
                         {getStatusIcon(status)}
                     </div>

@@ -12,13 +12,13 @@ const TopStatistic = ({data, icon, title, subtitle}) => {
     const hasDecimals = value?.toString().includes('.');
 
     return (
-        <div className="statistics-element p-3 bg-white col-span-2 flex flex-col gap-3 rounded-xl max-h-full">
-            <div className="icon flex flex-col items-center border-b pb-2">
+        <div className="statistics-element p-2 md:p-3 bg-white col-span-1 lg:col-span-2 flex flex-col gap-2 md:gap-3 rounded-xl max-h-full">
+            <div className="icon flex flex-col items-center border-b pb-1 md:pb-2">
                 {icon}
             </div>
 
-            <div className="flex flex-col gap-1 text-center">
-                <h2 className={`name font-bold text-lg truncate`}>
+            <div className="flex flex-col gap-0.5 md:gap-1 text-center">
+                <h2 className={`name font-bold text-sm md:text-lg truncate`}>
                     {isNumeric ? (
                         <CountUp
                             end={numericValue}
@@ -30,7 +30,7 @@ const TopStatistic = ({data, icon, title, subtitle}) => {
                         capitalize(value)
                     )}
                 </h2>
-                <p className="text-xs text-gray-500">{title}</p>
+                <p className="text-[10px] md:text-xs text-gray-500 truncate">{title}</p>
             </div>
         </div>
     )

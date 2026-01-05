@@ -701,15 +701,15 @@ const Managers = ({link}) => {
             user={user}
             title="Companies & Cooperations"
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
                     {/* Search Input */}
-                    <div className="relative flex items-center">
+                    <div className="relative flex items-center flex-1 md:flex-initial min-w-0">
                         <input
                             type="text"
-                            placeholder="Search companies..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`pl-9 pr-3 h-10 text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-52 transition-all duration-200 ${
+                            className={`pl-9 pr-3 h-10 text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-full md:w-52 transition-all duration-200 ${
                                 searchQuery
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
@@ -727,15 +727,24 @@ const Managers = ({link}) => {
                         companies={companies}
                     />
 
-                    {/* Send Reminders Button */}
+                    {/* Send Reminders Button - Desktop */}
                     <button
                         onClick={() => setShowReminderModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors"
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                         Send Reminders
+                    </button>
+                    {/* Send Reminders Button - Mobile (Icon only) */}
+                    <button
+                        onClick={() => setShowReminderModal(true)}
+                        className="md:hidden flex items-center justify-center w-10 h-10 bg-[#0E7F41] hover:bg-[#0a5f31] text-white rounded-xl transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
                     </button>
                 </div>
             )}
