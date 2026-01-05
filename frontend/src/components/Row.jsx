@@ -106,17 +106,11 @@ const ApplicantModal = ({visible, onClose, children}) => {
             {/* Modal */}
             <div ref={expandApplicantDiv}
                 className={`expandDetails ${animationClass} parent bg-white shadow-2xl rounded-xl px-8 py-10 w-80 md:w-[64rem] h-[42rem] max-h-[45rem] overflow-y-scroll md:overflow-y-auto absolute top-1/2 left-1/2`}>
-                {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
-                    aria-label="Close"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-600">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                {children}
+                {React.Children.map(children, child =>
+                    React.isValidElement(child)
+                        ? React.cloneElement(child, { onCloseModal: onClose })
+                        : child
+                )}
             </div>
         </div>,
         document.body
@@ -171,7 +165,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                         <ApplicantModal visible={isClicked} onClose={() => setIsClicked(false)} >
 
                             <div className="card-info flex flex-col md:flex-row gap-6">
-                                <Brief>
+                                <Brief onCloseModal={() => setIsClicked(false)}>
                                     <BriefInfo
                                         ticketId={ticketId}
                                         id={uniId}
@@ -308,7 +302,18 @@ const ApplicantModal = ({visible, onClose, children}) => {
                     </button>
 
                     <ApplicantModal visible={isClicked} onClose={() => setIsClicked(false)}>
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-6 relative">
+                            {/* Close Button for Company Modal */}
+                            <button
+                                onClick={() => setIsClicked(false)}
+                                className="absolute -top-6 -left-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors z-10"
+                                aria-label="Close"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 text-gray-600">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+
                             {/* Company Header */}
                             <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
                                 <div className="w-16 h-16 bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] rounded-xl flex items-center justify-center text-white text-2xl font-bold">
