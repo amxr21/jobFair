@@ -60,9 +60,9 @@ const TopBar = ({user}) => {
     
 
     return (
-        <div id="TopBar" className="md:w-full w-full border border-[0.5px] flex flex-col md:flex-row items-center justify-between px-4 py-3 rounded-xl transition-all duration-300">
-            <div className="user flex flex-col md:flex-row gap-3">
-                <div className="avatar flex items-center justify-center w-10 h-10 border rounded-lg">
+        <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-300">
+            <div className="user flex flex-row gap-2 md:gap-3 items-center">
+                <div className="avatar flex items-center justify-center w-9 h-9 md:w-10 md:h-10 border rounded-lg shrink-0">
                     {
                         user?.email.split('@')[0] == 'casto'
                         ? <CastoIcon />
@@ -71,9 +71,9 @@ const TopBar = ({user}) => {
                             : <VisitorIcon />
                     }
                 </div>
-                <div className="name">
-                    <h2 className="text-lg md:text-xl font-bold">{user ? user.email.split('@')[0] == 'casto' ? "CASTO Office" : user?.companyName : "Visitor"}</h2>
-                    <h6 className="text-xs font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
+                <div className="name min-w-0">
+                    <h2 className="text-sm md:text-xl font-bold truncate">{user ? user.email.split('@')[0] == 'casto' ? "CASTO Office" : user?.companyName : "Visitor"}</h2>
+                    <h6 className="text-[10px] md:text-xs font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
                 </div>
             </div>
             <div className="hidden md:block time text-right">
