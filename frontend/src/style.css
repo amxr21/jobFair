@@ -120,11 +120,11 @@
 @keyframes modalSlideDown {
     0% {
         opacity: 1;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(1);
     }
     100% {
         opacity: 0;
-        transform: translate(-50%, -40%) scale(0.95);
+        transform: translate(-50%, -48%) scale(0.98);
     }
 }
 
@@ -148,7 +148,7 @@
 }
 
 .expandDetails.modal-close {
-    animation: modalSlideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
 .expandDetails-backdrop {
@@ -160,7 +160,7 @@
 }
 
 .expandDetails-backdrop.backdrop-close {
-    animation: backdropFadeOut 0.4s ease-out forwards;
+    animation: backdropFadeOut 0.3s ease-out forwards;
 }
 
 
@@ -185,6 +185,7 @@
 
 /* Unified grid columns for applicant rows - synced with TableHeader */
 /* Columns: # | Name | UniID | Nationality | CGPA | Major | CV | Status | Expand */
+/* Desktop: All columns visible */
 .row {
     column-gap: 0.75rem;
     grid-template-columns: 0.1fr 0.7fr 0.5fr 0.7fr 0.3fr 1fr 0.35fr 0.35fr 0.12fr !important;
@@ -196,6 +197,80 @@
 .row-manager {
     column-gap: 0.75rem;
     grid-template-columns: 0.1fr 0.8fr 1fr 1fr 0.5fr 0.5fr 0.35fr 0.35fr 0.12fr !important;
+}
+
+/* ========== RESPONSIVE GRID FOR TABLETS & SMALL LAPTOPS ========== */
+
+/* Tablet/iPad Portrait & Small Laptops (768px - 1024px) */
+/* Applicant rows: Show # | Name | UniID | Major | Status | Expand */
+/* Hide: Nationality, CGPA, CV */
+@media (max-width: 1024px) {
+    .row {
+        grid-template-columns: 0.1fr 1fr 0.6fr 1.2fr 0.4fr 0.12fr !important;
+    }
+
+    /* Hide nationality (4th), CGPA (5th), CV (7th) columns */
+    .row > h2:nth-child(4),
+    .row > h2:nth-child(5),
+    .row > h2:nth-child(7),
+    .row > div:nth-child(4),
+    .row > div:nth-child(5),
+    .row > div:nth-child(7) {
+        display: none !important;
+    }
+
+    /* Manager rows: Show # | Company Name | Email | Status | Expand */
+    /* Hide: Representatives, City, Sector, No of App */
+    .row-manager {
+        grid-template-columns: 0.1fr 1fr 1.2fr 0.4fr 0.12fr !important;
+    }
+
+    .row-manager > h2:nth-child(4),
+    .row-manager > h2:nth-child(5),
+    .row-manager > h2:nth-child(6),
+    .row-manager > h2:nth-child(7) {
+        display: none !important;
+    }
+}
+
+/* Small Tablets & Large Phones (480px - 768px) */
+/* Applicant rows: Show # | Name | Major | Status | Expand */
+/* Minimal info for quick registration */
+@media (max-width: 768px) {
+    .row {
+        grid-template-columns: 0.15fr 1fr 1fr 0.5fr 0.15fr !important;
+        column-gap: 0.5rem;
+        padding-left: 0.75rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    /* Hide uniId (3rd), nationality (4th), CGPA (5th), CV (7th) */
+    .row > h2:nth-child(3),
+    .row > h2:nth-child(4),
+    .row > h2:nth-child(5),
+    .row > h2:nth-child(7),
+    .row > div:nth-child(3),
+    .row > div:nth-child(4),
+    .row > div:nth-child(5),
+    .row > div:nth-child(7) {
+        display: none !important;
+    }
+
+    /* Manager rows: Show # | Company Name | Status | Expand */
+    .row-manager {
+        grid-template-columns: 0.15fr 1fr 0.5fr 0.15fr !important;
+        column-gap: 0.5rem;
+        padding-left: 0.75rem !important;
+        padding-right: 0.5rem !important;
+    }
+
+    .row-manager > h2:nth-child(3),
+    .row-manager > h2:nth-child(4),
+    .row-manager > h2:nth-child(5),
+    .row-manager > h2:nth-child(6),
+    .row-manager > h2:nth-child(7) {
+        display: none !important;
+    }
 }
 
 .qrcode::before {

@@ -367,76 +367,76 @@ const MainBanner = ({link}) => {
             user={user}
             title="Applicants list"
             titleExtra={user && (
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center">
                     {/* Search Input - searches by Name or University ID only */}
                     <div className="relative flex items-center">
                         <input
                             type="text"
-                            placeholder="Search by name or ID..."
+                            placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className={`pl-9 pr-3 h-10 text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-64 transition-all duration-200 ${
+                            className={`pl-8 md:pl-9 pr-2 md:pr-3 h-9 md:h-10 text-xs md:text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-32 md:w-48 lg:w-64 transition-all duration-200 ${
                                 searchQuery
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
                             }`}
                         />
-                        <svg className="absolute left-3 w-4 h-4 text-gray-400" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                        <svg className="absolute left-2.5 md:left-3 w-3.5 md:w-4 h-3.5 md:h-4 text-gray-400" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
                     <FlagButton btnRef={flagIcon} handleClick={filterFlagged} />
                     <FilterDropdown filters={activeFilters} onFilterChange={handleFilterChange} applicants={[...applicants, ...otherApplicants]} />
 
-                    {/* Page Navigation Arrows - Hide when filters are active */}
+                    {/* Page Navigation Arrows - Hide when filters are active, simplified on mobile */}
                     {!showAll && !hasActiveFilters && (
-                        <div className="flex items-center gap-1 ml-2">
+                        <div className="flex items-center gap-1 ml-1 md:ml-2">
                             <button
                                 onClick={handlePrevPage}
                                 disabled={!pagination.hasPrevPage}
-                                className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-200 ${
+                                className={`w-8 h-8 md:w-10 md:h-10 rounded-xl border flex items-center justify-center transition-all duration-200 ${
                                     !pagination.hasPrevPage
                                         ? 'border-gray-300 bg-gray-100 text-gray-300 cursor-not-allowed'
                                         : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'
                                 }`}
                                 title="Previous 50 applicants"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 md:w-4 h-3.5 md:h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                                 </svg>
                             </button>
-                            <span className="text-xs text-gray-500 min-w-[40px] text-center">
+                            <span className="text-[10px] md:text-xs text-gray-500 min-w-[32px] md:min-w-[40px] text-center">
                                 {pagination.currentPage}/{pagination.totalPages}
                             </span>
                             <button
                                 onClick={handleNextPage}
                                 disabled={!pagination.hasNextPage}
-                                className={`w-10 h-10 rounded-xl border flex items-center justify-center transition-all duration-200 ${
+                                className={`w-8 h-8 md:w-10 md:h-10 rounded-xl border flex items-center justify-center transition-all duration-200 ${
                                     !pagination.hasNextPage
                                         ? 'border-gray-300 bg-gray-100 text-gray-300 cursor-not-allowed'
                                         : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'
                                 }`}
                                 title="Next 50 applicants"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3.5 md:w-4 h-3.5 md:h-4">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
                                 </svg>
                             </button>
                         </div>
                     )}
 
-                    {/* Show All / Show Paginated Toggle - Only show if more than 50 results and no filters active */}
+                    {/* Show All / Show Paginated Toggle - Only show if more than 50 results and no filters active, hide on small screens */}
                     {(pagination.uniqueStudentCount || pagination.totalItems) > 50 && !hasActiveFilters && (
                         <button
                             onClick={handleShowAll}
-                            className={`h-10 px-3 rounded-xl border text-xs font-medium transition-all duration-200 ml-1 ${
+                            className={`hidden md:flex h-9 md:h-10 px-2 md:px-3 rounded-xl border text-[10px] md:text-xs font-medium transition-all duration-200 ml-1 items-center ${
                                 showAll
                                     ? 'border-blue-500 bg-blue-50 text-blue-600'
                                     : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'
                             }`}
                             title={showAll ? `Show paginated (${pagination.totalPages} pages)` : `Show all ${pagination.uniqueStudentCount || pagination.totalItems} applicants`}
                         >
-                            {showAll ? `Paginate (${pagination.totalPages})` : 'Show All'}
+                            {showAll ? `Paginate` : 'All'}
                         </button>
                     )}
                 </div>
@@ -446,17 +446,18 @@ const MainBanner = ({link}) => {
         >
             {/* Tabs for non-CASTO users */}
             {user?.email !== 'casto@sharjah.ac.ae' && (
-                <div className="flex gap-1 mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+                <div className="flex gap-1 mb-3 md:mb-4 bg-gray-100 p-1 rounded-xl w-fit">
                     <button
                         onClick={() => setActiveTab('my')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                        className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${
                             activeTab === 'my'
                                 ? 'bg-white text-[#0E7F41] shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                        My Applicants
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        <span className="hidden md:inline">My Applicants</span>
+                        <span className="md:hidden">Mine</span>
+                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs ${
                             activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
                         }`}>
                             {finalList.length}
@@ -464,14 +465,15 @@ const MainBanner = ({link}) => {
                     </button>
                     <button
                         onClick={() => setActiveTab('other')}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                        className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${
                             activeTab === 'other'
                                 ? 'bg-white text-[#0E7F41] shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
-                        Other Applicants
-                        <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        <span className="hidden md:inline">Other Applicants</span>
+                        <span className="md:hidden">Others</span>
+                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs ${
                             activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
                         }`}>
                             {finalOtherList.length}
