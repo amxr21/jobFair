@@ -19,7 +19,7 @@ const userSchema = new Schema({
         required: true,
     },
     fields: {
-        type: String,
+        type: [String], // Array of industry fields
         required: true,
     },
     representitives: {

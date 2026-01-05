@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSignUp } from "../Hooks/useSignUp";
 import { Input, SelectInput, MultiSelectInput, StepTimeline, AuthFormOverlay } from "../components";
+import { INDUSTRY_FIELDS } from "./MultiSelectInput";
 
 const SignupFunc = () => {
   const [step, setStep] = useState(1);
@@ -14,7 +15,7 @@ const SignupFunc = () => {
   const [repNames, setRepNames] = useState(["", "", ""]);
 
   // Step 2: Company Type
-  const [fields, setFields] = useState("");
+  const [fields, setFields] = useState([]);
   const [sector, setSector] = useState("");
   const [city, setCity] = useState("");
   const [noOfPositions, setNoOfPositions] = useState("");
@@ -86,7 +87,7 @@ const SignupFunc = () => {
   };
 
   const isStep2Valid = () => {
-    return fields.trim() && sector && city && noOfPositions;
+    return fields.length > 0 && sector && city && noOfPositions;
   };
 
   const isStep3Valid = () => {
@@ -183,13 +184,13 @@ const SignupFunc = () => {
           {step === 2 && (
             <div className="flex flex-col gap-3 transition-all duration-300 ease-in-out animate-fadeIn">
               <h3 className="text-lg font-semibold text-gray-800 mb-1 transition-all duration-300 ease-in-out">Company Profile</h3>
-              <Input
+              <MultiSelectInput
                 Id="fields"
                 Name="Industry Fields"
-                Type="text"
-                Value={fields}
-                handleChange={(e) => setFields(e.target.value)}
-                placeholder="e.g., Technology, Finance, Healthcare"
+                options={INDUSTRY_FIELDS}
+                value={fields}
+                handleChange={setFields}
+                placeholder="Search and select industry fields..."
               />
               <div className="grid grid-cols-2 gap-3">
                 <SelectInput

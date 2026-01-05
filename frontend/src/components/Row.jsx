@@ -35,7 +35,7 @@ const colorCode = {
 
 
 
-const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, shortlistedBy, rejectedBy, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentatives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user, cv, preferredMajors, opportunityTypes, preferredQualities, link, onDelete}) => {
+const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, major, gpa, nationality, experience, attended, shortlistedBy, rejectedBy, age, portfolio, languages, file, qrCode, status='Registered', userType, companyName, companyEmail, companyRepresentatives, companyFields, companyStatus, numebrOfApplicants, companySector, companyCity, numberOfPositions, skills, city, expectedToGraduate, flags, user, cv, preferredMajors, opportunityTypes, preferredQualities, link, onDelete, companyApplicants = []}) => {
     const expandApplicantDiv = useRef();
     const expandApplicantBtn = useRef();
     const [isVisible, setIsVisible] = useState(false);
@@ -361,9 +361,9 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                 <div className="bg-gray-50 rounded-lg p-4">
                                     <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Industry Fields</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {companyFields?.split(',').map((field, idx) => (
-                                            <span key={idx} className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                                                {field.trim()}
+                                        {(Array.isArray(companyFields) ? companyFields : companyFields?.split(','))?.map((field, idx) => (
+                                            <span key={idx} className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs">
+                                                {typeof field === 'string' ? field.trim() : field}
                                             </span>
                                         ))}
                                     </div>
@@ -389,7 +389,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Preferred Majors</h3>
                                         <div className="flex flex-wrap gap-2">
                                             {preferredMajors.map((major, idx) => (
-                                                <span key={idx} className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
+                                                <span key={idx} className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
                                                     {major}
                                                 </span>
                                             ))}
@@ -402,6 +402,42 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                     <div className="bg-gray-50 rounded-lg p-4 md:col-span-2">
                                         <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Ideal Candidate Qualities</h3>
                                         <p className="text-sm text-gray-700">{preferredQualities}</p>
+                                    </div>
+                                )}
+
+                                {/* Applicants List */}
+                                {companyApplicants?.length > 0 && (
+                                    <div className="bg-gray-50 rounded-lg p-4 md:col-span-2">
+                                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                                            Applicants ({companyApplicants.length})
+                                        </h3>
+                                        <div className="max-h-[280px] overflow-y-auto border border-gray-200 rounded-lg bg-white">
+                                            {companyApplicants.map((applicant, idx) => (
+                                                <div
+                                                    key={applicant._id || idx}
+                                                    className={`flex items-center justify-between px-3 py-2 text-sm ${idx !== companyApplicants.length - 1 ? 'border-b border-gray-100' : ''} hover:bg-gray-50`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-600 text-xs rounded-full font-medium">
+                                                            {idx + 1}
+                                                        </span>
+                                                        <div>
+                                                            <p className="font-medium text-gray-800">{applicant.applicantDetails?.fullName || 'Unknown'}</p>
+                                                            <p className="text-xs text-gray-500">{applicant.applicantDetails?.major || 'No major'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs text-gray-500">{applicant.applicantDetails?.uniId || ''}</span>
+                                                        {applicant.attended && (
+                                                            <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Confirmed</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {companyApplicants.length > 10 && (
+                                            <p className="text-xs text-gray-500 mt-2 text-center">Scroll to see all {companyApplicants.length} applicants</p>
+                                        )}
                                     </div>
                                 )}
                             </div>

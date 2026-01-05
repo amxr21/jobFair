@@ -1,5 +1,131 @@
 import { useState, useRef, useEffect } from "react";
 
+// Industry Fields and Sectors (70+ options)
+const INDUSTRY_FIELDS = [
+  // Technology & IT
+  "Information Technology",
+  "Software Development",
+  "Artificial Intelligence",
+  "Machine Learning",
+  "Data Science",
+  "Cybersecurity",
+  "Cloud Computing",
+  "Blockchain",
+  "Internet of Things (IoT)",
+  "Robotics",
+  "Web Development",
+  "Mobile App Development",
+  "Game Development",
+  "DevOps",
+  "IT Consulting",
+
+  // Finance & Banking
+  "Banking",
+  "Investment Banking",
+  "Asset Management",
+  "Insurance",
+  "FinTech",
+  "Accounting",
+  "Financial Services",
+  "Venture Capital",
+  "Private Equity",
+
+  // Healthcare & Life Sciences
+  "Healthcare",
+  "Pharmaceuticals",
+  "Biotechnology",
+  "Medical Devices",
+  "Clinical Research",
+  "Health Tech",
+  "Hospitals & Clinics",
+
+  // Energy & Utilities
+  "Oil & Gas",
+  "Renewable Energy",
+  "Solar Energy",
+  "Nuclear Energy",
+  "Utilities",
+  "Energy Management",
+
+  // Manufacturing & Engineering
+  "Manufacturing",
+  "Automotive",
+  "Aerospace",
+  "Defense",
+  "Electronics",
+  "Industrial Engineering",
+  "Chemical Engineering",
+  "Civil Engineering",
+
+  // Retail & Consumer
+  "Retail",
+  "E-commerce",
+  "Consumer Goods",
+  "Fashion & Apparel",
+  "Food & Beverage",
+  "Hospitality",
+  "Tourism & Travel",
+
+  // Media & Entertainment
+  "Media",
+  "Entertainment",
+  "Advertising",
+  "Public Relations",
+  "Broadcasting",
+  "Digital Marketing",
+  "Content Creation",
+
+  // Professional Services
+  "Consulting",
+  "Legal Services",
+  "Human Resources",
+  "Recruitment",
+  "Business Services",
+  "Management Consulting",
+
+  // Construction & Real Estate
+  "Construction",
+  "Real Estate",
+  "Architecture",
+  "Property Management",
+  "Interior Design",
+
+  // Logistics & Supply Chain
+  "Logistics",
+  "Supply Chain",
+  "Transportation",
+  "Shipping & Maritime",
+  "Warehousing",
+  "Freight & Cargo",
+
+  // Education & Research
+  "Education",
+  "EdTech",
+  "Research & Development",
+  "Training & Development",
+  "Academic Institutions",
+
+  // Government & Public Sector
+  "Government",
+  "Public Administration",
+  "Non-Profit Organizations",
+  "NGOs",
+  "Social Services",
+
+  // Telecommunications
+  "Telecommunications",
+  "Networking",
+  "5G Technology",
+  "Satellite Communications",
+
+  // Agriculture & Environment
+  "Agriculture",
+  "AgriTech",
+  "Environmental Services",
+  "Sustainability",
+  "Water Management"
+];
+
 // University of Sharjah Majors by College
 const UOS_MAJORS = [
   // College of Engineering
@@ -263,5 +389,5 @@ const MultiSelectInput = ({
   );
 };
 
-export { UOS_MAJORS };
+export { UOS_MAJORS, INDUSTRY_FIELDS };
 export default MultiSelectInput;
