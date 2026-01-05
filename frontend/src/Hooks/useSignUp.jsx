@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuthContext } from "./useAuthContext";
-
-const link = import.meta.env.VITE_API_URL || "http://localhost:2000";
+import { API_URL as link } from "../config/api";
 
 const capitalize = (str) => {
     if(!str) return ""

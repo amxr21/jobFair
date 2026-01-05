@@ -10,12 +10,7 @@ import { useAuthContext } from "../Hooks/useAuthContext"
 import axios from "axios";
 
 import { BriefSurveyStatstics, CurrentCompanyBar, ResponsesPieChart, SummaryDetailModeBar } from "./index";
-
-
-
-
-const link = "http://localhost:2000"
-// const link = "https://jobfair-production.up.railway.app"
+import { API_URL as link } from "../config/api";
 
 
 const QuestionsContainer = () => {
