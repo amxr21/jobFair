@@ -5,6 +5,7 @@ const Input = ({
   Type,
   Value,
   handleChange,
+  onBlur,
   Name,
   placeholder,
   required = true,
@@ -57,7 +58,10 @@ const Input = ({
         type={Type}
         value={Value}
         onChange={handleChange}
-        onBlur={() => setTouched(true)}
+        onBlur={() => {
+          setTouched(true);
+          if (onBlur) onBlur();
+        }}
         placeholder={placeholder || Name}
         className={`w-full px-2.5 py-1.5 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 ease-in-out ${getBorderClass()}`}
       />

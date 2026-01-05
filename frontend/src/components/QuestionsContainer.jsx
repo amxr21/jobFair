@@ -21,7 +21,7 @@ const QuestionsContainer = () => {
 
   const { allResponses, setAllResponses } = useContext(SurveyContext)
   const { answers, updateAnswers } = useContext(AnswersContext)
-  
+
   const [ list, setList ] = useState([])
   const [ companies, setCompanies ] = useState(null)
 
@@ -31,6 +31,46 @@ const QuestionsContainer = () => {
   const [ surveyPart, setSurveyPart ] = useState(0);
 
   const [ currentCompanyData, setCurrentCompanyData ] = useState(0)
+
+  // Survey visibility toggle
+  const [ surveyPublic, setSurveyPublic ] = useState(false)
+  const [ isTogglingVisibility, setIsTogglingVisibility ] = useState(false)
+
+  // Fetch survey visibility setting
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await axios.get(`${link}/settings`)
+        if (response?.data) {
+          setSurveyPublic(response.data.surveyPublic)
+        }
+      } catch (error) {
+        // Error fetching settings
+      }
+    }
+    fetchSettings()
+  }, [])
+
+  // Toggle survey visibility
+  const toggleSurveyVisibility = async () => {
+    if (!user?.token) return
+
+    setIsTogglingVisibility(true)
+    try {
+      const response = await axios.patch(
+        `${link}/settings`,
+        { key: 'surveyPublic', value: !surveyPublic },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      )
+      if (response?.data) {
+        setSurveyPublic(!surveyPublic)
+      }
+    } catch (error) {
+      console.error('Error toggling survey visibility:', error)
+    } finally {
+      setIsTogglingVisibility(false)
+    }
+  }
 
 
       const surveyData = [
@@ -279,7 +319,34 @@ const QuestionsContainer = () => {
 
     return (
       <div className="flex flex-col gap-3 flex-1 h-full overflow-hidden">
-        <SummaryDetailModeBar func={setMode} currentMode={mode} />
+        {/* Header with Survey Visibility Toggle */}
+        <div className="flex items-center justify-between">
+          <SummaryDetailModeBar func={setMode} currentMode={mode} />
+
+          {/* Survey Visibility Toggle - Only for CASTO admin */}
+          {user?.email === "casto@sharjah.ac.ae" && (
+            <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2 border shadow-sm">
+              <span className="text-sm text-gray-600">Survey Visibility:</span>
+              <button
+                onClick={toggleSurveyVisibility}
+                disabled={isTogglingVisibility}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:ring-offset-2 ${
+                  surveyPublic ? 'bg-[#0E7F41]' : 'bg-gray-300'
+                } ${isTogglingVisibility ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out ${
+                    surveyPublic ? 'translate-x-[1.375rem]' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${surveyPublic ? 'text-[#0E7F41]' : 'text-gray-500'}`}>
+                {surveyPublic ? 'Public' : 'Hidden'}
+              </span>
+            </div>
+          )}
+        </div>
+
         {
           mode == "summary" &&
 
