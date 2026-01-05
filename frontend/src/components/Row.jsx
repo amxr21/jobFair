@@ -133,10 +133,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     // Note: Click outside handling is now managed by ApplicantModal's backdrop onClick
     // The modal handles its own closing animation when onClose is called
 
-
-    if(email == 'casto@sharjah.ac.ae'){ number -= 1; return '';}
-    else{
-        return userType != 'manager'
+    return userType != 'manager'
         ?
             <div id={ticketId} className={`row relative overflow-hidden grid py-2 pl-7 pr-6 h-[52px] ${shortlistedBy?.length ? 'border-2 border-blue-500' : rejectedBy?.length ? 'border-2 border-red-600' : ''} ${flags?.includes(user?.companyName) ? "border-2 border-green-500 bg-white" :'bg-white'} rounded-xl items-center mb-2 text-xs xl:text-sm`}>
                 <h2 className="flex items-center truncate">{number}</h2>
@@ -414,8 +411,6 @@ const ApplicantModal = ({visible, onClose, children}) => {
 
 
             </div>
-        
-    }
 
 }
 

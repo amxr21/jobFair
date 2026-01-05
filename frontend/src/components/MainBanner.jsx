@@ -181,6 +181,8 @@ const MainBanner = ({link}) => {
         if (list.length === 0) return [];
         // First, deduplicate by uniId keeping latest submissions
         let deduplicated = getUniqueLatestApplicants(list);
+        // Filter out system/admin accounts
+        deduplicated = deduplicated.filter(app => app.applicantDetails?.email !== 'casto@sharjah.ac.ae');
         let sorted = sortList(deduplicated, filterCriteriaa, isAscending);
         sorted = applyDropdownFilters(sorted, activeFilters);
         if ((hasActiveFilters || showAll) && searchQuery) {
