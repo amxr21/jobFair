@@ -445,3 +445,18 @@ button, a, .clickable {
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+
+/* ========== MOBILE NAVIGATION STYLES ========== */
+
+/* Safe area for devices with notches (iPhone X+) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Ensure content doesn't get hidden behind mobile nav */
+@media (max-width: 768px) {
+  .page-container {
+    max-height: calc(100vh - 3.5rem) !important;
+    padding-bottom: 1rem !important;
+  }
+}
