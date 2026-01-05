@@ -318,9 +318,9 @@ const QuestionsContainer = () => {
 
 
     return (
-      <div className="flex flex-col gap-3 flex-1 h-full overflow-hidden">
+      <div className="flex flex-col gap-3 flex-1 h-full overflow-hidden p-3 md:p-0">
         {/* Header with Survey Visibility Toggle */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <SummaryDetailModeBar func={setMode} currentMode={mode} />
 
           {/* Survey Visibility Toggle - Only for CASTO admin */}
@@ -351,8 +351,8 @@ const QuestionsContainer = () => {
           mode == "summary" &&
 
           <div id="QuestionsContainer" className="bg-[#F3F6FF] flex-1 rounded-xl overflow-y-auto">
-            <div className="sections relative flex flex-col rounded-xl gap-4 grow p-6 ">
-              <div className="brief-statstics flex gap-4 h-fit min-h-48">
+            <div className="sections relative flex flex-col rounded-xl gap-3 md:gap-4 grow p-3 md:p-6">
+              <div className="brief-statstics flex flex-col md:flex-row gap-3 md:gap-4 h-fit md:min-h-48">
                 <ResponsesPieChart data={companies} res={allResponsesData?.length} unres={companies?.length - 1 - allResponsesData?.length} />
                 <BriefSurveyStatstics number={companies?.length-1} text={"Companies Registered and Engaged in the Job Fair"} type={"main"} />
                 <div className="flex gap-2 min-h-full">
@@ -362,22 +362,22 @@ const QuestionsContainer = () => {
               </div>
 
               {/* Survey Part Tabs */}
-              <div className="flex gap-2 border-b">
+              <div className="flex gap-1 md:gap-2 border-b overflow-x-auto">
                 <button
                   onClick={() => setSurveyPart(0)}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-2 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                  Part 1: Event Experience
+                  <span className="hidden sm:inline">Part 1: </span>Event Experience
                 </button>
                 <button
                   onClick={() => setSurveyPart(1)}
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-2 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                  Part 2: Recruitment & Follow-Up
+                  <span className="hidden sm:inline">Part 2: </span>Recruitment
                 </button>
               </div>
 
-              <div className="bg-white p-6 border rounded-xl">
+              <div className="bg-white p-3 md:p-6 border rounded-xl">
                 <SurveySection
                   key={surveyPart}
                   section={surveyPart}
@@ -395,29 +395,29 @@ const QuestionsContainer = () => {
         {
           mode == "details" &&
           <div className="bg-[#F3F6FF] flex-1 rounded-xl overflow-auto">
-            <div className="sections relative flex flex-col rounded-xl gap-4 p-6">
+            <div className="sections relative flex flex-col rounded-xl gap-3 md:gap-4 p-3 md:p-6">
               {/* Company selector and tabs in one card */}
               <div className="sticky top-0 z-10 bg-white rounded-xl border overflow-hidden">
                 <CurrentCompanyBar CompanyName={a[currentCompanyData]} length={a.length} func={setCurrentCompanyData}/>
 
                 {/* Survey Part Tabs */}
-                <div className="flex gap-2 border-t px-4">
+                <div className="flex gap-1 md:gap-2 border-t px-2 md:px-4 overflow-x-auto">
                   <button
                     onClick={() => setSurveyPart(0)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-2 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${surveyPart === 0 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                   >
-                    Part 1: Event Experience
+                    <span className="hidden sm:inline">Part 1: </span>Event Experience
                   </button>
                   <button
                     onClick={() => setSurveyPart(1)}
-                    className={`px-4 py-2 text-sm font-medium transition-colors ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`px-2 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${surveyPart === 1 ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                   >
-                    Part 2: Recruitment & Follow-Up
+                    <span className="hidden sm:inline">Part 2: </span>Recruitment
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white p-6 border rounded-xl">
+              <div className="bg-white p-3 md:p-6 border rounded-xl">
                 <SurveySection
                   key={`${currentCompanyData}-${surveyPart}`}
                   section={surveyPart}

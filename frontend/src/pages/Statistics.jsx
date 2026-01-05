@@ -177,7 +177,7 @@ const Statistics = ({ link }) => {
   }, [data]);
 
   return (
-    <div className="flex flex-col gap-y-4 flex-1 min-w-0 h-full max-h-[100vh] overflow-hidden">
+    <div className="flex flex-col gap-y-3 md:gap-y-4 flex-1 min-w-0 h-full max-h-[100vh] overflow-hidden p-3 md:p-0">
       {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
 
       {/* View Mode Toggle */}
@@ -185,7 +185,7 @@ const Statistics = ({ link }) => {
         <div className="flex bg-white rounded-xl p-1 shadow-sm border border-gray-200">
           <button
             onClick={() => setViewMode('basic')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 md:px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 ${
               viewMode === 'basic'
                 ? 'bg-[#0E7F41] text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-50'
@@ -195,29 +195,29 @@ const Statistics = ({ link }) => {
           </button>
           <button
             onClick={() => setViewMode('advanced')}
-            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`px-3 md:px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 ${
               viewMode === 'advanced'
                 ? 'bg-[#0E7F41] text-white shadow-md'
                 : 'text-gray-600 hover:bg-gray-50'
             }`}
           >
-            Advanced Analytics
+            <span className="hidden sm:inline">Advanced </span>Analytics
           </button>
         </div>
       </div>
 
       {viewMode === 'basic' ? (
-        <div id="Statistics" className="bg-[#F3F6FF] flex-1 min-h-0 overflow-hidden rounded-xl p-4 w-full animate-fadeIn">
+        <div id="Statistics" className="bg-[#F3F6FF] flex-1 min-h-0 overflow-auto rounded-xl p-3 md:p-4 w-full animate-fadeIn">
           <div className="flex flex-col h-full gap-3">
             {/* Row 1 - Stats cards */}
-            <div className="grid grid-cols-12 gap-x-4 rounded-lg shrink-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-2 md:gap-4 rounded-lg shrink-0">
               {titles.map((type, i) => (
                 <StatisticsElement key={i} data={data} type={type} />
               ))}
             </div>
 
             {/* Row 2 - Charts */}
-            <div className="grid grid-cols-12 gap-x-4 flex-1 min-h-[200px]">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 flex-1 min-h-[200px]">
               <StatsticTypeProvider>
                 <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title="Number of" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
                 <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title="Companies By" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
@@ -226,7 +226,7 @@ const Statistics = ({ link }) => {
             </div>
 
             {/* Row 3 - Bottom stats */}
-            <div className="grid grid-cols-10 gap-x-4 shrink-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-2 md:gap-4 shrink-0">
               <TopStatistic title="Top Company" subtitle="Applications" data={mostCompany?.length ? mostCompany : ['', '']} icon={<StarIcon />} />
               <TopStatistic title="Top Field" subtitle="Companies" data={mostField?.length ? mostField : ['', '']} icon={<TrendIcon />} />
               <TopStatistic title="Top Major" subtitle="Students" data={topMajor?.length ? topMajor : ['', '']} icon={<GraduationIcon />} />

@@ -29,7 +29,7 @@ const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
     const { data: currentData, colors: currentColors } = getCurrentData();
 
     return (
-        <div className="col-span-3 bg-white rounded-xl p-4 flex flex-col w-full h-full overflow-hidden">
+        <div className="col-span-1 lg:col-span-3 bg-white rounded-xl p-3 md:p-4 flex flex-col w-full h-full overflow-hidden min-h-[280px]">
             {/* Header with title and filter in same row */}
             <div className="flex items-center justify-between mb-2">
                 <h2 className="text-sm font-medium text-gray-700">{title}</h2>
