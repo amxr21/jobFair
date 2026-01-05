@@ -242,6 +242,11 @@ const Managers = ({link}) => {
                     {finalList.length != 0 ?  finalList.map((company) => {
                         counter += 1;
 
+                        // Get applicants for this company
+                        const companyApplicants = applicantsList.filter(app =>
+                            app.user_id?.includes(company.companyName)
+                        );
+
                         return (
                             <Row
                                 key={company._id}
@@ -259,6 +264,7 @@ const Managers = ({link}) => {
                                 preferredMajors={company.preferredMajors}
                                 opportunityTypes={company.opportunityTypes}
                                 preferredQualities={company.preferredQualities}
+                                companyApplicants={companyApplicants}
                             />
                         );
                     })
