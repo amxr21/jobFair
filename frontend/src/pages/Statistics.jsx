@@ -133,7 +133,7 @@ const Statistics = ({ link }) => {
     const applicantsCount = attendedIds.size;
     const representativesCount = reps.length;
     const total = representativesCount + applicantsCount;
-    setNumber(Math.round((total / 60) * 100));
+    setNumber(Math.round((total / 629) * 100));
   }, [data]);
 
   useEffect(() => {
@@ -219,8 +219,8 @@ const Statistics = ({ link }) => {
             {/* Row 2 - Charts */}
             <div className="grid grid-cols-12 gap-x-4 flex-1 min-h-[200px]">
               <StatsticTypeProvider>
-                <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title="Applicants" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
-                <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title="Data By" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
+                <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title="Number of" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
+                <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title="Companies By" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
               </StatsticTypeProvider>
               <BarChartElement dataset={sectors} />
             </div>
