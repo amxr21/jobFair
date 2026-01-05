@@ -15,8 +15,8 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
     const [result, setResult] = useState(null);
     const [selectAll, setSelectAll] = useState(false);
 
-    // Filter to only show pending companies
-    const pendingCompanies = companies.filter(c => c.status !== 'Confirmed');
+    // Filter to only show pending companies (not Confirmed or Canceled)
+    const pendingCompanies = companies.filter(c => !c.status || c.status === 'Pending');
 
     const handleSelectAll = () => {
         if (selectAll) {
