@@ -8,7 +8,7 @@ const requireAuth = require("../middlewares/requireAuth");
 // Cloudinary configuration
 const { cloudinary, upload } = require("../config/cloudinary");
 
-const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus} = require("../controllers/applicantsControllers")
+const {getAllApplicants, getApplicant, addApplicant, testFunc, updateApplicant, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings} = require("../controllers/applicantsControllers")
 
 const router = express.Router();
 
@@ -64,11 +64,18 @@ router.post("/applicants", upload.single("cvfile"), addApplicantPublic);
 // Company confirmation route (public - no auth required)
 router.get("/confirm-attendance/:token", confirmCompanyAttendance);
 
+// Settings route (public - for checking survey visibility)
+router.get("/settings", getSettings);
+
 router.use(requireAuth);
+
+// Settings update route (requires auth - admin only)
+router.patch("/settings", updateSettings);
 
 // Company reminder routes (requires auth - admin only)
 router.post("/companies/send-reminders", sendCompanyReminders);
 router.patch("/companies/:id/status", updateCompanyStatus);
+router.delete("/companies/:id", deleteCompany);
 
 router.get("/", testFunc);
 

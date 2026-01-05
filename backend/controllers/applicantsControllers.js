@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const ApplicantModel = require("../models/applicantFormModel");
 const UserModel = require("../models/userModel");
+const SettingsModel = require("../models/settingsModel");
 const QRCode = require("qrcode");
 
 const dotenv = require("dotenv");
@@ -803,4 +804,69 @@ const updateCompanyStatus = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus}
+// Delete company (admin only)
+const deleteCompany = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid company ID" });
+        }
+
+        const company = await UserModel.findByIdAndDelete(id);
+
+        if (!company) {
+            return res.status(404).json({ error: "Company not found" });
+        }
+
+        // Optionally: Remove all applicants associated with this company
+        // await ApplicantModel.updateMany(
+        //     { user_id: id },
+        //     { $pull: { user_id: id } }
+        // );
+
+        res.status(200).json({ message: "Company deleted successfully", company });
+
+    } catch (error) {
+        console.error("Error deleting company:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Get app settings (public endpoint for certain settings)
+const getSettings = async (req, res) => {
+    try {
+        const surveyPublic = await SettingsModel.getSetting('surveyPublic', false);
+
+        res.status(200).json({
+            surveyPublic
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Update app settings (admin only)
+const updateSettings = async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        const userEmail = req.user?.email;
+
+        // Only allow certain keys to be updated
+        const allowedKeys = ['surveyPublic'];
+        if (!allowedKeys.includes(key)) {
+            return res.status(400).json({ error: 'Invalid setting key' });
+        }
+
+        const setting = await SettingsModel.setSetting(key, value, userEmail);
+
+        res.status(200).json({
+            message: 'Setting updated successfully',
+            setting: { key: setting.key, value: setting.value }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings}
