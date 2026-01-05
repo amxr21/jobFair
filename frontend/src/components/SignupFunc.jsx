@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useSignUp } from "../Hooks/useSignUp";
 import { Input, SelectInput, MultiSelectInput, StepTimeline, AuthFormOverlay } from "../components";
 import { INDUSTRY_FIELDS } from "./MultiSelectInput";
+import axios from "axios";
+import { API_URL } from "../config/api";
 
 const SignupFunc = () => {
   const [step, setStep] = useState(1);
@@ -25,21 +27,133 @@ const SignupFunc = () => {
   const [opportunityTypes, setOpportunityTypes] = useState([]);
   const [preferredQualities, setPreferredQualities] = useState("");
 
+  // Email validation
+  const [emailError, setEmailError] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+
+  // Similar company name detection
+  const [similarCompanies, setSimilarCompanies] = useState([]);
+  const [showSimilarCompanyDialog, setShowSimilarCompanyDialog] = useState(false);
+  const [selectedExistingCompany, setSelectedExistingCompany] = useState(null);
+  const [isCheckingCompanyName, setIsCheckingCompanyName] = useState(false);
+  const [isReinitializing, setIsReinitializing] = useState(false);
+
   const { signup, error, isLoading } = useSignUp();
+
+  // Check if email is already in use
+  const checkEmailAvailability = async (emailToCheck) => {
+    if (!emailToCheck || !emailToCheck.includes('@')) {
+      setEmailError("");
+      return;
+    }
+
+    setIsCheckingEmail(true);
+    setEmailError("");
+
+    try {
+      const response = await axios.get(`${API_URL}/companies`);
+      const existingEmails = response.data.map(company => company.email?.toLowerCase());
+
+      if (existingEmails.includes(emailToCheck.toLowerCase())) {
+        setEmailError("This email is already registered");
+      }
+    } catch (error) {
+      // Silently fail - backend will catch duplicates anyway
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+
+  // Check for similar company names
+  const checkSimilarCompanyName = async (nameToCheck) => {
+    if (!nameToCheck || nameToCheck.trim().length < 3) {
+      setSimilarCompanies([]);
+      return [];
+    }
+
+    setIsCheckingCompanyName(true);
+
+    try {
+      const response = await axios.get(`${API_URL}/user/check-company-name`, {
+        params: { companyName: nameToCheck }
+      });
+
+      const similar = response.data.similarCompanies || [];
+      setSimilarCompanies(similar);
+      return similar;
+    } catch (error) {
+      console.error("Error checking similar company names:", error);
+      return [];
+    } finally {
+      setIsCheckingCompanyName(false);
+    }
+  };
+
+  // Handle reinitialize existing company
+  const handleReinitializeCompany = async (existingCompanyId) => {
+    setIsReinitializing(true);
+
+    try {
+      const count = parseInt(numRepresentatives) || 0;
+      const representitives = repNames.slice(0, count).filter(n => n.trim()).join(", ");
+
+      const response = await axios.put(`${API_URL}/user/reinitialize`, {
+        existingCompanyId,
+        email,
+        password,
+        fields,
+        representitives,
+        companyName,
+        sector,
+        city,
+        noOfPositions,
+        preferredMajors,
+        opportunityTypes,
+        preferredQualities
+      });
+
+      if (response.data) {
+        // Store user data in localStorage (same as normal signup)
+        localStorage.setItem('user', JSON.stringify(response.data));
+        setIsRedirecting(true);
+        setShowSimilarCompanyDialog(false);
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error("Error reinitializing company:", error);
+      alert(error.response?.data?.error || "Failed to update company. Please try again.");
+    } finally {
+      setIsReinitializing(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (step < 3) {
       setStep(step + 1);
     } else {
-      // Combine representative names into a single string (as the API expects)
-      const count = parseInt(numRepresentatives) || 0;
-      const representitives = repNames.slice(0, count).filter(n => n.trim()).join(", ");
+      // Check for similar company names before signup
+      const similar = await checkSimilarCompanyName(companyName);
 
-      const success = await signup(email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities);
-      if (success) {
-        setIsRedirecting(true);
+      if (similar.length > 0) {
+        // Show dialog to ask user if they want to reinitialize
+        setShowSimilarCompanyDialog(true);
+        return;
       }
+
+      // No similar companies found, proceed with normal signup
+      await proceedWithSignup();
+    }
+  };
+
+  // Proceed with normal signup
+  const proceedWithSignup = async () => {
+    const count = parseInt(numRepresentatives) || 0;
+    const representitives = repNames.slice(0, count).filter(n => n.trim()).join(", ");
+
+    const success = await signup(email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities);
+    if (success) {
+      setIsRedirecting(true);
     }
   };
 
@@ -74,6 +188,10 @@ const SignupFunc = () => {
   // Validation for each step
   const isStep1Valid = () => {
     if (!companyName.trim() || !email.trim() || !password.trim() || !numRepresentatives) {
+      return false;
+    }
+    // Check if email has error
+    if (emailError) {
       return false;
     }
     // Check if all representative names are filled
@@ -121,14 +239,31 @@ const SignupFunc = () => {
                 placeholder="Enter your company name"
               />
               <div className="grid grid-cols-2 gap-3">
-                <Input
-                  Id="email"
-                  Name="Email"
-                  Type="email"
-                  Value={email}
-                  handleChange={(e) => setEmail(e.target.value)}
-                  placeholder="company@example.com"
-                />
+                <div className="relative">
+                  <Input
+                    Id="email"
+                    Name="Email"
+                    Type="email"
+                    Value={email}
+                    handleChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError("");
+                    }}
+                    onBlur={() => checkEmailAvailability(email)}
+                    placeholder="company@example.com"
+                  />
+                  {isCheckingEmail && (
+                    <div className="absolute right-2 top-7 text-gray-400">
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
+                  )}
+                  {emailError && (
+                    <p className="text-xs text-red-500 mt-0.5 ml-1 animate-fadeIn">{emailError}</p>
+                  )}
+                </div>
                 <Input
                   Id="password"
                   Name="Password"
@@ -323,6 +458,113 @@ const SignupFunc = () => {
       {/* Redirect Overlay */}
       {isRedirecting && (
         <AuthFormOverlay type="redirect" message="Account created!" />
+      )}
+
+      {/* Similar Company Dialog */}
+      {showSimilarCompanyDialog && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
+          <div className="bg-white rounded-xl p-5 m-4 max-w-md w-full shadow-2xl animate-fadeIn">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-yellow-100 rounded-full">
+                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-base font-semibold text-gray-800">Similar Company Found</h3>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              We found companies with similar names. If your company already has an account, you can update it instead of creating a new one.
+            </p>
+
+            <div className="max-h-40 overflow-y-auto mb-4 space-y-2">
+              {similarCompanies.map((company) => (
+                <div
+                  key={company.id}
+                  onClick={() => setSelectedExistingCompany(selectedExistingCompany === company.id ? null : company.id)}
+                  className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                    selectedExistingCompany === company.id
+                      ? 'border-[#0E7F41] bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{company.companyName}</p>
+                      <p className="text-xs text-gray-500">{company.email}</p>
+                    </div>
+                    {selectedExistingCompany === company.id && (
+                      <svg className="w-5 h-5 text-[#0E7F41]" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {selectedExistingCompany && (
+                <button
+                  type="button"
+                  onClick={() => handleReinitializeCompany(selectedExistingCompany)}
+                  disabled={isReinitializing}
+                  className="w-full py-2.5 bg-[#0E7F41] text-white text-sm font-medium rounded-lg hover:bg-[#0a5f31] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isReinitializing ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Updating Account...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      Update This Account
+                    </>
+                  )}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={async () => {
+                  setShowSimilarCompanyDialog(false);
+                  await proceedWithSignup();
+                }}
+                disabled={isLoading}
+                className="w-full py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                {isLoading ? "Creating..." : "No, Create New Account"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSimilarCompanyDialog(false)}
+                className="w-full py-2 text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checking Company Name Overlay */}
+      {isCheckingCompanyName && (
+        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-40 rounded-2xl">
+          <div className="flex items-center gap-3">
+            <svg className="animate-spin w-6 h-6 text-[#0E7F41]" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span className="text-sm text-gray-600">Checking company name...</span>
+          </div>
+        </div>
       )}
     </div>
   );
