@@ -1,319 +1,155 @@
-# Job Fair Dashboard – Management & Analytics Platform
+# Job Fair Portal — Dashboard & Analytics
 
-An interactive, real-time web application designed to streamline and digitize the internship and job application process at the University of Sharjah's **CASTO Office**. This dashboard facilitates a **paperless**, **efficient**, and **automated** experience for managers and administrators during career and internship fairs.
+A web application for managing internship and career fair events. Built for event administrators and company representatives to handle applicant registration, shortlisting, analytics, and company coordination — entirely paperless.
 
-**Live Preview:** [Job Fair Dashboard](https://job-fair-control.vercel.app)
-**Repository:** [GitHub - amxr21/jobFair](https://github.com/amxr21/jobFair)
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [System Architecture](#system-architecture)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Recent Updates](#recent-updates)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact](#contact)
+**Live demo:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
 
 ---
 
-## Overview
+## Quick start (demo mode — no database needed)
 
-The Job Fair Dashboard is tailored for the CASTO office to reduce the administrative burden of managing student applications during job fairs. The platform includes multiple user roles:
+```bash
+git clone https://github.com/amxr21/jobFair.git
+cd jobFair
 
-- **Admin (CASTO Office)**: Full access to all applicants, companies, statistics, and management features
-- **Managers (Company Representatives)**: Scan applicant tickets, review applications, shortlist/reject candidates, and view company-specific insights
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
 
-This system enables quick interactions at booths, instant access to applications, and powerful data tracking during the entire event lifecycle.
+# Configure backend (demo mode is on by default)
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 
-Works seamlessly with the [JobFairForm](https://github.com/amxr21/jobFairForm) applicant submission portal.
+# Start both servers
+cd backend && npm run dev        # → http://localhost:2000
+cd frontend && npm run dev       # → http://localhost:5173
+```
+
+**Demo mode** (`DEMO_MODE=true` in `backend/.env`) runs entirely in-memory — no MongoDB, no Cloudinary, no email service required. Sample data is pre-loaded automatically.
+
+Demo login credentials are printed in the terminal when the backend starts in demo mode.
 
 ---
 
 ## Features
 
-### Applicant Management
-- View all applicants with pagination and search
-- Filter by major, nationality, study level, city, GPA range, status, and more
-- **Deduplication**: Automatically shows only the latest submission per student (by University ID)
-- Expandable applicant cards with full details modal
-- Delete incorrect applicant entries (admin only)
-- Flag, shortlist, and reject applicants
-- Download applicant CVs (stored on Cloudinary)
+**Applicant management**
+- Paginated list with name search and 12+ filters (major, nationality, GPA, city, status…)
+- Expandable applicant detail modal — full profile, QR code, CV download
+- Shortlist / reject / flag applicants with undo support
+- Deduplication — only the latest submission per student is shown
 
-### Company/Manager Management
-- View all registered companies
-- Expandable company rows with detailed modal
-- Display preferred majors, opportunity types, and preferred qualities
-- Track company representatives
+**Company management**
+- Company list with status tracking (Pending / Confirmed / Canceled)
+- Expandable company modals — representatives, fields, preferred majors
+- Send confirmation reminder emails to pending companies (production mode)
 
-### Statistics & Analytics
-- **Overview Tab**: Quick stats (students, companies, CEOs, tech fields)
-- **Advanced Analytics** with 6 tabs:
-  - **Demographics**: Gender distribution, nationality breakdown, city distribution
-  - **Education**: Study level, GPA distribution, college, top majors
-  - **Companies**: Sector distribution, opportunity types, preferred majors
-  - **Skills**: Technical and non-technical skills distribution
-  - **Recruitment**: Shortlist rates, flagged applicants, company popularity
-  - **Profiles**: CV upload rates, LinkedIn profiles, experience rates
-- Interactive charts (Pie, Bar) using MUI X-Charts
-- Unique student count (excludes duplicate submissions)
+**Statistics & analytics**
+- Overview: live counters for students, companies, fields, representatives
+- Advanced analytics (6 tabs): Demographics, Education, Companies, Skills, Recruitment, Profiles
+- Interactive pie and bar charts
 
-### Authentication & Security
-- JWT-based authentication
-- Role-based access control (Admin vs Manager)
-- Secure API endpoints
-
-### UI/UX Features
-- Modern, responsive design with Tailwind CSS
-- Smooth animations and transitions
-- Dark/light mode ready styling
-- Mobile-optimized interface
+**UX**
+- Step-by-step tour guide on first visit
+- In-place search highlight (Ctrl+F style)
+- Smooth modal open/close animations
+- Responsive — works on desktop, tablet, and mobile
+- 404 page with smart redirect suggestions
 
 ---
 
-## Tech Stack
+## Two modes
 
-### Frontend
-- **React.js** (Vite)
-- **Tailwind CSS**
-- **MUI X-Charts** (PieChart, BarChart)
-- **React Router DOM**
-- **Axios**
-- **Context API** for state management
-
-### Backend
-- **Node.js**
-- **Express.js**
-- **MongoDB** (via Mongoose)
-- **Cloudinary** (file storage)
-- **Nodemailer** (transactional emails)
-- **JWT** (authentication)
-
-### Hosting
-- **Frontend**: Vercel
-- **Backend**: Railway
+| | Demo mode | Production mode |
+|---|---|---|
+| `DEMO_MODE` | `true` | `false` |
+| Database | In-memory (no setup) | MongoDB (Atlas or local) |
+| File storage | Disabled | Cloudinary |
+| Emails | Disabled | Nodemailer / Gmail |
+| Purpose | Local dev, demos | Real deployment |
 
 ---
 
-## System Architecture
+## Tech stack
 
-```
-Frontend (React + Vite)
-   |
-   |---> REST API (Express.js)
-   |        |
-   |        |---> MongoDB
-   |        |      ├── Applicants collection
-   |        |      ├── Companies/Managers collection
-   |        |      └── Users collection
-   |        |
-   |        |---> Cloudinary (CV storage)
-   |        |
-   |        |---> Nodemailer (emails)
-   |
-   |<--- JobFairForm (applicant submissions)
-```
+| Layer | Technologies |
+|---|---|
+| Frontend | React 18, Vite, Tailwind CSS, MUI X-Charts, React Router, Axios |
+| Backend | Node.js, Express, Mongoose, JWT, Cloudinary, Nodemailer |
+| Database | MongoDB Atlas (production) / in-memory (demo) |
+| Hosting | Vercel (frontend), Railway (backend) |
 
 ---
 
-## Installation
-
-### Prerequisites
-
-- Node.js v16+
-- MongoDB (local or cloud instance)
-- Cloudinary account
-
-### Steps
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/amxr21/jobFair.git
-   cd jobFair
-   ```
-
-2. **Install dependencies**
-   ```bash
-   # Frontend
-   cd frontend
-   npm install
-
-   # Backend
-   cd ../backend
-   npm install
-   ```
-
-3. **Configure environment variables**
-
-   Create a `.env` file in the `backend/` directory:
-
-   ```env
-   PORT=2000
-   URI=your_mongo_connection_string
-   TOKEN_SIGN=your_jwt_secret
-
-   # Email Configuration
-   EMAIL_USER=your_email@gmail.com
-   EMAIL_PASS=your_app_password
-
-   # Cloudinary Configuration
-   CLOUDINARY_CLOUD_NAME=your_cloud_name
-   CLOUDINARY_API_KEY=your_api_key
-   CLOUDINARY_API_SECRET=your_api_secret
-   ```
-
-4. **Run the development servers**
-
-   In two separate terminals:
-
-   ```bash
-   # Terminal 1 - Backend
-   cd backend
-   npm run dev
-
-   # Terminal 2 - Frontend
-   cd frontend
-   npm run dev
-   ```
-
-   The app should be running on:
-   - Frontend: `http://localhost:5173`
-   - Backend: `http://localhost:2000`
-
----
-
-## Usage
-
-### Admin (CASTO Office)
-1. Log in with admin credentials (casto@sharjah.ac.ae)
-2. Access all applicants, companies, and full statistics
-3. Use filters to find specific applicants
-4. View advanced analytics for insights
-5. Delete incorrect applicant entries if needed
-
-### Managers (Company Representatives)
-1. Log in with company credentials
-2. View applicants who applied to your company
-3. Scan QR codes to access applicant details
-4. Shortlist or reject candidates
-5. Flag interesting profiles for later review
-
----
-
-## Project Structure
+## Project structure
 
 ```
 jobFair/
-├── backend/                        # Backend source code
-│   ├── config/
-│   │   └── cloudinary.js
-│   ├── controllers/
-│   │   ├── applicantsControllers.js  # Pagination, search, delete, unique count
-│   │   └── userController.js
-│   ├── middlewares/
-│   │   └── requireAuth.js
-│   ├── models/
-│   │   ├── applicantFormModel.js
-│   │   └── userModel.js              # With preferredMajors, opportunityTypes
-│   ├── routers/
-│   │   └── applicantRouter.js
-│   └── server.js
+├── backend/
+│   ├── config/          # Cloudinary setup
+│   ├── controllers/     # Business logic (applicants, users)
+│   ├── demo/            # In-memory controllers + seed data (demo mode)
+│   ├── middlewares/     # JWT auth guard
+│   ├── models/          # Mongoose schemas
+│   ├── routers/         # Express route definitions
+│   ├── server.js
+│   └── .env.example     # Environment variable template
 │
-├── frontend/                       # Frontend source code
+├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── AdvancedAnalytics.jsx  # 6-tab analytics dashboard
-│   │   │   ├── MainBanner.jsx         # Applicants list with filters
-│   │   │   ├── Row.jsx                # Expandable row with modal
-│   │   │   ├── FilterDropdown.jsx     # Multi-filter component
-│   │   │   ├── StatisticsElement.jsx  # Stat cards with deduplication
-│   │   │   ├── PageContainer.jsx      # Reusable page layout
-│   │   │   └── ...
-│   │   ├── pages/
-│   │   │   ├── Statistics.jsx         # Overview + Advanced toggle
-│   │   │   ├── Managers.jsx           # Companies list
-│   │   │   ├── Login.jsx
-│   │   │   └── Signup.jsx
-│   │   ├── Context/
-│   │   ├── Hooks/
+│   │   ├── components/  # Reusable UI components
+│   │   ├── pages/       # Route-level pages
+│   │   ├── Context/     # React context providers
+│   │   ├── Hooks/       # Custom hooks
 │   │   └── App.jsx
-│   └── style.css
+│   └── .env.example
 │
+├── .gitignore
 ├── README.md
-└── package.json
+├── package.json         # Root convenience scripts
+└── vercel.json
 ```
 
 ---
 
-## Recent Updates
+## Environment variables
 
-### v2.0 (January 2025)
+Copy the example files and fill in your values for production. Demo mode requires no changes.
 
-#### Backend
-- **Pagination API**: Added page/limit params for efficient data loading
-- **Search Functionality**: Search by name, University ID, email
-- **Unique Student Count**: MongoDB aggregation for accurate deduplication
-- **Delete Endpoint**: Remove incorrect applicant entries
-- **Cloudinary Integration**: CV file storage
-- **Extended User Model**: preferredMajors, opportunityTypes, preferredQualities fields
+**`backend/.env`** — see [`backend/.env.example`](backend/.env.example)
 
-#### Frontend
-- **Advanced Analytics Dashboard**: 6 interactive tabs with charts
-  - Demographics, Education, Companies, Skills, Recruitment, Profiles
-- **Filter Dropdown**: Multi-select filtering with 12+ filter categories
-- **Deduplication**: Shows only latest submission per student
-- **Delete Functionality**: Admin can remove incorrect entries
-- **Managers Page**: Expandable rows with company modals
-- **UI Improvements**: PageContainer, AuthText, improved styling
-- **Consistent Counts**: All pages use deduplicated unique student count
+```
+DEMO_MODE=true          # set to false for production
+PORT=2000
+URI=                    # MongoDB connection string (production only)
+TOKEN_SIGN=             # JWT secret (production only)
+CLOUDINARY_CLOUD_NAME=  # Cloudinary (production only)
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+EMAIL_USER=             # Gmail address (production only)
+EMAIL_PASS=             # Gmail app password (production only)
+```
 
----
+**`frontend/.env`** — see [`frontend/.env.example`](frontend/.env.example)
 
-## Screenshots
-
-> Screenshots can be added to `/assets/screenshots/`
-
-### Statistics Overview
-![Statistics Overview](assets/screenshots/statistics-overview.png)
-
-### Advanced Analytics
-![Advanced Analytics](assets/screenshots/advanced-analytics.png)
-
-### Applicants List with Filters
-![Applicants List](assets/screenshots/applicants-list.png)
+```
+VITE_DB_MODE=demo       # demo | local | production
+```
 
 ---
 
-## Contributing
+## Root scripts
 
-Contributions are welcome. Please follow these steps:
-
-1. Fork the repository
-2. Create a new branch: `git checkout -b feature/your-feature-name`
-3. Commit your changes: `git commit -m "Add your message"`
-4. Push to the branch: `git push origin feature/your-feature-name`
-5. Open a pull request
+```bash
+npm run install-server   # install backend deps
+npm run install-client   # install frontend deps
+npm run start-server     # start backend (node)
+npm run start-client     # start frontend (vite dev)
+npm run build-client     # build frontend for production
+```
 
 ---
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## Contact
-
-**Ammar Obad**
-Full-stack Developer | Computer Engineer
-Website: [ammarobad.info](https://www.ammarobad.info)
-GitHub: [@amxr21](https://github.com/amxr21)
-Email: ammar211080@gmail.com
+MIT

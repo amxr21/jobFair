@@ -1,47 +1,53 @@
-# Dependencies
+# ─── Dependencies ─────────────────────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
 
-# Environment variables (NEVER commit these!)
+# ─── Environment variables (NEVER commit these) ───────────────────────────────
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 backend/.env
+backend/.env.*
+!backend/.env.example
 frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
-# Testing
-coverage/
-
-# Production builds
+# ─── Build outputs ─────────────────────────────────────────────────────────────
 build/
 dist/
+frontend/dist/
 
-# IDE and editor files
+# ─── Test / coverage ──────────────────────────────────────────────────────────
+coverage/
+
+# ─── Sensitive data files ─────────────────────────────────────────────────────
+sampleData.json
+sampleData*.json
+*.seed.json
+
+# ─── Internal / private docs ──────────────────────────────────────────────────
+CHANGELOG_INTERNAL.md
+INTERNAL_*.md
+
+# ─── IDE and editor ───────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS files
+# ─── OS files ─────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Logs
+# ─── Logs ─────────────────────────────────────────────────────────────────────
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.log
 
-# Sample/test data with credentials
-sampleData.json
-
-# Temporary files
+# ─── Temporary files ──────────────────────────────────────────────────────────
 *.tmp
 *.temp
-
-# Internal documentation (not for public repo)
-CHANGELOG_INTERNAL.md
