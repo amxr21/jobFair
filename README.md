@@ -1,74 +1,30 @@
 # Job Fair Portal — Dashboard & Analytics
 
-A web application that digitizes career fair management for event coordinators and company representatives. Handles applicant registration, shortlisting, company coordination, and live analytics — entirely paperless.
+A full-stack web application built to digitize and streamline career fair management for university events. Handles applicant registration, company coordination, shortlisting workflows, real-time analytics, and attendance confirmation — entirely paperless.
 
-🔗 **Live demo:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
-
----
-
-## Try the demo
-
-The live site runs against in-memory sample data — no account creation or database setup needed.
-
-> **Want a guided walkthrough with demo access?**
-> Reach out and I'm happy to set one up — [ammarobad21@gmail.com](mailto:ammarobad21@gmail.com)
+🔗 **Live:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
 
 ---
 
-## What you can do in the demo
+## Overview
 
-**As Admin:**
-- Browse the full applicants list with search, filters, and sort
-- Open any applicant's detail modal — profile, QR code, CV link
-- Shortlist, reject, or flag applicants (with undo)
-- View the Statistics dashboard — overview counters and 6-tab advanced analytics
-- Manage the companies list — confirm, cancel, or delete entries
-- Send confirmation reminder emails *(disabled in demo — no real email sent)*
+The platform serves two user roles:
 
-**As a Company Manager:**
-- See applicants who applied to your company
-- Shortlist, reject, or flag candidates
-- View your company status page
-- Browse other companies' applicants and add them to your list
-
----
-
-## Run locally (no database needed)
-
-Demo mode runs entirely in-memory. No MongoDB, no Cloudinary, no email setup.
-
-```bash
-# 1. Clone
-git clone https://github.com/amxr21/jobFair.git
-cd jobFair
-
-# 2. Install
-cd backend && npm install
-cd ../frontend && npm install
-
-# 3. Configure (copy examples — defaults already work for demo)
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-
-# 4. Start
-cd backend && node server.js      # API → http://localhost:2000
-cd ../frontend && npm run dev     # UI  → http://localhost:5173
-```
-
-Sample accounts are pre-loaded automatically when the server starts in demo mode.
+- **Admin (Event Coordinator)** — Full access to all applicants, companies, statistics, and event management tools
+- **Company Representative** — Access to applicants who selected their company, shortlisting/flagging tools, and company status page
 
 ---
 
 ## Features
 
-| Area | Highlights |
+| Area | Details |
 |---|---|
-| **Applicants** | Paginated list, name search with yellow highlight, 12+ dropdown filters, deduplication by student ID |
-| **Detail modal** | QR code, full profile, skills tags, CV download, shortlist/reject/flag with undo |
-| **Other tab** | Company reps can view all applicants and add them to their list |
-| **Companies** | Status tracking (Pending / Confirmed / Canceled), representative list, reminder emails |
-| **Statistics** | Live counters + 6-tab advanced analytics (Demographics, Education, Companies, Skills, Recruitment, Profiles) |
-| **UX** | Step-by-step tour guide, smooth animations, responsive layout, smart 404 page |
+| **Applicant list** | Paginated, searchable (name highlight), 12+ dropdown filters, deduplication by student ID |
+| **Applicant modal** | Full profile, QR code, CV download, shortlist / reject / flag with undo |
+| **Company management** | Status tracking (Pending / Confirmed / Canceled), representative list, confirmation emails |
+| **Statistics** | Live counters + 6-tab advanced analytics: Demographics, Education, Companies, Skills, Recruitment, Profiles |
+| **UX** | Step-by-step tour guide, smooth animations, responsive design, smart 404 page |
+| **Demo mode** | Runs fully in-memory — no MongoDB, Cloudinary, or email service needed |
 
 ---
 
@@ -78,8 +34,60 @@ Sample accounts are pre-loaded automatically when the server starts in demo mode
 |---|---|
 | Frontend | React 18, Vite, Tailwind CSS, MUI X-Charts, React Router, Axios |
 | Backend | Node.js, Express, Mongoose, JWT, Cloudinary, Nodemailer |
-| Demo data | In-memory store (no database required) |
+| Demo data | In-memory store — no database required |
 | Hosting | Vercel (frontend) · Render (backend) |
+
+---
+
+## Run locally
+
+**Demo mode** — no database or external services needed:
+
+```bash
+git clone https://github.com/amxr21/jobFair.git
+cd jobFair
+
+cd backend && npm install
+cd ../frontend && npm install
+
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+
+# Start backend (demo mode is on by default)
+cd backend && node server.js
+
+# Start frontend (separate terminal)
+cd frontend && npm run dev
+```
+
+Frontend → `http://localhost:5173`  
+Backend → `http://localhost:2000`
+
+Sample accounts are seeded automatically when the server starts in demo mode.
+
+---
+
+## Environment variables
+
+**`backend/.env`** — copy from [`backend/.env.example`](backend/.env.example)
+
+```
+DEMO_MODE=true          # false → real MongoDB + Cloudinary
+PORT=2000
+URI=                    # MongoDB URI (production only)
+TOKEN_SIGN=             # JWT secret (production only)
+CLOUDINARY_CLOUD_NAME=  # (production only)
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+EMAIL_USER=             # Gmail address (production only)
+EMAIL_PASS=             # Gmail app password (production only)
+```
+
+**`frontend/.env`** — copy from [`frontend/.env.example`](frontend/.env.example)
+
+```
+VITE_DB_MODE=demo       # demo | local | production
+```
 
 ---
 
@@ -89,21 +97,19 @@ Sample accounts are pre-loaded automatically when the server starts in demo mode
 jobFair/
 ├── backend/
 │   ├── config/          # Cloudinary setup
-│   ├── controllers/     # Business logic (applicants, users)
+│   ├── controllers/     # Business logic
 │   ├── demo/            # In-memory controllers + seed data
-│   ├── middlewares/     # JWT auth guard
+│   ├── middlewares/     # JWT auth
 │   ├── models/          # Mongoose schemas
 │   ├── routers/         # Express routes
-│   ├── server.js
-│   └── .env.example
+│   └── server.js
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/  # Shared UI components
+│   │   ├── components/  # Reusable UI
 │   │   ├── pages/       # Route-level pages
-│   │   ├── Context/     # Auth + state context
-│   │   ├── Hooks/       # Custom hooks
-│   │   └── App.jsx
+│   │   ├── Context/     # Auth + state
+│   │   └── Hooks/
 │   └── .env.example
 │
 └── README.md
@@ -111,27 +117,9 @@ jobFair/
 
 ---
 
-## Environment variables
+## Demo access
 
-Demo mode works with the `.env.example` defaults — no changes needed.
-
-**`backend/.env`**
-```
-DEMO_MODE=true          # false → connects to MongoDB
-PORT=2000
-URI=                    # MongoDB URI (production only)
-TOKEN_SIGN=             # JWT secret (production only)
-CLOUDINARY_CLOUD_NAME=  # (production only)
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-EMAIL_USER=             # Gmail (production only)
-EMAIL_PASS=
-```
-
-**`frontend/.env`**
-```
-VITE_DB_MODE=demo       # demo | local | production
-```
+Interested in a live walkthrough? Feel free to reach out.
 
 ---
 
