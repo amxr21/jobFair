@@ -55,7 +55,7 @@ const NavBar = ({link}) => {
 
 
     return (
-        <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-3 justify-between gap-y-8 h-full overflow-hidden">
+        <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-3 justify-between gap-y-8 h-full overflow-hidden p-4">
 
             <OfficeLogo />
 
