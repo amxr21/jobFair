@@ -5,33 +5,32 @@ import AuthText from "./AuthText";
 
 const AuthPageLayout = ({ variant = "login", children }) => {
   return (
-    <div className="fixed inset-0 flex w-screen h-screen overflow-hidden z-50">
+    <div className="fixed inset-0 flex w-screen h-screen overflow-hidden z-50 transition-all duration-300 ease-in-out">
       {/* Background Image with Green Overlay */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-in-out"
         style={{ backgroundImage: `url(${CareerFairBg})` }}
       >
-        <div className="absolute inset-0 bg-[#0E7F41]/85" />
+        <div className="absolute inset-0 bg-[#0E7F41]/85 transition-opacity duration-300 ease-in-out" />
       </div>
 
-      {/* Two-column layout — NO outer padding so nothing peeks behind the card */}
-      <div className="relative flex w-full h-full overflow-hidden">
-
-        {/* Left panel — text and logos over the green background */}
-        <div className="hidden md:flex flex-1 flex-col justify-between px-12 lg:px-20 py-10">
-          <div />
+      {/* Content */}
+      <div className="relative flex flex-col-reverse md:flex-row justify-between overflow-x-hidden overflow-y-auto md:overflow-y-hidden w-full h-full p-4 md:p-3 lg:p-4 transition-all duration-300 ease-in-out">
+        {/* Left side - Text and Logos */}
+        <div className="hidden md:flex md:w-1/2 flex-col justify-center gap-36 px-6 lg:px-20 py-4 transition-all duration-300 ease-in-out">
           <AuthText variant={variant} />
-          <div className="flex gap-8 items-center pb-2">
-            <img src={UniLogoWhite} alt="University of Sharjah" className="h-14 w-auto" />
-            <img src={CastoLogoWhite} alt="CASTO" className="h-14 w-auto" />
+          <div className="flex gap-8 items-center transition-all duration-300 ease-in-out">
+            <img src={UniLogoWhite} alt="University Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
+            <img src={CastoLogoWhite} alt="CASTO Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
           </div>
         </div>
 
-        {/* Right panel — white card, flush to right/top/bottom, no outer gap */}
-        <div className="w-full md:w-[42%] h-full bg-white flex flex-col overflow-y-auto shadow-2xl flex-shrink-0">
-          {children}
+        {/* Right side - Form */}
+        <div className="w-full md:w-2/5 h-full flex flex-col transition-all duration-300 ease-in-out">
+          <div className="flex-1 min-h-0 transition-all duration-300 ease-in-out">
+            {children}
+          </div>
         </div>
-
       </div>
     </div>
   );

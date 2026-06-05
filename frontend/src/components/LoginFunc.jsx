@@ -24,7 +24,7 @@ const LoginFunc = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+    <div className="w-full h-full bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
       {/* Header */}
       <div className="w-8/10 px-6 mx-auto py-6 border-b border-gray-100 shrink-0 transition-all duration-300 ease-in-out">
         <h2 className="text-2xl font-semibold text-gray-800 text-center transition-all duration-300 ease-in-out">Log in to your account</h2>
