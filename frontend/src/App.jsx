@@ -56,7 +56,7 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <div className="App flex relative gap-x-6 xl:gap-x-8 p-0 md:p-6 h-[100vh] pb-14 md:pb-0 overflow-hidden">
+            <div className="App flex relative gap-x-6 xl:gap-x-8 p-0  h-[100vh] pb-14 md:pb-0 overflow-hidden">
                 <BrowserRouter>
                     <ConditionalNavBar link={link} />
                     <AnimatedRoutes>
