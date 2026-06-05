@@ -868,4 +868,49 @@ const updateSettings = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings}
+const unshortlistApplicant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ error: "No such id" });
+        const applicant = await ApplicantModel.findOneAndUpdate(
+            { _id: id },
+            { $pull: { shortlistedBy: req.body.company } },
+            { new: true }
+        );
+        res.status(200).json(applicant);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const unrejectApplicant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ error: "No such id" });
+        const applicant = await ApplicantModel.findOneAndUpdate(
+            { _id: id },
+            { $pull: { rejectedBy: req.body.company } },
+            { new: true }
+        );
+        res.status(200).json(applicant);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const unflagApplicant = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).json({ error: "No such id" });
+        const applicant = await ApplicantModel.findOneAndUpdate(
+            { _id: id },
+            { $pull: { flags: req.body.company } },
+            { new: true }
+        );
+        res.status(200).json(applicant);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings}
