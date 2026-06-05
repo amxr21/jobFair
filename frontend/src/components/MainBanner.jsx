@@ -434,7 +434,16 @@ const MainBanner = ({link}) => {
                     )}
                 </div>
             )}
-            headerRight={user && <span data-tour="tour-register-btn"><BarButtons link={link} /></span>}
+            headerRight={user && (
+                <div className="flex items-center gap-x-2">
+                    <button
+                        onClick={() => { localStorage.removeItem(TOUR_KEY); setShowTour(true); }}
+                        className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-gray-300 bg-white text-gray-400 hover:text-[#0E7F41] hover:border-[#0E7F41] flex items-center justify-center transition-all duration-200 text-xs font-bold"
+                        title="Start feature tour"
+                    >?</button>
+                    <span data-tour="tour-register-btn"><BarButtons link={link} /></span>
+                </div>
+            )}
             showAccessButtons={true}
         >
             {/* Tabs for non-CASTO users */}

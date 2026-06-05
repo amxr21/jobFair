@@ -40,14 +40,48 @@ const AnimatedRoutes = ({ children }) => {
     );
 };
 
+const noPaddingRoutes = ['/login', '/signup', '/confirm-attendance'];
+
 const ConditionalNavBar = ({ link }) => {
     const location = useLocation();
-    const hideNavBarRoutes = ['/login', '/signup', '/confirm-attendance'];
-    const shouldHideNavBar = hideNavBarRoutes.some(route =>
+    const shouldHideNavBar = noPaddingRoutes.some(route =>
         location.pathname === route || location.pathname.startsWith(route + '/')
     );
     if (shouldHideNavBar) return null;
     return <NavBar link={link} />;
+};
+
+const AppLayout = ({ user, isCASTO }) => {
+    const location = useLocation();
+    const isNoPadding = noPaddingRoutes.some(route =>
+        location.pathname === route || location.pathname.startsWith(route + '/')
+    );
+
+    const baseClasses = "App flex relative gap-x-6 xl:gap-x-8 h-[100vh] pb-14 md:pb-0 overflow-hidden";
+
+    return (
+        <div className={isNoPadding ? baseClasses : `${baseClasses} p-3 md:p-5`}>
+            <ConditionalNavBar link={link} />
+            <AnimatedRoutes>
+                <ErrorBoundary>
+                    <Routes>
+                        <Route path="/" element={user ? <MainBanner link={link} /> : <Navigate to="/login" replace />} />
+                        <Route path="/managers" element={isCASTO ? <Managers link={link} /> : <Navigate to="/" replace />} />
+                        <Route path="/survey" element={<Survey />} />
+                        <Route path="/surveyResults" element={isCASTO ? <SurveyResults /> : <Navigate to="/" replace />} />
+                        <Route path="/statistics" element={isCASTO ? <Statistics link={link} /> : <Navigate to="/" replace />} />
+                        <Route path="/company-status" element={user && !isCASTO ? <CompanyStatus /> : <Navigate to="/" replace />} />
+                        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
+                        <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" replace />} />
+                        <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
+                        <Route path="*" element={<NotFound />} />
+                    </Routes>
+                </ErrorBoundary>
+            </AnimatedRoutes>
+            <MobileNav />
+            <MobileRegisterFAB />
+        </div>
+    );
 };
 
 function App() {
@@ -56,29 +90,9 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <div className="App flex relative gap-x-6 xl:gap-x-8 p-0  h-[100vh] pb-14 md:pb-0 overflow-hidden">
-                <BrowserRouter>
-                    <ConditionalNavBar link={link} />
-                    <AnimatedRoutes>
-                        <ErrorBoundary>
-                            <Routes>
-                                <Route path="/" element={user ? <MainBanner link={link} /> : <Navigate to="/login" replace />} />
-                                <Route path="/managers" element={isCASTO ? <Managers link={link} /> : <Navigate to="/" replace />} />
-                                <Route path="/survey" element={<Survey />} />
-                                <Route path="/surveyResults" element={isCASTO ? <SurveyResults /> : <Navigate to="/" replace />} />
-                                <Route path="/statistics" element={isCASTO ? <Statistics link={link} /> : <Navigate to="/" replace />} />
-                                <Route path="/company-status" element={user && !isCASTO ? <CompanyStatus /> : <Navigate to="/" replace />} />
-                                <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
-                                <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" replace />} />
-                                <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
-                                <Route path="*" element={<NotFound />} />
-                            </Routes>
-                        </ErrorBoundary>
-                    </AnimatedRoutes>
-                    <MobileNav />
-                    <MobileRegisterFAB />
-                </BrowserRouter>
-            </div>
+            <BrowserRouter>
+                <AppLayout user={user} isCASTO={isCASTO} />
+            </BrowserRouter>
         </PrimeReactProvider>
     )
 }

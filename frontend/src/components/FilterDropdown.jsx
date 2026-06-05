@@ -147,7 +147,7 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`border rounded-xl w-10 h-10 flex items-center justify-center transition-all duration-200 ${
+                className={`border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'

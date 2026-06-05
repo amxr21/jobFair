@@ -119,7 +119,9 @@ jobFair/
 
 ## Demo access
 
-Interested in a live walkthrough? Feel free to reach out.
+Interested in a live walkthrough of the platform?
+
+📅 **[Book a demo call](https://calendly.com/ammar211080)** — happy to walk you through the features, answer questions, or discuss customisation for your event.
 
 ---
 

@@ -1,6 +1,10 @@
 const express = require("express");
-const {signupUser, loginUser, checkSimilarCompanyName, reinitializeCompany} = require("../controllers/userController")
 
+const isDemo = process.env.DEMO_MODE === "true";
+
+const { signupUser, loginUser, checkSimilarCompanyName, reinitializeCompany } = isDemo
+    ? require("../demo/demoControllers")
+    : require("../controllers/userController");
 
 const router = express.Router();
 
