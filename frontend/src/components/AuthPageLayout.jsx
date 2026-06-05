@@ -5,30 +5,30 @@ import AuthText from "./AuthText";
 
 const AuthPageLayout = ({ variant = "login", children }) => {
   return (
-    <div style={{ position: 'fixed', inset: 0, display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 50 }}>
-
-      {/* Background image + green overlay — fills entire viewport */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CareerFairBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,127,65,0.85)' }} />
+    <div className="fixed inset-0 flex w-screen h-screen overflow-hidden z-50">
+      {/* Background Image with Green Overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${CareerFairBg})` }}
+      >
+        <div className="absolute inset-0 bg-[#0E7F41]/85" />
       </div>
 
-      {/* Two-column layout — zero padding, flush to all edges */}
-      <div style={{ position: 'relative', display: 'flex', width: '100%', height: '100%' }}>
+      {/* Two-column layout — NO outer padding so nothing peeks behind the card */}
+      <div className="relative flex w-full h-full overflow-hidden">
 
-        {/* Left panel — green image side */}
-        <div style={{ flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'space-between', padding: '40px 48px' }}
-          className="md:flex">
+        {/* Left panel — text and logos over the green background */}
+        <div className="hidden md:flex flex-1 flex-col justify-between px-12 lg:px-20 py-10">
           <div />
           <AuthText variant={variant} />
-          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
-            <img src={UniLogoWhite} alt="University of Sharjah" style={{ height: 56, width: 'auto' }} />
-            <img src={CastoLogoWhite} alt="CASTO" style={{ height: 56, width: 'auto' }} />
+          <div className="flex gap-8 items-center pb-2">
+            <img src={UniLogoWhite} alt="University of Sharjah" className="h-14 w-auto" />
+            <img src={CastoLogoWhite} alt="CASTO" className="h-14 w-auto" />
           </div>
         </div>
 
-        {/* Right panel — white form, flush to right/top/bottom edges, no rounding */}
-        <div style={{ width: '42%', minWidth: 340, height: '100%', background: 'white', display: 'flex', flexDirection: 'column', overflowY: 'auto', flexShrink: 0 }}
-          className="w-full md:w-[42%]">
+        {/* Right panel — white card, flush to right/top/bottom, no outer gap */}
+        <div className="w-full md:w-[42%] h-full bg-white flex flex-col overflow-y-auto shadow-2xl flex-shrink-0">
           {children}
         </div>
 
