@@ -55,14 +55,14 @@ const NavBar = ({link}) => {
 
 
     return (
-        <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-4 justify-between gap-y-16 h-full overflow-hidden">
+        <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-3 justify-between gap-y-8 h-full overflow-hidden">
 
             <OfficeLogo />
 
             <div className="links flex flex-col justify-between w-full grow ">
-                <div className="flex flex-col gap-y-8">
+                <div className="flex flex-col gap-y-5">
                     {user?.companyName == "CASTO Office" && <ApplicationFormButton />}
-                    <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col gap-y-3">
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
                         {/* Company Status link for non-CASTO users */}
                         {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={'My Status'} icon={'status'} />}
@@ -70,7 +70,7 @@ const NavBar = ({link}) => {
                             surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" && <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
                         {
                             user?.email == "casto@sharjah.ac.ae" &&
-                            <div className="flex flex-col gap-y-4">
+                            <div className="flex flex-col gap-y-3">
                                 <PageLink link='managers' title={'Managers'} icon={'managers'} />
                                 <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />
                             </div>

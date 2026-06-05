@@ -96,36 +96,29 @@ const BarButtons = ({link}) => {
 
 
 
-const aaa2 = () => {
+const toggleAttendanceScanner = () => {
     setIsCameraOn2(prev => {
-        if(!prev){
+        if (!prev) {
             confirmAttendanceButton.current.textContent = "Scanning...";
-        }
-        else{
+        } else {
             confirmAttendanceButton.current.textContent = "Confirm Attendance";
             scanner?.clear();
         }
-
         return !prev;
-    })
-}
+    });
+};
 
-
-
-
-    const aaa = () => {
+    const toggleRegisterScanner = () => {
         setIsCameraOn(prev => {
-            if(!prev){
-                openCamera.current.textContent = "Scanning..."
-            }
-            else{
+            if (!prev) {
+                openCamera.current.textContent = "Scanning...";
+            } else {
                 openCamera.current.textContent = "Register an Applicant";
                 scanner?.clear();
             }
-
             return !prev;
-        })
-    }
+        });
+    };
 
 
 
@@ -184,11 +177,10 @@ const aaa2 = () => {
 
             <div className="flex md:flex-row flex-col items-center w-fit grow justify-end gap-x-3">
                 <div className="flex text-black w-fit gap-x-2">
-                    <button ref={openCamera} onClick={aaa} className="text-sm h-fit border border-[#0E7F41] text-green-800 font-medium px-2 py-1.5 rounded-md">Register an Applicant</button>
-                    {
-                        user?.email == "casto@sharjah.ac.ae" &&
-                        <button ref={confirmAttendanceButton} onClick={aaa2} className="text-sm h-fit border border-[#0E7F41] bg-[#0E7F41] text-white font-medium px-2 py-1.5 rounded-md">Confirm Attendance</button>
-                    }
+                    <button ref={openCamera} onClick={toggleRegisterScanner} className="text-xs h-7 md:h-8 border border-[#0E7F41] text-[#0E7F41] font-medium px-2.5 rounded-lg hover:bg-[#0E7F41] hover:text-white transition-all duration-200">Register an Applicant</button>
+                    {user?.email === "casto@sharjah.ac.ae" && (
+                        <button ref={confirmAttendanceButton} onClick={toggleAttendanceScanner} className="text-xs h-7 md:h-8 border border-[#0E7F41] bg-[#0E7F41] text-white font-medium px-2.5 rounded-lg hover:bg-[#0a5f31] transition-all duration-200">Confirm Attendance</button>
+                    )}
                 </div>
             </div>
         </>

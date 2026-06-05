@@ -5,8 +5,8 @@ const ScrollToTopButton = ({ scrollableRefC, isAtTop }) => {
 
   return (
     <button
-      className={`absolute flex items-center justify-center bottom-4 right-4 scroll-to-top p-2 rounded-2xl w-10 h-10 bg-white border shadow-2xl transition-opacity duration-300 ${
-        isAtTop ? 'opacity-0' : 'opacity-100'}`}
+      className={`absolute flex items-center justify-center bottom-3 left-1/2 -translate-x-1/2 scroll-to-top p-1.5 rounded-lg w-7 h-7 bg-white border border-gray-200 shadow-md transition-opacity duration-300 pointer-events-auto ${
+        isAtTop ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       onClick={handleScrollToTop}
     >
       <svg

@@ -119,15 +119,15 @@ const StatisticsElement = ({ data = {}, type }) => {
   }, [type, managers, applicants, representativesCount, fieldsNumber]);
 
   return (
-    <div className="statistics-element col-span-1 lg:col-span-3 flex gap-2 md:gap-3 bg-white p-2 md:p-3 h-fit rounded-xl">
-      <div className="icon h-8 w-8 md:h-10 md:w-10 shrink-0">
+    <div className="statistics-element col-span-1 lg:col-span-3 flex gap-1.5 md:gap-2 bg-white p-1.5 md:p-2 h-fit rounded-lg">
+      <div className="icon h-7 w-7 md:h-8 md:w-8 shrink-0">
         <img src={icon} alt="icon" className="h-full w-full" />
       </div>
       <div className="text flex flex-col gap-y-0 min-w-0">
-        <h2 className="number text-xl md:text-3xl font-bold">
+        <h2 className="number text-lg md:text-2xl font-bold">
           <CountUp end={header} duration={1500} suffix="+" />
         </h2>
-        <h6 className="subtitle text-[10px] md:text-xs font-medium truncate">{subheader}</h6>
+        <h6 className="subtitle text-[9px] md:text-[10px] font-medium truncate">{subheader}</h6>
       </div>
     </div>
   );

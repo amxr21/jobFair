@@ -60,9 +60,9 @@ const TopBar = ({user}) => {
     
 
     return (
-        <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-300">
-            <div className="user flex flex-row gap-2 md:gap-3 items-center">
-                <div className="avatar flex items-center justify-center w-9 h-9 md:w-10 md:h-10 border rounded-lg shrink-0">
+        <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-1.5 md:py-2 rounded-md transition-all duration-300">
+            <div className="user flex flex-row gap-2 items-center">
+                <div className="avatar flex items-center justify-center w-8 h-8 border rounded-md shrink-0">
                     {
                         user?.email.split('@')[0] == 'casto'
                         ? <CastoIcon />
@@ -72,13 +72,13 @@ const TopBar = ({user}) => {
                     }
                 </div>
                 <div className="name min-w-0">
-                    <h2 className="text-sm md:text-xl font-bold truncate">{user ? user.email.split('@')[0] == 'casto' ? "CASTO Office" : user?.companyName : "Visitor"}</h2>
-                    <h6 className="text-[10px] md:text-xs font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
+                    <h2 className="text-sm md:text-base font-bold truncate">{user ? user.email.split('@')[0] == 'casto' ? "CASTO Office" : user?.companyName : "Visitor"}</h2>
+                    <h6 className="text-[9px] md:text-[10px] font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
                 </div>
             </div>
             <div className="hidden md:block time text-right">
-                <h4 className="time text-3xl font-bold">{time}</h4>
-                <p className="date text-xs font-extralight text-gray-400">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
+                <h4 className="time text-xl font-bold">{time}</h4>
+                <p className="date text-[10px] font-extralight text-gray-400">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
             </div>
         </div>
     )

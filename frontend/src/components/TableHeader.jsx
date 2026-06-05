@@ -23,7 +23,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
 
     return userType != 'manager'
     ?
-        <div className="row grid py-2 pl-3 md:pl-7 pr-4 md:pr-8 rounded-xl font-semibold text-xs xl:text-sm items-center">
+        <div className="row grid py-1.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
             <h2 className={headerClass}>#</h2>
             <h2 className={getClickableClass('Name')} onClick={() => onSort?.('Name')}><span>Name</span><SortArrow isActive={sortColumn === 'Name'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('University ID')} ${hideOnMobile}`} onClick={() => onSort?.('University ID')}><span className="lg:inline hidden">University </span><span>ID</span><SortArrow isActive={sortColumn === 'University ID'} isAscending={isAscending} /></h2>
@@ -35,7 +35,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
             <h2 className={`${headerClass} text-[#F3F6FF]`}>.</h2>
         </div>
     :
-        <div className="row-manager grid py-2 pl-3 md:pl-7 pr-4 md:pr-8 rounded-xl font-semibold text-xs xl:text-sm items-center">
+        <div className="row-manager grid py-1.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
             <h2 className={headerClass}>#</h2>
             <h2 className={getClickableClass('Company Name')} onClick={() => onSort?.('Company Name')}><span className="md:inline hidden">Company </span><span>Name</span><SortArrow isActive={sortColumn === 'Company Name'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('Company Email')} ${hideOnMobile}`} onClick={() => onSort?.('Company Email')}><span>Email</span><SortArrow isActive={sortColumn === 'Company Email'} isAscending={isAscending} /></h2>
