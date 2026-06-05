@@ -1,12 +1,12 @@
-// Centralized API configuration
-// Change this single value to switch between environments
+const DB_MODE = import.meta.env.VITE_DB_MODE || 'demo';
+const CUSTOM_URL = import.meta.env.VITE_API_URL;
 
-const API_URLS = {
-    production: "https://jobfair-7zaa.onrender.com",
-    local: "http://localhost:2000"
+const URL_MAP = {
+    production: 'https://jobfair-7zaa.onrender.com',
+    local: 'http://localhost:2000',
+    demo: 'http://localhost:2000',
 };
 
-// Use environment variable if set, otherwise default to production
-export const API_URL = import.meta.env.VITE_API_URL || API_URLS.production;
+export const API_URL = CUSTOM_URL || URL_MAP[DB_MODE] || 'http://localhost:2000';
 
 export default API_URL;

@@ -1,10 +1,3 @@
-const colorCode = {
-    confirmed: {active: '#0066CC', off: '#E5F0FF'},
-    registerd: {active: '#0E7F41', off: '#E5FFE5'},
-    pending: {active: '#EBC600', off: '#FFFACD'},
-    canceled: {active: '#CC0000', off: '#FFE5E5'},
-} 
-
 import { EmailIcon } from "./index"
 
 // Format multiline text - intelligently handles different text patterns
