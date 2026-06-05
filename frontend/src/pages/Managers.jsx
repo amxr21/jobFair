@@ -2,10 +2,13 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { createPortal } from "react-dom";
 
-import { Row, TableHeader, PageContainer } from "../components/index";
+import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
+import TourGuide from "../components/TourGuide";
 
 import { CircularProgress } from "@mui/material";
+
+const MANAGERS_TOUR_KEY = 'managers_tour_v1';
 
 
 // Company Filter Dropdown Component
@@ -420,6 +423,9 @@ const Managers = ({link}) => {
     const [showReminderModal, setShowReminderModal] = useState(false)
     const [activeFilters, setActiveFilters] = useState({})
     const [searchQuery, setSearchQuery] = useState('')
+    const [isAtTop, setIsAtTop] = useState(true)
+    const [showTour, setShowTour] = useState(false)
+    const scrollableRef = useRef(null)
 
     const [ applicantsList, setApplicantsList ] = useState([])
     const [ numberOfApplicants, setNumberOfApplicants ] = useState()
@@ -475,20 +481,11 @@ const Managers = ({link}) => {
         });
     };
 
-    // Apply search filter to companies
+    // Search filters by name only — matches applicant list behaviour
     const applySearchFilter = (list, query) => {
         if (!query || query.trim() === '') return list;
-
-        const searchLower = query.toLowerCase().trim();
-        return list.filter(company => {
-            const companyName = company.companyName?.toLowerCase() || '';
-            const email = company.email?.toLowerCase() || '';
-            const representatives = company.representitives?.toLowerCase() || '';
-
-            return companyName.includes(searchLower) ||
-                   email.includes(searchLower) ||
-                   representatives.includes(searchLower);
-        });
+        const q = query.toLowerCase().trim();
+        return list.filter(company => company.companyName?.toLowerCase().includes(q));
     };
 
     // Sorting function to arrange companies by specified criteria
@@ -679,7 +676,12 @@ const Managers = ({link}) => {
             }
         };
     
-        if (user) fetchData();
+        if (user) {
+            fetchData();
+            if (!localStorage.getItem(MANAGERS_TOUR_KEY)) {
+                setTimeout(() => setShowTour(true), 800);
+            }
+        }
 
     }, [user, link]);
     
@@ -697,54 +699,41 @@ const Managers = ({link}) => {
 
 
     return (
+        <>
         <PageContainer
             user={user}
             title="Companies & Cooperations"
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
-                <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
-                    {/* Search Input */}
-                    <div className="relative flex items-center flex-1 md:flex-initial min-w-0">
+                <div className="flex flex-wrap gap-1.5 items-center">
+                    {/* Search — name-only, filter + highlight */}
+                    <div data-tour="tour-search" className="relative flex items-center">
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search by name…"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`pl-9 pr-3 h-10 text-sm border rounded-xl focus:outline-none focus:border-blue-500 w-full md:w-52 transition-all duration-200 ${
-                                searchQuery
-                                    ? 'border-blue-500 bg-blue-50'
-                                    : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                            className={`pl-7 pr-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
+                                searchQuery ? 'border-blue-500 bg-blue-50' : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
                             }`}
                         />
-                        <svg className="absolute left-3 w-4 h-4 text-gray-400" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                        <svg className="absolute left-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} className="absolute right-1.5 text-gray-400 hover:text-gray-600">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
                     </div>
-
-                    {/* Filter Dropdown */}
-                    <CompanyFilterDropdown
-                        filters={activeFilters}
-                        onFilterChange={handleFilterChange}
-                        companies={companies}
-                    />
-
-                    {/* Send Reminders Button - Desktop */}
-                    <button
-                        onClick={() => setShowReminderModal(true)}
-                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span data-tour="tour-filter-btn">
+                        <CompanyFilterDropdown filters={activeFilters} onFilterChange={handleFilterChange} companies={companies} />
+                    </span>
+                    <button data-tour="tour-register-btn" onClick={() => setShowReminderModal(true)}
+                        className="flex items-center gap-1.5 px-2.5 h-7 md:h-8 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-xs font-medium rounded-lg transition-colors">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        Send Reminders
-                    </button>
-                    {/* Send Reminders Button - Mobile (Icon only) */}
-                    <button
-                        onClick={() => setShowReminderModal(true)}
-                        className="md:hidden flex items-center justify-center w-10 h-10 bg-[#0E7F41] hover:bg-[#0a5f31] text-white rounded-xl transition-colors"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
+                        <span className="hidden md:inline">Send Reminders</span>
                     </button>
                 </div>
             )}
@@ -758,62 +747,79 @@ const Managers = ({link}) => {
                 user={user}
             />
 
-            <div className="grow h-40 overflow-hidden text-xs md:text-base">
-                <TableHeader userType={'manager'} sortColumn={filterSelected} isAscending={isAscending} onSort={handleSort} />
-                <div className="list h-[40rem] overflow-y-auto w-full pt-2 pb-6">
-                    {finalList.length != 0 ?  finalList.map((company) => {
-                        counter += 1;
-
-                        // Get applicants for this company
-                        const companyApplicants = applicantsList.filter(app =>
-                            app.user_id?.includes(company.companyName)
-                        );
-
-                        return (
-                            <Row
-                                key={company._id}
-                                number={counter}
-                                userType={'manager'}
-                                companyId={company._id}
-                                companyName={company.companyName}
-                                companyEmail={company.email}
-                                companyRepresentatives={company.representitives}
-                                companyFields={company.fields}
-                                companyStatus={company?.status}
-                                companySector={company.sector}
-                                companyCity={company.city}
-                                numberOfPositions={company.noOfPositions}
-                                numebrOfApplicants={company.numberOfApplicants}
-                                preferredMajors={company.preferredMajors}
-                                opportunityTypes={company.opportunityTypes}
-                                preferredQualities={company.preferredQualities}
-                                companyApplicants={companyApplicants}
-                                link={link}
-                                user={user}
-                                onStatusChange={(id, newStatus) => {
-                                    setCompanies(prev => prev.map(c =>
-                                        c._id === id ? { ...c, status: newStatus } : c
-                                    ));
-                                }}
-                            />
-                        );
-                    })
-                    :
-                    isLoading
-                    ?
-                    <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                        <CircularProgress size={18}/>
-                        <p className="text-sm">Loading companies...</p>
-                    </div>
-                    :
-                    <div className="flex items-center w-48 justify-between mx-auto mt-4">
-                        <p className="text-sm">No listed Companies</p>
-                    </div>
-
-                        }
+            {/* List — identical structure to MainBanner */}
+            <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden rounded-lg text-xs md:text-base">
+                <div data-tour="tour-table-header">
+                    <TableHeader
+                        userType={'manager'}
+                        sortColumn={filterSelected}
+                        isAscending={isAscending}
+                        onSort={handleSort}
+                    />
                 </div>
+
+                {isLoading ? (
+                    <LoadingApplicants />
+                ) : finalList.length > 0 ? (
+                    <>
+                        <div
+                            ref={scrollableRef}
+                            className="flex-1 overflow-y-auto list"
+                            onScroll={(e) => setIsAtTop(e.target.scrollTop === 0)}
+                        >
+                            {finalList.map((company, index) => {
+                                counter += 1;
+                                const companyApplicants = applicantsList.filter(app =>
+                                    app.user_id?.includes(company.companyName)
+                                );
+                                return (
+                                    <div key={company._id} data-tour={index === 0 ? 'tour-first-row' : undefined} className="relative flex flex-col">
+                                        <Row
+                                            number={index + 1}
+                                            userType={'manager'}
+                                            companyId={company._id}
+                                            companyName={company.companyName}
+                                            companyEmail={company.email}
+                                            companyRepresentatives={company.representitives}
+                                            companyFields={company.fields}
+                                            companyStatus={company?.status}
+                                            companySector={company.sector}
+                                            companyCity={company.city}
+                                            numberOfPositions={company.noOfPositions}
+                                            numebrOfApplicants={company.numberOfApplicants}
+                                            preferredMajors={company.preferredMajors}
+                                            opportunityTypes={company.opportunityTypes}
+                                            preferredQualities={company.preferredQualities}
+                                            companyApplicants={companyApplicants}
+                                            searchQuery={searchQuery}
+                                            link={link}
+                                            user={user}
+                                            onStatusChange={(id, newStatus) => {
+                                                setCompanies(prev => prev.map(c =>
+                                                    c._id === id ? { ...c, status: newStatus } : c
+                                                ));
+                                            }}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <ScrollToTopButton isAtTop={isAtTop} scrollableRefC={scrollableRef} />
+                    </>
+                ) : (
+                    <NoApplicants />
+                )}
             </div>
         </PageContainer>
+
+        <TourGuide
+            show={showTour}
+            onDone={() => {
+                setShowTour(false);
+                localStorage.setItem(MANAGERS_TOUR_KEY, '1');
+            }}
+        />
+        </>
     );
 };
 
