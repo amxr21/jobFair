@@ -5,32 +5,33 @@ import AuthText from "./AuthText";
 
 const AuthPageLayout = ({ variant = "login", children }) => {
   return (
-    <div className="fixed inset-0 flex w-screen h-screen overflow-hidden z-50 transition-all duration-300 ease-in-out">
-      {/* Background Image with Green Overlay */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-in-out"
-        style={{ backgroundImage: `url(${CareerFairBg})` }}
-      >
-        <div className="absolute inset-0 bg-[#0E7F41]/85 transition-opacity duration-300 ease-in-out" />
+    <div style={{ position: 'fixed', inset: 0, display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden', zIndex: 50 }}>
+
+      {/* Background image + green overlay — fills entire viewport */}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${CareerFairBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(14,127,65,0.85)' }} />
       </div>
 
-      {/* Content */}
-      <div className="relative flex flex-col-reverse md:flex-row justify-between overflow-x-hidden overflow-y-auto md:overflow-y-hidden w-full h-full p-4 md:p-3 lg:p-4 transition-all duration-300 ease-in-out">
-        {/* Left side - Text and Logos */}
-        <div className="hidden md:flex md:w-1/2 flex-col justify-center gap-36 px-6 lg:px-20 py-4 transition-all duration-300 ease-in-out">
+      {/* Two-column layout — zero padding, flush to all edges */}
+      <div style={{ position: 'relative', display: 'flex', width: '100%', height: '100%' }}>
+
+        {/* Left panel — green image side */}
+        <div style={{ flex: 1, display: 'none', flexDirection: 'column', justifyContent: 'space-between', padding: '40px 48px' }}
+          className="md:flex">
+          <div />
           <AuthText variant={variant} />
-          <div className="flex gap-8 items-center transition-all duration-300 ease-in-out">
-            <img src={UniLogoWhite} alt="University Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
-            <img src={CastoLogoWhite} alt="CASTO Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
+          <div style={{ display: 'flex', gap: 32, alignItems: 'center' }}>
+            <img src={UniLogoWhite} alt="University of Sharjah" style={{ height: 56, width: 'auto' }} />
+            <img src={CastoLogoWhite} alt="CASTO" style={{ height: 56, width: 'auto' }} />
           </div>
         </div>
 
-        {/* Right side - Form */}
-        <div className="w-full md:w-2/5 h-full flex flex-col transition-all duration-300 ease-in-out">
-          <div className="flex-1 min-h-0 transition-all duration-300 ease-in-out">
-            {children}
-          </div>
+        {/* Right panel — white form, flush to right/top/bottom edges, no rounding */}
+        <div style={{ width: '42%', minWidth: 340, height: '100%', background: 'white', display: 'flex', flexDirection: 'column', overflowY: 'auto', flexShrink: 0 }}
+          className="w-full md:w-[42%]">
+          {children}
         </div>
+
       </div>
     </div>
   );

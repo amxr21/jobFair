@@ -220,7 +220,7 @@ const SignupFunc = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+    <div className="w-full h-full bg-white flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
       <StepTimeline currentStep={step} steps={stepInfo} />
 
       {/* Form Content */}

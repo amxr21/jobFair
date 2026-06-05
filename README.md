@@ -8,26 +8,10 @@ A web application that digitizes career fair management for event coordinators a
 
 ## Try the demo
 
-The live site runs against real in-memory sample data. No account creation needed — just use one of the credentials below.
+The live site runs against in-memory sample data — no account creation or database setup needed.
 
-### Admin account
-Full access to all applicants, companies, statistics, and management tools.
-
-| Field | Value |
-|---|---|
-| Email | `casto@sharjah.ac.ae` |
-| Password | `Admin@2024!` |
-
-### Company / Manager accounts
-Access to your company's applicants, shortlisting tools, and company status page.
-
-| Company | Email | Password |
-|---|---|---|
-| Emirates NBD | `hr@emiratesnbd.ae` | `EmiratesNBD@2024` |
-| ADNOC | `careers@adnoc.ae` | `Adnoc@Recruit2024` |
-| Khansaheb Civil | `hr@khansaheb.ae` | `Khansaheb@2024` |
-
-> More company accounts are available — use the Sign Up page to register a new one, or browse the Managers list while logged in as Admin.
+> **Want a guided walkthrough with demo access?**
+> Reach out and I'm happy to set one up — [ammarobad21@gmail.com](mailto:ammarobad21@gmail.com)
 
 ---
 
@@ -71,7 +55,7 @@ cd backend && node server.js      # API → http://localhost:2000
 cd ../frontend && npm run dev     # UI  → http://localhost:5173
 ```
 
-Log in with any of the demo credentials above.
+Sample accounts are pre-loaded automatically when the server starts in demo mode.
 
 ---
 
