@@ -6,20 +6,35 @@ const cors = require("cors");
 
 const isDemo = process.env.DEMO_MODE === "true";
 
+// Fixed origins (localhost dev + production)
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",
-    "https://job-fair-control.vercel.app"
+    "https://job-fair-control.vercel.app",
 ];
+
+// Allow any Vercel preview/branch URL for this project, plus any
+// origin explicitly listed in ALLOWED_ORIGINS env var (comma-separated).
+const extraOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
+    : [];
 
 const corsOptions = {
     origin: function (origin, callback) {
+        // Allow server-to-server or same-origin requests (no Origin header)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) {
+
+        const isAllowedFixed = allowedOrigins.includes(origin);
+        const isAllowedExtra = extraOrigins.includes(origin);
+        // Allow any Vercel preview deployment URL (*.vercel.app)
+        const isVercelPreview = /^https:\/\/[a-z0-9-]+-amxr22s-projects\.vercel\.app$/.test(origin)
+            || origin === "https://job-fair-control.vercel.app";
+
+        if (isAllowedFixed || isAllowedExtra || isVercelPreview) {
             callback(null, true);
         } else {
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error(`CORS: origin ${origin} not allowed`));
         }
     },
     credentials: true,
