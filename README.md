@@ -1,72 +1,90 @@
 # Job Fair Portal — Dashboard & Analytics
 
-A web application for managing internship and career fair events. Built for event administrators and company representatives to handle applicant registration, shortlisting, analytics, and company coordination — entirely paperless.
+A web application that digitizes career fair management for event coordinators and company representatives. Handles applicant registration, shortlisting, company coordination, and live analytics — entirely paperless.
 
-**Live demo:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
+🔗 **Live demo:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
 
 ---
 
-## Quick start (demo mode — no database needed)
+## Try the demo
+
+The live site runs against real in-memory sample data. No account creation needed — just use one of the credentials below.
+
+### Admin account
+Full access to all applicants, companies, statistics, and management tools.
+
+| Field | Value |
+|---|---|
+| Email | `casto@sharjah.ac.ae` |
+| Password | `Admin@2024!` |
+
+### Company / Manager accounts
+Access to your company's applicants, shortlisting tools, and company status page.
+
+| Company | Email | Password |
+|---|---|---|
+| Emirates NBD | `hr@emiratesnbd.ae` | `EmiratesNBD@2024` |
+| ADNOC | `careers@adnoc.ae` | `Adnoc@Recruit2024` |
+| Khansaheb Civil | `hr@khansaheb.ae` | `Khansaheb@2024` |
+
+> More company accounts are available — use the Sign Up page to register a new one, or browse the Managers list while logged in as Admin.
+
+---
+
+## What you can do in the demo
+
+**As Admin:**
+- Browse the full applicants list with search, filters, and sort
+- Open any applicant's detail modal — profile, QR code, CV link
+- Shortlist, reject, or flag applicants (with undo)
+- View the Statistics dashboard — overview counters and 6-tab advanced analytics
+- Manage the companies list — confirm, cancel, or delete entries
+- Send confirmation reminder emails *(disabled in demo — no real email sent)*
+
+**As a Company Manager:**
+- See applicants who applied to your company
+- Shortlist, reject, or flag candidates
+- View your company status page
+- Browse other companies' applicants and add them to your list
+
+---
+
+## Run locally (no database needed)
+
+Demo mode runs entirely in-memory. No MongoDB, no Cloudinary, no email setup.
 
 ```bash
+# 1. Clone
 git clone https://github.com/amxr21/jobFair.git
 cd jobFair
 
-# Install dependencies
+# 2. Install
 cd backend && npm install
 cd ../frontend && npm install
 
-# Configure backend (demo mode is on by default)
+# 3. Configure (copy examples — defaults already work for demo)
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 
-# Start both servers
-cd backend && npm run dev        # → http://localhost:2000
-cd frontend && npm run dev       # → http://localhost:5173
+# 4. Start
+cd backend && node server.js      # API → http://localhost:2000
+cd ../frontend && npm run dev     # UI  → http://localhost:5173
 ```
 
-**Demo mode** (`DEMO_MODE=true` in `backend/.env`) runs entirely in-memory — no MongoDB, no Cloudinary, no email service required. Sample data is pre-loaded automatically.
-
-Demo login credentials are printed in the terminal when the backend starts in demo mode.
+Log in with any of the demo credentials above.
 
 ---
 
 ## Features
 
-**Applicant management**
-- Paginated list with name search and 12+ filters (major, nationality, GPA, city, status…)
-- Expandable applicant detail modal — full profile, QR code, CV download
-- Shortlist / reject / flag applicants with undo support
-- Deduplication — only the latest submission per student is shown
-
-**Company management**
-- Company list with status tracking (Pending / Confirmed / Canceled)
-- Expandable company modals — representatives, fields, preferred majors
-- Send confirmation reminder emails to pending companies (production mode)
-
-**Statistics & analytics**
-- Overview: live counters for students, companies, fields, representatives
-- Advanced analytics (6 tabs): Demographics, Education, Companies, Skills, Recruitment, Profiles
-- Interactive pie and bar charts
-
-**UX**
-- Step-by-step tour guide on first visit
-- In-place search highlight (Ctrl+F style)
-- Smooth modal open/close animations
-- Responsive — works on desktop, tablet, and mobile
-- 404 page with smart redirect suggestions
-
----
-
-## Two modes
-
-| | Demo mode | Production mode |
-|---|---|---|
-| `DEMO_MODE` | `true` | `false` |
-| Database | In-memory (no setup) | MongoDB (Atlas or local) |
-| File storage | Disabled | Cloudinary |
-| Emails | Disabled | Nodemailer / Gmail |
-| Purpose | Local dev, demos | Real deployment |
+| Area | Highlights |
+|---|---|
+| **Applicants** | Paginated list, name search with yellow highlight, 12+ dropdown filters, deduplication by student ID |
+| **Detail modal** | QR code, full profile, skills tags, CV download, shortlist/reject/flag with undo |
+| **Other tab** | Company reps can view all applicants and add them to their list |
+| **Companies** | Status tracking (Pending / Confirmed / Canceled), representative list, reminder emails |
+| **Statistics** | Live counters + 6-tab advanced analytics (Demographics, Education, Companies, Skills, Recruitment, Profiles) |
+| **UX** | Step-by-step tour guide, smooth animations, responsive layout, smart 404 page |
 
 ---
 
@@ -76,8 +94,8 @@ Demo login credentials are printed in the terminal when the backend starts in de
 |---|---|
 | Frontend | React 18, Vite, Tailwind CSS, MUI X-Charts, React Router, Axios |
 | Backend | Node.js, Express, Mongoose, JWT, Cloudinary, Nodemailer |
-| Database | MongoDB Atlas (production) / in-memory (demo) |
-| Hosting | Vercel (frontend), Railway (backend) |
+| Demo data | In-memory store (no database required) |
+| Hosting | Vercel (frontend) · Render (backend) |
 
 ---
 
@@ -88,64 +106,47 @@ jobFair/
 ├── backend/
 │   ├── config/          # Cloudinary setup
 │   ├── controllers/     # Business logic (applicants, users)
-│   ├── demo/            # In-memory controllers + seed data (demo mode)
+│   ├── demo/            # In-memory controllers + seed data
 │   ├── middlewares/     # JWT auth guard
 │   ├── models/          # Mongoose schemas
-│   ├── routers/         # Express route definitions
+│   ├── routers/         # Express routes
 │   ├── server.js
-│   └── .env.example     # Environment variable template
+│   └── .env.example
 │
 ├── frontend/
 │   ├── src/
-│   │   ├── components/  # Reusable UI components
+│   │   ├── components/  # Shared UI components
 │   │   ├── pages/       # Route-level pages
-│   │   ├── Context/     # React context providers
+│   │   ├── Context/     # Auth + state context
 │   │   ├── Hooks/       # Custom hooks
 │   │   └── App.jsx
 │   └── .env.example
 │
-├── .gitignore
-├── README.md
-├── package.json         # Root convenience scripts
-└── vercel.json
+└── README.md
 ```
 
 ---
 
 ## Environment variables
 
-Copy the example files and fill in your values for production. Demo mode requires no changes.
+Demo mode works with the `.env.example` defaults — no changes needed.
 
-**`backend/.env`** — see [`backend/.env.example`](backend/.env.example)
-
+**`backend/.env`**
 ```
-DEMO_MODE=true          # set to false for production
+DEMO_MODE=true          # false → connects to MongoDB
 PORT=2000
-URI=                    # MongoDB connection string (production only)
+URI=                    # MongoDB URI (production only)
 TOKEN_SIGN=             # JWT secret (production only)
-CLOUDINARY_CLOUD_NAME=  # Cloudinary (production only)
+CLOUDINARY_CLOUD_NAME=  # (production only)
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-EMAIL_USER=             # Gmail address (production only)
-EMAIL_PASS=             # Gmail app password (production only)
+EMAIL_USER=             # Gmail (production only)
+EMAIL_PASS=
 ```
 
-**`frontend/.env`** — see [`frontend/.env.example`](frontend/.env.example)
-
+**`frontend/.env`**
 ```
 VITE_DB_MODE=demo       # demo | local | production
-```
-
----
-
-## Root scripts
-
-```bash
-npm run install-server   # install backend deps
-npm run install-client   # install frontend deps
-npm run start-server     # start backend (node)
-npm run start-client     # start frontend (vite dev)
-npm run build-client     # build frontend for production
 ```
 
 ---
