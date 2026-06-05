@@ -59,13 +59,21 @@ if (isDemo) {
 } else {
     const mongoose = require("mongoose");
     const uri = process.env.URI;
-    mongoose.connect(uri);
-    const connection = mongoose.connection;
-    connection.once("open", () => {
-        console.log("DB Connected successfully");
-        app.use("/", routers);
-        app.use("/user", userRoutes);
-    });
+
+    // Register routes before connecting — Express queues them immediately.
+    // Routes that need DB will fail gracefully if DB isn't ready yet,
+    // but this eliminates the 404s caused by routes not being mounted.
+    app.use("/", routers);
+    app.use("/user", userRoutes);
+
+    mongoose.connect(uri)
+        .then(() => {
+            console.log("DB Connected successfully");
+        })
+        .catch((err) => {
+            console.error("DB connection error:", err.message);
+        });
+
     app.listen(process.env.PORT || 2000, () => {
         console.log("Server running on PORT:", process.env.PORT || 2000);
     });
