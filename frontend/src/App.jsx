@@ -50,20 +50,9 @@ const ConditionalNavBar = ({ link }) => {
     return <NavBar link={link} />;
 };
 
-const AuthLoadingCover = () => (
-    <div className="fixed inset-0 z-[99999] bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0E7F41]" />
-            <p className="text-xs text-gray-400">Loading…</p>
-        </div>
-    </div>
-);
-
 function App() {
-    const { user, isAuthLoading } = useAuthContext();
+    const { user } = useAuthContext();
     const isCASTO = user?.companyName === "CASTO Office" || user?.email === "casto@sharjah.ac.ae";
-
-    if (isAuthLoading) return <AuthLoadingCover />;
 
     return (
         <PrimeReactProvider>

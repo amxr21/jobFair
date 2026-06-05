@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer } from "react";
+import { createContext, useReducer } from "react";
 
 export const AuthContext = createContext();
 
@@ -13,20 +13,20 @@ export const authReducer = (state, action) => {
     }
 }
 
-export const AuthContextProvidor = ({ children }) => {
-    const [state, dispatch] = useReducer(authReducer, {
-        user: null,
-        isAuthLoading: true,
-    });
+// Read localStorage once, synchronously, as the initial state.
+// This runs before the first render so isAuthLoading is never true
+// and the AuthLoadingCover white flash never appears.
+function getInitialState() {
+    try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        return { user: user || null, isAuthLoading: false };
+    } catch {
+        return { user: null, isAuthLoading: false };
+    }
+}
 
-    useEffect(() => {
-        try {
-            const user = JSON.parse(localStorage.getItem("user"));
-            dispatch({ type: "LOGIN", payload: user });
-        } catch {
-            dispatch({ type: "LOGIN", payload: null });
-        }
-    }, [])
+export const AuthContextProvidor = ({ children }) => {
+    const [state, dispatch] = useReducer(authReducer, undefined, getInitialState);
 
     return (
         <AuthContext.Provider value={{ ...state, dispatch }}>
