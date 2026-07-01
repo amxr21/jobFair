@@ -1,14 +1,15 @@
 import { Link, useLocation } from "react-router-dom"
-import { Applicants, Managers, Statistics, SurveyStatsticsIcon, Survey, StatusIcon } from "./Icons"
+import { Applicants, Managers, Statistics, SurveyStatsticsIcon, Survey, StatusIcon, SettingsIcon } from "./Icons"
 
 const ICON_MAP = {
-    applicants: <Applicants />,
-    managers: <Managers />,
-    statistics: <Statistics />,
-    surveyResults: <SurveyStatsticsIcon />,
+    applicants:      <Applicants />,
+    managers:        <Managers />,
+    statistics:      <Statistics />,
+    surveyResults:   <SurveyStatsticsIcon />,
     surveyStatstics: <SurveyStatsticsIcon />,
-    status: <StatusIcon />,
-    survey: <Survey />,
+    status:          <StatusIcon />,
+    survey:          <Survey />,
+    settings:        <SettingsIcon />,
 };
 
 const PageLink = ({ title, icon, link }) => {
@@ -25,8 +26,8 @@ const PageLink = ({ title, icon, link }) => {
                     style={{
                         backgroundColor: isActive ? '#0E7F41' : 'transparent',
                         color: isActive ? '#ffffff' : '#9ca3af',
-                        transition: 'background-color 0.25s ease, color 0.25s ease, box-shadow 0.2s ease',
-                        boxShadow: isActive ? '0 2px 8px rgba(14,127,65,0.35)' : 'none',
+                        boxShadow: isActive ? '0 2px 10px rgba(14,127,65,0.4)' : 'none',
+                        transition: 'background-color 0.25s cubic-bezier(0.4,0,0.2,1), color 0.25s ease, box-shadow 0.25s ease',
                     }}
                 >
                     {ICON_MAP[icon] ?? <Survey />}
@@ -36,7 +37,7 @@ const PageLink = ({ title, icon, link }) => {
                     style={{
                         color: isActive ? '#f9fafb' : '#9ca3af',
                         fontWeight: isActive ? 600 : 400,
-                        transition: 'color 0.25s ease',
+                        transition: 'color 0.25s ease, font-weight 0.15s ease',
                     }}
                 >
                     {title}

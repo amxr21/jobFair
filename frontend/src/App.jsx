@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound } from "./pages/index";
+import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound, EventSettings } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
 import { useAuthContext } from "./Hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
@@ -71,6 +71,7 @@ const AppLayout = ({ user, isCASTO }) => {
                         <Route path="/survey" element={<Survey />} />
                         <Route path="/surveyResults" element={isCASTO ? <SurveyResults /> : <Navigate to="/" replace />} />
                         <Route path="/statistics" element={isCASTO ? <Statistics link={link} /> : <Navigate to="/" replace />} />
+                        <Route path="/event-settings" element={isCASTO ? <EventSettings link={link} /> : <Navigate to="/" replace />} />
                         <Route path="/company-status" element={user && !isCASTO ? <CompanyStatus /> : <Navigate to="/" replace />} />
                         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" replace />} />
