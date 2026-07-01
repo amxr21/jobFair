@@ -73,6 +73,7 @@ const NavBar = ({link}) => {
                             <div className="flex flex-col gap-y-3">
                                 <PageLink link='managers' title={'Managers'} icon={'managers'} />
                                 <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />
+                                <PageLink link='event-settings' title={'Event Settings'} icon={'settings'} />
                             </div>
                         }
                         {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={'Survey Results'} icon={'surveyResults'} />}
