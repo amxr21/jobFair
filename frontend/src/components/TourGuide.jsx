@@ -1,136 +1,192 @@
-import { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
 
-const TOUR_KEY = 'applicants_tour_v1';
+export const APPLICANTS_TOUR_KEY = 'applicants_tour_v2';
+export const MANAGERS_TOUR_KEY = 'managers_tour_v2';
 
-const STEPS = [
+// ─── Step definitions ────────────────────────────────────────────────────────
+
+const APPLICANT_STEPS = [
     {
         target: 'tour-search',
-        title: 'Search by name',
-        body: "Type any part of an applicant's name. Matches are highlighted in yellow — all rows stay visible so you can see context.",
+        title: 'Search applicants by name',
+        body: 'Type any part of a name to instantly filter the list. Matches update live as you type — no submit needed.',
         placement: 'bottom',
+        tip: 'Press Esc to clear the search field.',
     },
     {
         target: 'tour-flag-btn',
-        title: 'Flagged filter',
-        body: "Click to show only applicants you've flagged for follow-up. Click again to show everyone.",
+        title: 'Flag filter — focus your shortlist',
+        body: 'Click the flag icon to show only applicants you have flagged. Click again to return to the full list. Flags persist across sessions.',
         placement: 'bottom',
+        tip: 'Flag individual applicants by expanding their row.',
     },
     {
         target: 'tour-filter-btn',
         title: 'Advanced filters',
-        body: 'Filter by major, nationality, CGPA, attendance status, and more. Active filters appear as chips — click × on any chip to remove it individually.',
+        body: 'Filter by major, nationality, CGPA range, attendance status, CV presence, shortlist, and more. Active filters show as chips — click × to remove any one, or "Clear all" to reset.',
         placement: 'bottom',
+        tip: 'Filters stack — "CS major" + "CGPA 3.5+" shows only both matching.',
     },
     {
         target: 'tour-table-header',
-        title: 'Sort columns',
-        body: 'Click any column header to sort the list. Click again to reverse the order.',
+        title: 'Sort by any column',
+        body: 'Click any column header (Name, University ID, Nationality, CGPA, Major, Status) to sort. Click again to reverse. An arrow marks the active sort column.',
         placement: 'bottom',
+        tip: 'CGPA sorts highest-first by default.',
     },
     {
         target: 'tour-first-row',
-        title: 'Expand a row',
-        body: 'Click the ↗ icon on the right of any row to open the full applicant profile — QR code, all details, shortlist / reject / flag actions.',
+        title: 'Expand a row — full applicant profile',
+        body: 'Click the ↗ icon on any row to open the full profile. View their QR code, download their CV, and take actions: shortlist, reject, flag, or undo.',
         placement: 'top',
+        tip: 'Shortlisted and rejected statuses are visible to all managers — flag is private to you.',
     },
     {
         target: 'tour-register-btn',
-        title: 'Register an applicant',
-        body: "Opens a QR scanner. Scan a student's QR code to register them under your company.",
+        title: 'Register & confirm attendance',
+        body: '"Register an Applicant" scans a student\'s QR to link them to your company. "Confirm Attendance" scans their QR to mark them as physically present at the fair.',
         placement: 'bottom',
+        tip: 'Allow camera permissions when prompted.',
     },
 ];
 
-const BOX_W = 260;
-const ARROW_H = 7;
-const GAP = 6;
-const SCREEN_PAD = 10;
+const MANAGER_STEPS = [
+    {
+        target: 'tour-search',
+        title: 'Search companies by name',
+        body: 'Type any part of a company name to instantly filter the list. Results update as you type.',
+        placement: 'bottom',
+        tip: 'Search is case-insensitive.',
+    },
+    {
+        target: 'tour-filter-btn',
+        title: 'Filter companies',
+        body: 'Filter by attendance status (Pending / Confirmed / Canceled), sector, city, and industry. Combine filters to narrow down your list.',
+        placement: 'bottom',
+        tip: 'Use "Reminder Status: Not Sent" to find companies not yet contacted.',
+    },
+    {
+        target: 'tour-register-btn',
+        title: 'Send confirmation reminders',
+        body: 'Opens a modal listing all pending companies. Select one, several, or all with "Select All Pending", then Send — each company receives a confirmation email.',
+        placement: 'bottom',
+        tip: 'Only companies with Pending status appear in the reminder list.',
+    },
+    {
+        target: 'tour-table-header',
+        title: 'Sort companies',
+        body: 'Click any column header to sort. Use "No. of Applicants" to see which companies are getting the most interest.',
+        placement: 'bottom',
+        tip: 'Sorting by Status groups Confirmed, Pending, and Canceled together.',
+    },
+    {
+        target: 'tour-first-row',
+        title: 'Expand a company row',
+        body: 'Click the ↗ icon to open the full company profile. View their preferred majors, delegate list, and applicants. Change status (Confirm / Cancel / Reset) directly from this panel.',
+        placement: 'top',
+        tip: 'Status changes take effect immediately and are saved to the database.',
+    },
+];
+
+// ─── Positioning ──────────────────────────────────────────────────────────────
+
+const BOX_W = 310;
+const GAP = 12;
+const SCREEN_PAD = 16;
 
 function computePosition(targetEl, boxEl) {
     if (!targetEl || !boxEl) return null;
 
     const tr = targetEl.getBoundingClientRect();
-    const boxH = boxEl.offsetHeight || 120;
+    const boxH = boxEl.offsetHeight || 160;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Try preferred placements in order: bottom → top → right → left
-    const placements = ['bottom', 'top', 'right', 'left'];
+    const clampX = (x) => Math.max(SCREEN_PAD, Math.min(x, vw - BOX_W - SCREEN_PAD));
+    const clampY = (y) => Math.max(SCREEN_PAD, Math.min(y, vh - boxH - SCREEN_PAD));
 
-    for (const placement of placements) {
-        let top, left;
+    const centerX = tr.left + tr.width / 2 - BOX_W / 2;
 
-        if (placement === 'bottom') {
-            top = tr.bottom + GAP + ARROW_H;
-            left = tr.left + tr.width / 2 - BOX_W / 2;
+    const placements = {
+        bottom: () => {
+            const top = tr.bottom + GAP;
             if (top + boxH <= vh - SCREEN_PAD) {
-                left = Math.max(SCREEN_PAD, Math.min(left, vw - BOX_W - SCREEN_PAD));
-                const arrowX = tr.left + tr.width / 2 - left;
-                return { top, left, placement: 'bottom', arrowX: Math.max(12, Math.min(arrowX, BOX_W - 12)) };
+                const left = clampX(centerX);
+                return { top, left, placement: 'bottom', arrowX: tr.left + tr.width / 2 - left };
             }
-        } else if (placement === 'top') {
-            top = tr.top - boxH - GAP - ARROW_H;
-            left = tr.left + tr.width / 2 - BOX_W / 2;
+        },
+        top: () => {
+            const top = tr.top - boxH - GAP;
             if (top >= SCREEN_PAD) {
-                left = Math.max(SCREEN_PAD, Math.min(left, vw - BOX_W - SCREEN_PAD));
-                const arrowX = tr.left + tr.width / 2 - left;
-                return { top, left, placement: 'top', arrowX: Math.max(12, Math.min(arrowX, BOX_W - 12)) };
+                const left = clampX(centerX);
+                return { top, left, placement: 'top', arrowX: tr.left + tr.width / 2 - left };
             }
-        } else if (placement === 'right') {
-            left = tr.right + GAP + ARROW_H;
-            top = tr.top + tr.height / 2 - boxH / 2;
+        },
+        right: () => {
+            const left = tr.right + GAP;
             if (left + BOX_W <= vw - SCREEN_PAD) {
-                top = Math.max(SCREEN_PAD, Math.min(top, vh - boxH - SCREEN_PAD));
-                return { top, left, placement: 'right', arrowX: null };
+                return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'right', arrowX: null };
             }
-        } else {
-            left = tr.left - BOX_W - GAP - ARROW_H;
-            top = tr.top + tr.height / 2 - boxH / 2;
+        },
+        left: () => {
+            const left = tr.left - BOX_W - GAP;
             if (left >= SCREEN_PAD) {
-                top = Math.max(SCREEN_PAD, Math.min(top, vh - boxH - SCREEN_PAD));
-                return { top, left, placement: 'left', arrowX: null };
+                return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'left', arrowX: null };
             }
-        }
+        },
+    };
+
+    const preferred = ['bottom', 'top', 'right', 'left'];
+    for (const p of preferred) {
+        const result = placements[p]?.();
+        if (result) return result;
     }
 
-    // Fallback: center of screen
     return {
-        top: Math.max(SCREEN_PAD, vh / 2 - 80),
-        left: Math.max(SCREEN_PAD, vw / 2 - BOX_W / 2),
+        top: clampY(vh / 2 - boxH / 2),
+        left: clampX(vw / 2 - BOX_W / 2),
         placement: 'bottom',
         arrowX: BOX_W / 2,
     };
 }
 
-export default function TourGuide({ show, onDone }) {
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function TourGuide({ show, onDone, variant = 'applicants' }) {
+    const STEPS = variant === 'managers' ? MANAGER_STEPS : APPLICANT_STEPS;
+
     const [step, setStep] = useState(0);
     const [pos, setPos] = useState(null);
+    const [spotRect, setSpotRect] = useState(null);
     const boxRef = useRef(null);
 
     const current = STEPS[step];
 
-    const reposition = () => {
+    const reposition = useCallback(() => {
         const targetEl = document.querySelector(`[data-tour="${current.target}"]`);
+        if (!targetEl) return;
+
         const result = computePosition(targetEl, boxRef.current);
         if (result) setPos(result);
-        targetEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    };
 
-    // Measure after paint so boxRef.current.offsetHeight is accurate
+        const r = targetEl.getBoundingClientRect();
+        setSpotRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }, [current?.target]);
+
     useLayoutEffect(() => {
         if (!show) return;
-        // rAF ensures the box is rendered before we measure
         const id = requestAnimationFrame(() => reposition());
         return () => cancelAnimationFrame(id);
-    }, [show, step]);
+    }, [show, step, reposition]);
 
     useEffect(() => {
         if (!show) return;
         window.addEventListener('resize', reposition);
         return () => window.removeEventListener('resize', reposition);
-    }, [show, step]);
+    }, [show, reposition]);
 
-    // Keyboard nav
     useEffect(() => {
         if (!show) return;
         const onKey = (e) => {
@@ -142,14 +198,8 @@ export default function TourGuide({ show, onDone }) {
         return () => window.removeEventListener('keydown', onKey);
     }, [show, step]);
 
-    // Outside-click dismiss
     useEffect(() => {
-        if (!show) return;
-        const onDown = (e) => {
-            if (boxRef.current && !boxRef.current.contains(e.target)) onDone();
-        };
-        document.addEventListener('mousedown', onDown);
-        return () => document.removeEventListener('mousedown', onDown);
+        if (show) setStep(0);
     }, [show]);
 
     const advance = () => {
@@ -159,91 +209,163 @@ export default function TourGuide({ show, onDone }) {
 
     if (!show) return null;
 
+    const pad = 6;
+    const sr = spotRect;
+
+    // Build SVG clip path for the spotlight cutout
+    const hasSpot = sr && sr.width > 0;
+    const sx = sr ? sr.left - pad : 0;
+    const sy = sr ? sr.top - pad : 0;
+    const sw = sr ? sr.width + pad * 2 : 0;
+    const sh = sr ? sr.height + pad * 2 : 0;
+    const r = 8; // corner radius
+
     const arrowStyle = (placement, arrowX) => {
-        const base = { position: 'absolute', width: 0, height: 0, transform: 'translateX(-50%)' };
-        if (placement === 'bottom') return { ...base, top: -ARROW_H, left: arrowX, borderLeft: `${ARROW_H}px solid transparent`, borderRight: `${ARROW_H}px solid transparent`, borderBottom: `${ARROW_H}px solid white` };
-        if (placement === 'top') return { ...base, bottom: -ARROW_H, left: arrowX, borderLeft: `${ARROW_H}px solid transparent`, borderRight: `${ARROW_H}px solid transparent`, borderTop: `${ARROW_H}px solid white` };
+        const ARROW = 7;
+        const base = { position: 'absolute', width: 0, height: 0 };
+        if (placement === 'bottom') return {
+            ...base, top: -ARROW, left: Math.max(14, Math.min(arrowX, BOX_W - 14)),
+            transform: 'translateX(-50%)',
+            borderLeft: `${ARROW}px solid transparent`,
+            borderRight: `${ARROW}px solid transparent`,
+            borderBottom: `${ARROW}px solid #0E7F41`,
+        };
+        if (placement === 'top') return {
+            ...base, bottom: -ARROW, left: Math.max(14, Math.min(arrowX, BOX_W - 14)),
+            transform: 'translateX(-50%)',
+            borderLeft: `${ARROW}px solid transparent`,
+            borderRight: `${ARROW}px solid transparent`,
+            borderTop: `${ARROW}px solid #0E7F41`,
+        };
         return {};
     };
 
+    const progress = ((step + 1) / STEPS.length) * 100;
+
     return (
         <>
-            {/* Spotlight — pointer-events: none so table stays interactive */}
-            <TargetSpotlight targetId={current.target} />
+            {/* Full-screen backdrop with SVG cutout */}
+            <svg
+                className="fixed inset-0 w-full h-full z-[99990]"
+                style={{ pointerEvents: 'none' }}
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <defs>
+                    <mask id="tour-mask">
+                        <rect width="100%" height="100%" fill="white" />
+                        {hasSpot && (
+                            <rect
+                                x={sx} y={sy} width={sw} height={sh}
+                                rx={r} ry={r}
+                                fill="black"
+                            />
+                        )}
+                    </mask>
+                </defs>
+                <rect
+                    width="100%" height="100%"
+                    fill="rgba(0,0,0,0.5)"
+                    mask="url(#tour-mask)"
+                />
+                {/* Spotlight border ring */}
+                {hasSpot && (
+                    <rect
+                        x={sx} y={sy} width={sw} height={sh}
+                        rx={r} ry={r}
+                        fill="none"
+                        stroke="#0E7F41"
+                        strokeWidth="2"
+                    />
+                )}
+            </svg>
 
-            {/* Tooltip */}
+            {/* Clickable dismiss layer (behind tooltip) */}
+            <div
+                className="fixed inset-0 z-[99991]"
+                onClick={onDone}
+                style={{ cursor: 'pointer' }}
+            />
+
+            {/* Tooltip box */}
             <div
                 ref={boxRef}
-                onMouseDown={(e) => e.stopPropagation()}
-                className="fixed z-[99999] bg-white rounded-lg shadow-2xl border border-gray-200 p-3"
+                onClick={(e) => e.stopPropagation()}
+                className="fixed z-[99999] bg-white rounded-xl shadow-2xl overflow-hidden"
                 style={{
                     width: BOX_W,
                     maxWidth: `calc(100vw - ${SCREEN_PAD * 2}px)`,
                     top: pos?.top ?? -9999,
                     left: pos?.left ?? -9999,
-                    whiteSpace: 'normal',
-                    wordBreak: 'break-word',
                 }}
             >
-                {pos && pos.arrowX != null && (
-                    <div style={arrowStyle(pos.placement, pos.arrowX)} />
-                )}
+                {/* Arrow */}
+                {pos?.arrowX != null && <div style={arrowStyle(pos.placement, pos.arrowX)} />}
 
-                {/* Progress dots */}
-                <div className="flex items-center gap-1 mb-2">
-                    {STEPS.map((_, i) => (
-                        <span key={i} className={`rounded-full transition-all duration-200 ${i === step ? 'w-4 h-1.5 bg-[#0E7F41]' : 'w-1.5 h-1.5 bg-gray-300'}`} />
-                    ))}
-                    <span className="ml-auto text-[10px] text-gray-400">{step + 1}/{STEPS.length}</span>
+                {/* Green header */}
+                <div className="bg-[#0E7F41] px-3 pt-2.5 pb-2">
+                    {/* Progress bar */}
+                    <div className="w-full h-1 bg-white/25 rounded-full mb-2">
+                        <div
+                            className="h-full bg-white rounded-full transition-all duration-400"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        {/* Dot indicators */}
+                        <div className="flex items-center gap-1.5">
+                            {STEPS.map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setStep(i)}
+                                    className={`rounded-full transition-all duration-200 ${i === step ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40 hover:bg-white/70'}`}
+                                />
+                            ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-white/70 font-medium">{step + 1} / {STEPS.length}</span>
+                            <button onClick={onDone} className="text-white/60 hover:text-white transition-colors text-sm leading-none" title="Close tour">✕</button>
+                        </div>
+                    </div>
                 </div>
 
-                <p className="text-xs font-bold text-gray-800 mb-1">{current.title}</p>
-                <p className="text-[11px] text-gray-600 leading-relaxed">{current.body}</p>
+                {/* Body */}
+                <div className="px-3 pt-2.5 pb-1">
+                    <p className="text-xs font-bold text-gray-900 mb-1 leading-snug">{current.title}</p>
+                    <p className="text-[11px] text-gray-600 leading-relaxed">{current.body}</p>
 
-                <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">
+                    {current.tip && (
+                        <div className="mt-2 flex items-start gap-1.5 bg-[#F0FFF7] border border-[#C6EDD9] rounded-lg px-2 py-1.5">
+                            <svg className="w-3 h-3 text-[#0E7F41] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-[10px] text-[#0E7F41] leading-relaxed font-medium">{current.tip}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between px-3 py-2 border-t border-gray-100">
                     <button onClick={onDone} className="text-[10px] text-gray-400 hover:text-gray-600 transition-colors">
                         Skip tour
                     </button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         {step > 0 && (
-                            <button onClick={() => setStep(s => s - 1)} className="text-[11px] px-2.5 py-1 rounded border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
-                                Back
+                            <button
+                                onClick={() => setStep(s => s - 1)}
+                                className="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
+                                ← Back
                             </button>
                         )}
-                        <button onClick={advance} className="text-[11px] px-3 py-1 rounded bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium">
-                            {step === STEPS.length - 1 ? 'Done' : 'Next →'}
+                        <button
+                            onClick={advance}
+                            className="text-[11px] px-3 py-1 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
+                        >
+                            {step === STEPS.length - 1 ? '✓ Done' : 'Next →'}
                         </button>
                     </div>
                 </div>
             </div>
         </>
-    );
-}
-
-function TargetSpotlight({ targetId }) {
-    const [rect, setRect] = useState(null);
-
-    useLayoutEffect(() => {
-        const el = document.querySelector(`[data-tour="${targetId}"]`);
-        if (!el) { setRect(null); return; }
-        const r = el.getBoundingClientRect();
-        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-    }, [targetId]);
-
-    if (!rect) return null;
-
-    const pad = 4;
-    return (
-        <div
-            className="fixed z-[99991] pointer-events-none"
-            style={{
-                top: rect.top - pad,
-                left: rect.left - pad,
-                width: rect.width + pad * 2,
-                height: rect.height + pad * 2,
-                boxShadow: '0 0 0 9999px rgba(0,0,0,0.25)',
-                borderRadius: 6,
-            }}
-        />
     );
 }
