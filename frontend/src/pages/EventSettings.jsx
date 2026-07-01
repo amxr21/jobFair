@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
 
-// ─── Seed Data ───────────────────────────────────────────────────────────────
+// ─── Seed Data ────────────────────────────────────────────────────────────────
 
-const COMPANIES = ["Emirates NBD", "Etisalat", "Dubai Police", "DP World"];
+const COMPANIES = ["Emirates NBD", "Etisalat", "Dubai Police", "DP World", "ADNOC"];
 
 const INIT_BOOTHS = [
   { id: 1, number: "B01", zone: "A", company: "Emirates NBD", type: "Premium", status: "Assigned" },
@@ -23,7 +23,7 @@ const INIT_BOOTHS = [
 
 const INIT_BANNERS = [
   { id: 1, company: "Emirates NBD", material: "Roll-up Banner", status: "Placed", submitted: "2024-03-10", notes: "2 roll-ups, logo updated" },
-  { id: 2, company: "Etisalat", material: "Backdrop 3x2m", status: "Printed", submitted: "2024-03-12", notes: "Awaiting delivery" },
+  { id: 2, company: "Etisalat", material: "Backdrop 3×2m", status: "Printed", submitted: "2024-03-12", notes: "Awaiting delivery" },
   { id: 3, company: "Dubai Police", material: "Table Skirt", status: "Approved", submitted: "2024-03-14", notes: "Standard green theme" },
   { id: 4, company: "DP World", material: "Digital Screen Graphic", status: "Submitted", submitted: "2024-03-15", notes: "HD resolution required" },
   { id: 5, company: "ADNOC", material: "Roll-up Banner", status: "Not Submitted", submitted: "—", notes: "Follow up needed" },
@@ -112,12 +112,8 @@ const INIT_PASSES = [
 ];
 
 const ANALYTICS_STATS = {
-  totalCompanies: 24,
-  totalStudents: 1847,
-  checkinRate: 86,
-  applications: 1423,
-  boothsUtilized: 22,
-  avgFeedback: 4.3,
+  totalCompanies: 24, totalStudents: 1847, checkinRate: 86,
+  applications: 1423, boothsUtilized: 22, avgFeedback: 4.3,
 };
 
 const FEEDBACK_CATEGORIES = [
@@ -128,49 +124,77 @@ const FEEDBACK_CATEGORIES = [
   { label: "Overall Experience", score: 4.3 },
 ];
 
-// ─── Helper Components ────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const Badge = ({ label, color }) => {
-  const colors = {
-    green: "bg-green-100 text-green-700",
-    yellow: "bg-amber-100 text-amber-700",
-    red: "bg-red-100 text-red-600",
-    gray: "bg-gray-100 text-gray-500",
-    blue: "bg-blue-100 text-blue-700",
-    orange: "bg-orange-100 text-orange-700",
-    purple: "bg-purple-100 text-purple-700",
-  };
-  return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${colors[color] || colors.gray}`}>
-      {label}
-    </span>
-  );
+const BADGE_COLORS = {
+  green: "bg-green-100 text-green-700",
+  yellow: "bg-amber-100 text-amber-700",
+  red: "bg-red-100 text-red-600",
+  gray: "bg-gray-100 text-gray-500",
+  blue: "bg-blue-100 text-blue-700",
+  orange: "bg-orange-100 text-orange-700",
+  purple: "bg-purple-100 text-purple-700",
 };
 
-const statusColor = (status) => {
-  const map = {
-    Assigned: "green", Available: "gray", Reserved: "yellow",
-    Placed: "green", Printed: "blue", Approved: "green",
-    Submitted: "yellow", "Not Submitted": "gray",
-    Fulfilled: "green", "In Progress": "blue", Open: "yellow",
-    Partial: "yellow", Pending: "gray",
-    Present: "green", Absent: "red",
-    "Checked In": "green",
-    Ended: "gray", Live: "green", Upcoming: "blue",
-    Active: "green", Used: "gray", Revoked: "red",
-    Printed: "green",
-    Critical: "red", High: "orange", Medium: "yellow", Low: "gray",
-  };
-  return map[status] || "gray";
-};
+const Badge = ({ label, color = "gray" }) => (
+  <span className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${BADGE_COLORS[color] || BADGE_COLORS.gray}`}>
+    {label}
+  </span>
+);
 
-const StatCard = ({ label, value, sub, color }) => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1">
-    <p className="text-xs text-gray-500 font-medium">{label}</p>
-    <p className={`text-2xl font-bold`} style={{ color: color || "#0E7F41" }}>{value}</p>
-    {sub && <p className="text-xs text-gray-400">{sub}</p>}
+const statusColor = (s) => ({
+  Assigned: "green", Available: "gray", Reserved: "yellow",
+  Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
+  Fulfilled: "green", "In Progress": "blue", Open: "yellow", Partial: "yellow", Pending: "gray",
+  Present: "green", Absent: "red", "Checked In": "green",
+  Ended: "gray", Live: "green", Upcoming: "blue",
+  Active: "green", Used: "gray", Revoked: "red",
+  Critical: "red", High: "orange", Medium: "yellow", Low: "gray",
+}[s] || "gray");
+
+const StatCard = ({ label, value, sub, color = "#0E7F41" }) => (
+  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1 min-w-0">
+    <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
+    <p className="text-2xl font-bold truncate" style={{ color }}>{value}</p>
+    {sub && <p className="text-xs text-gray-400 truncate">{sub}</p>}
   </div>
 );
+
+const Th = ({ children }) => (
+  <th className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4 whitespace-nowrap">{children}</th>
+);
+
+// Sub-tab bar used inside Attendance
+const SubTabBar = ({ tabs, active, onChange }) => {
+  const btnRefs = useRef([]);
+  const pillRef = useRef(null);
+
+  useLayoutEffect(() => {
+    const btn = btnRefs.current[active];
+    const pill = pillRef.current;
+    if (!btn || !pill) return;
+    pill.style.left = `${btn.offsetLeft}px`;
+    pill.style.width = `${btn.offsetWidth}px`;
+  }, [active]);
+
+  return (
+    <div className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit">
+      <div
+        ref={pillRef}
+        className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
+        style={{ background: "#0E7F41", left: 0, width: 0, transition: "left 0.2s cubic-bezier(0.4,0,0.2,1), width 0.2s cubic-bezier(0.4,0,0.2,1)" }}
+      />
+      {tabs.map((t, i) => (
+        <button
+          key={t}
+          ref={(el) => (btnRefs.current[i] = el)}
+          onClick={() => onChange(i)}
+          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
+        >{t}</button>
+      ))}
+    </div>
+  );
+};
 
 // ─── Tab 1: Venue Mapping & Booth Assignment ──────────────────────────────────
 
@@ -180,95 +204,66 @@ const VenueMapping = () => {
   const [formCompany, setFormCompany] = useState("");
   const [formType, setFormType] = useState("Standard");
 
-  const startAssign = (booth) => {
-    setAssigningId(booth.id);
-    setFormCompany(booth.company || "");
-    setFormType(booth.type);
-  };
-
-  const cancelAssign = () => {
-    setAssigningId(null);
-    setFormCompany("");
-    setFormType("Standard");
-  };
-
+  const startAssign = (booth) => { setAssigningId(booth.id); setFormCompany(booth.company || ""); setFormType(booth.type); };
+  const cancelAssign = () => { setAssigningId(null); setFormCompany(""); setFormType("Standard"); };
   const saveAssign = (id) => {
-    setBooths((prev) =>
-      prev.map((b) =>
-        b.id === id
-          ? { ...b, company: formCompany || null, type: formType, status: formCompany ? "Assigned" : "Available" }
-          : b
-      )
-    );
+    setBooths((prev) => prev.map((b) => b.id === id
+      ? { ...b, company: formCompany || null, type: formType, status: formCompany ? "Assigned" : "Available" }
+      : b));
     cancelAssign();
   };
 
-  const zones = ["A", "B", "C"];
+  const assigned = booths.filter((b) => b.status === "Assigned").length;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-3 flex-wrap">
-        {[
-          { label: "Assigned", color: "green" },
-          { label: "Reserved", color: "yellow" },
-          { label: "Available", color: "gray" },
-        ].map((s) => (
-          <div key={s.label} className="flex items-center gap-1.5 text-xs text-gray-600">
-            <Badge label={s.label} color={s.color} />
-          </div>
-        ))}
-        <span className="text-xs text-gray-400 ml-auto">{booths.filter((b) => b.status === "Assigned").length} / {booths.length} assigned</span>
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex gap-3 flex-wrap">
+          {[["Assigned", "green"], ["Reserved", "yellow"], ["Available", "gray"]].map(([l, c]) => (
+            <div key={l} className="flex items-center gap-1.5 text-xs text-gray-600">
+              <span className={`w-2 h-2 rounded-full ${c === "green" ? "bg-green-500" : c === "yellow" ? "bg-amber-400" : "bg-gray-300"}`} />
+              {l}
+            </div>
+          ))}
+        </div>
+        <span className="text-xs font-semibold text-gray-500">{assigned} / {booths.length} assigned</span>
       </div>
 
-      {zones.map((zone) => (
+      {["A", "B", "C"].map((zone) => (
         <div key={zone}>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Zone {zone}</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Zone {zone}</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {booths.filter((b) => b.zone === zone).map((booth) => (
-              <div key={booth.id} className={`rounded-xl border p-3 flex flex-col gap-2 ${booth.status === "Assigned" ? "border-green-200 bg-green-50" : booth.status === "Reserved" ? "border-amber-200 bg-amber-50" : "border-gray-200 bg-white"}`}>
+              <div key={booth.id} className={`rounded-xl border p-3 flex flex-col gap-2.5 ${
+                booth.status === "Assigned" ? "border-green-200 bg-green-50"
+                : booth.status === "Reserved" ? "border-amber-200 bg-amber-50"
+                : "border-gray-200 bg-white"}`}>
                 <div className="flex justify-between items-center">
                   <span className="font-bold text-sm text-gray-800">{booth.number}</span>
                   <Badge label={booth.status} color={statusColor(booth.status)} />
                 </div>
                 <div className="text-xs text-gray-500 flex flex-col gap-0.5">
-                  <span>{booth.type}</span>
-                  <span className="font-medium text-gray-700 truncate">{booth.company || "—"}</span>
+                  <span className="text-gray-400">{booth.type}</span>
+                  <span className="font-semibold text-gray-700 truncate">{booth.company || "Unassigned"}</span>
                 </div>
-
                 {assigningId === booth.id ? (
-                  <div className="flex flex-col gap-2 pt-1 border-t border-gray-200">
-                    <select
-                      className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500"
-                      value={formCompany}
-                      onChange={(e) => setFormCompany(e.target.value)}
-                    >
-                      <option value="">— No Company —</option>
+                  <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={formCompany} onChange={(e) => setFormCompany(e.target.value)}>
+                      <option value="">— Unassigned —</option>
                       {COMPANIES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <select
-                      className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-green-500"
-                      value={formType}
-                      onChange={(e) => setFormType(e.target.value)}
-                    >
-                      {["Standard", "Premium", "Corner"].map((t) => <option key={t} value={t}>{t}</option>)}
+                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={formType} onChange={(e) => setFormType(e.target.value)}>
+                      {["Standard", "Premium", "Corner"].map((t) => <option key={t}>{t}</option>)}
                     </select>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => saveAssign(booth.id)}
-                        className="flex-1 text-xs rounded-lg py-1 font-medium text-white"
-                        style={{ background: "#0E7F41" }}
-                      >Save</button>
-                      <button
-                        onClick={cancelAssign}
-                        className="flex-1 text-xs rounded-lg py-1 font-medium bg-gray-100 text-gray-600"
-                      >Cancel</button>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => saveAssign(booth.id)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-white" style={{ background: "#0E7F41" }}>Save</button>
+                      <button onClick={cancelAssign} className="flex-1 text-xs rounded-lg py-1.5 font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
                     </div>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => startAssign(booth)}
-                    className="text-xs rounded-lg py-1 font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-                  >Assign</button>
+                  <button onClick={() => startAssign(booth)} className="text-xs rounded-lg py-1.5 font-medium border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+                    {booth.company ? "Reassign" : "Assign"}
+                  </button>
                 )}
               </div>
             ))}
@@ -282,73 +277,83 @@ const VenueMapping = () => {
 // ─── Tab 2: Banner & Branding Status ─────────────────────────────────────────
 
 const BannerBranding = () => {
-  const [banners] = useState(INIT_BANNERS);
+  const [banners, setBanners] = useState(INIT_BANNERS);
 
   const stepIdx = (status) => BANNER_STEPS.indexOf(status);
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead>
-            <tr className="border-b border-gray-100">
-              {["Company", "Material Type", "Status", "Submitted", "Notes", "Progress"].map((h) => (
-                <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {banners.map((row) => {
-              const si = stepIdx(row.status);
-              return (
-                <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 pr-4 font-medium text-gray-800">{row.company}</td>
-                  <td className="py-3 pr-4 text-gray-600">{row.material}</td>
-                  <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
-                  <td className="py-3 pr-4 text-gray-500 text-xs">{row.submitted}</td>
-                  <td className="py-3 pr-4 text-gray-500 text-xs max-w-[160px]">{row.notes}</td>
-                  <td className="py-3 pr-4">
-                    <div className="flex items-center gap-1">
-                      {BANNER_STEPS.map((step, idx) => (
-                        <div key={step} className="flex items-center gap-1">
-                          <div
-                            title={step}
-                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center text-[9px] font-bold ${idx <= si ? "border-green-500 bg-green-500 text-white" : "border-gray-300 bg-white text-gray-300"}`}
-                          >
-                            {idx < si ? "✓" : idx === si ? "●" : ""}
-                          </div>
-                          {idx < BANNER_STEPS.length - 1 && (
-                            <div className={`w-4 h-0.5 ${idx < si ? "bg-green-400" : "bg-gray-200"}`} />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+  const advance = (id) => {
+    setBanners((prev) => prev.map((b) => {
+      if (b.id !== id) return b;
+      const idx = stepIdx(b.status);
+      return idx < BANNER_STEPS.length - 1 ? { ...b, status: BANNER_STEPS[idx + 1] } : b;
+    }));
+  };
 
-      <div className="flex flex-wrap gap-3 pt-1">
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex gap-4 flex-wrap pb-1">
         {BANNER_STEPS.map((step, idx) => (
           <div key={step} className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className={`w-2.5 h-2.5 rounded-full ${idx === 0 ? "bg-gray-300" : idx === 4 ? "bg-green-500" : "bg-blue-400"}`} />
-            <span>{step}</span>
+            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${idx === 0 ? "bg-gray-300" : idx === 4 ? "bg-green-500" : "bg-blue-400"}`} />
+            {step}
           </div>
         ))}
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {banners.map((row) => {
+          const si = stepIdx(row.status);
+          return (
+            <div key={row.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <p className="font-semibold text-gray-800 text-sm">{row.company}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{row.material}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Badge label={row.status} color={statusColor(row.status)} />
+                  {si < BANNER_STEPS.length - 1 && (
+                    <button onClick={() => advance(row.id)} className="text-xs font-medium text-white rounded-lg px-3 py-1 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
+                      Mark {BANNER_STEPS[si + 1]} →
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress stepper */}
+              <div className="flex items-center gap-0.5">
+                {BANNER_STEPS.map((step, idx) => (
+                  <div key={step} className="flex items-center flex-1 last:flex-none">
+                    <div title={step} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold flex-shrink-0 transition-all duration-300 ${
+                      idx < si ? "border-green-500 bg-green-500 text-white"
+                      : idx === si ? "border-green-500 bg-white text-green-600"
+                      : "border-gray-200 bg-white text-gray-300"}`}>
+                      {idx < si ? "✓" : idx + 1}
+                    </div>
+                    {idx < BANNER_STEPS.length - 1 && (
+                      <div className={`flex-1 h-0.5 mx-0.5 transition-all duration-300 ${idx < si ? "bg-green-400" : "bg-gray-200"}`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {row.notes && <p className="text-xs text-gray-400 italic">{row.notes}</p>}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
-// ─── Tab 3: Special & Additional Requirements ─────────────────────────────────
+// ─── Tab 3: Special & Additional Requirements ──────────────────────────────────
 
 const SpecialRequirements = () => {
   const [rows, setRows] = useState(INIT_REQUIREMENTS);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ company: COMPANIES[0], description: "", category: "", priority: "Medium", status: "Open", notes: "" });
+
+  const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = () => {
     if (!form.description.trim()) return;
@@ -357,75 +362,74 @@ const SpecialRequirements = () => {
     setShowForm(false);
   };
 
+  const cycleStatus = (id) => {
+    const cycle = ["Open", "In Progress", "Fulfilled"];
+    setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: cycle[(cycle.indexOf(r.status) + 1) % cycle.length] } : r));
+  };
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="text-sm font-medium text-white rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
-          style={{ background: "#0E7F41" }}
-        >
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2 flex-wrap">
+          {["Open", "In Progress", "Fulfilled"].map((s) => (
+            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500">
+              <Badge label={`${rows.filter(r => r.status === s).length} ${s}`} color={statusColor(s)} />
+            </span>
+          ))}
+        </div>
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0" style={{ background: "#0E7F41" }}>
           {showForm ? "Cancel" : "+ Add Requirement"}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-gray-200 flex flex-col gap-3">
+        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
           <p className="text-sm font-semibold text-gray-700">New Requirement</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Company</label>
-              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}>
-                {COMPANIES.map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Category</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="e.g. AV Equipment" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Priority</label>
-              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.priority} onChange={(e) => setForm((f) => ({ ...f, priority: e.target.value }))}>
-                {["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}
-              </select>
-            </div>
+            {[
+              { label: "Company", el: <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.company} onChange={F("company")}>{COMPANIES.map((c) => <option key={c}>{c}</option>)}</select> },
+              { label: "Category", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="e.g. AV Equipment" value={form.category} onChange={F("category")} /> },
+              { label: "Priority", el: <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.priority} onChange={F("priority")}>{["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}</select> },
+            ].map(({ label, el }) => (
+              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
+            ))}
             <div className="flex flex-col gap-1 md:col-span-2">
               <label className="text-xs text-gray-500 font-medium">Description</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Describe the requirement..." value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Describe the requirement..." value={form.description} onChange={F("description")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Notes</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Optional notes..." value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
+              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Optional..." value={form.notes} onChange={F("notes")} />
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} className="text-sm font-medium text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save</button>
+            <button onClick={handleAdd} className="text-sm font-semibold text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save</button>
           </div>
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
-          <thead>
-            <tr className="border-b border-gray-100">
-              {["Company", "Description", "Category", "Priority", "Status", "Notes"].map((h) => (
-                <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                <td className="py-3 pr-4 font-medium text-gray-800">{row.company}</td>
-                <td className="py-3 pr-4 text-gray-600 max-w-[200px]">{row.description}</td>
-                <td className="py-3 pr-4 text-gray-500 text-xs">{row.category}</td>
-                <td className="py-3 pr-4"><Badge label={row.priority} color={statusColor(row.priority)} /></td>
-                <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
-                <td className="py-3 pr-4 text-gray-500 text-xs">{row.notes}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex flex-col gap-2">
+        {rows.map((row) => (
+          <div key={row.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 flex items-start justify-between gap-3 flex-wrap hover:border-gray-200 transition-colors">
+            <div className="flex flex-col gap-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-gray-800 text-sm">{row.company}</span>
+                <Badge label={row.category} color="blue" />
+                <Badge label={row.priority} color={statusColor(row.priority)} />
+              </div>
+              <p className="text-sm text-gray-600">{row.description}</p>
+              {row.notes && <p className="text-xs text-gray-400 italic">{row.notes}</p>}
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge label={row.status} color={statusColor(row.status)} />
+              {row.status !== "Fulfilled" && (
+                <button onClick={() => cycleStatus(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors text-gray-600">
+                  {row.status === "Open" ? "Start →" : "Fulfill ✓"}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -434,39 +438,44 @@ const SpecialRequirements = () => {
 // ─── Tab 4: Equipment & Logistics ─────────────────────────────────────────────
 
 const EquipmentLogistics = () => {
-  const [rows] = useState(INIT_EQUIPMENT);
+  const [rows, setRows] = useState(INIT_EQUIPMENT);
 
-  const totalTables = rows.filter((r) => r.item.toLowerCase().includes("table")).reduce((a, r) => a + r.qtyReq, 0);
-  const totalChairs = rows.filter((r) => r.item.toLowerCase().includes("chair")).reduce((a, r) => a + r.qtyReq, 0);
-  const totalPower = rows.filter((r) => r.item.toLowerCase().includes("power") || r.item.toLowerCase().includes("extension")).reduce((a, r) => a + r.qtyReq, 0);
-  const totalScreens = rows.filter((r) => r.item.toLowerCase().includes("screen") || r.item.toLowerCase().includes("monitor")).reduce((a, r) => a + r.qtyReq, 0);
+  const total = (kw) => rows.filter((r) => kw.some((k) => r.item.toLowerCase().includes(k))).reduce((a, r) => a + r.qtyReq, 0);
+  const fulfillItem = (id) => setRows((prev) => prev.map((r) => r.id === id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled" } : r));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Tables" value={totalTables} sub="Total requested" />
-        <StatCard label="Chairs" value={totalChairs} sub="Total requested" color="#2959A6" />
-        <StatCard label="Power Outlets" value={totalPower} sub="Strips & cables" color="#f59e0b" />
-        <StatCard label="Screens" value={totalScreens} sub="Monitors & displays" color="#8b5cf6" />
+        <StatCard label="Tables" value={total(["table"])} sub="Total requested" />
+        <StatCard label="Chairs" value={total(["chair"])} sub="Total requested" color="#2959A6" />
+        <StatCard label="Power / Cables" value={total(["power", "extension", "cable"])} sub="Strips & cables" color="#f59e0b" />
+        <StatCard label="Screens" value={total(["screen", "monitor"])} sub="Monitors & displays" color="#8b5cf6" />
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-xl border border-gray-100">
         <table className="w-full text-sm min-w-[560px]">
           <thead>
-            <tr className="border-b border-gray-100">
-              {["Company / Booth", "Item", "Qty Requested", "Qty Fulfilled", "Status"].map((h) => (
-                <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              {["Company / Booth", "Item", "Requested", "Fulfilled", "Status", ""].map((h, i) => (
+                <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                <td className="py-3 pr-4 font-medium text-gray-800 text-xs">{row.entity}</td>
-                <td className="py-3 pr-4 text-gray-700">{row.item}</td>
-                <td className="py-3 pr-4 text-gray-600 text-center">{row.qtyReq}</td>
-                <td className="py-3 pr-4 text-gray-600 text-center">{row.qtyFul}</td>
-                <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
+              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
+                <td className="px-4 py-3 text-xs font-medium text-gray-600">{row.entity}</td>
+                <td className="px-4 py-3 text-gray-800">{row.item}</td>
+                <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyReq}</td>
+                <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyFul}</td>
+                <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <td className="px-4 py-3">
+                  {row.status !== "Fulfilled" && (
+                    <button onClick={() => fulfillItem(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                      Fulfill ✓
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -479,18 +488,18 @@ const EquipmentLogistics = () => {
 // ─── Tab 5: Company Delegate List ─────────────────────────────────────────────
 
 const DelegateList = () => {
-  const [companies] = useState(INIT_DELEGATES);
+  const [companies, setCompanies] = useState(INIT_DELEGATES);
   const [expanded, setExpanded] = useState(new Set([0]));
 
   const totalDelegates = companies.reduce((a, c) => a + c.delegates.length, 0);
   const totalPrinted = companies.reduce((a, c) => a + c.delegates.filter((d) => d.badge === "Printed").length, 0);
 
-  const toggle = (idx) => {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(idx) ? next.delete(idx) : next.add(idx);
-      return next;
-    });
+  const toggle = (idx) => setExpanded((prev) => { const n = new Set(prev); n.has(idx) ? n.delete(idx) : n.add(idx); return n; });
+
+  const printBadge = (cIdx, dIdx) => {
+    setCompanies((prev) => prev.map((c, ci) => ci !== cIdx ? c : {
+      ...c, delegates: c.delegates.map((d, di) => di !== dIdx ? d : { ...d, badge: "Printed" })
+    }));
   };
 
   return (
@@ -504,24 +513,22 @@ const DelegateList = () => {
       <div className="flex flex-col gap-2">
         {companies.map((company, idx) => (
           <div key={company.company} className="rounded-xl border border-gray-200 overflow-hidden">
-            <button
-              onClick={() => toggle(idx)}
-              className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
-            >
+            <button onClick={() => toggle(idx)} className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
               <div className="flex items-center gap-3">
                 <span className="font-semibold text-gray-800 text-sm">{company.company}</span>
                 <Badge label={`${company.delegates.length} delegates`} color="blue" />
+                <Badge label={`${company.delegates.filter(d => d.badge === "Printed").length} badges printed`} color="green" />
               </div>
-              <span className="text-gray-400 text-sm">{expanded.has(idx) ? "▲" : "▼"}</span>
+              <span className="text-gray-400 text-xs">{expanded.has(idx) ? "▲ Hide" : "▼ Show"}</span>
             </button>
 
             {expanded.has(idx) && (
               <div className="border-t border-gray-100 overflow-x-auto">
-                <table className="w-full text-sm min-w-[480px]">
+                <table className="w-full text-sm min-w-[520px]">
                   <thead>
                     <tr className="bg-gray-50">
-                      {["Name", "Role", "Email", "Phone", "Badge"].map((h) => (
-                        <th key={h} className="text-left text-xs font-semibold text-gray-500 px-4 py-2">{h}</th>
+                      {["Name", "Role", "Email", "Phone", "Badge", ""].map((h, i) => (
+                        <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -533,6 +540,13 @@ const DelegateList = () => {
                         <td className="px-4 py-2.5 text-gray-500 text-xs">{d.email}</td>
                         <td className="px-4 py-2.5 text-gray-500 text-xs">{d.phone}</td>
                         <td className="px-4 py-2.5"><Badge label={d.badge} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
+                        <td className="px-4 py-2.5">
+                          {d.badge !== "Printed" && (
+                            <button onClick={() => printBadge(idx, di)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                              Print Badge
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -550,68 +564,53 @@ const DelegateList = () => {
 
 const AttendanceCheckin = () => {
   const [subTab, setSubTab] = useState(0);
-  const subTabRefs = useRef([]);
-  const subPillRef = useRef(null);
+  const [students, setStudents] = useState(INIT_ATTENDANCE_STUDENTS);
+  const [companies, setCompanies] = useState(INIT_ATTENDANCE_COMPANIES);
 
-  const subTabs = ["Companies", "Students"];
+  const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
+  const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
+  const studCheckedIn = students.filter((s) => s.status === "Checked In").length;
+  const studTotal = students.length;
 
-  useEffect(() => {
-    const btn = subTabRefs.current[subTab];
-    const pill = subPillRef.current;
-    if (!btn || !pill) return;
-    pill.style.left = `${btn.offsetLeft}px`;
-    pill.style.width = `${btn.offsetWidth}px`;
-  }, [subTab]);
-
-  const compCheckedIn = INIT_ATTENDANCE_COMPANIES.reduce((a, c) => a + c.checkedIn, 0);
-  const compTotal = INIT_ATTENDANCE_COMPANIES.reduce((a, c) => a + c.delegateCount, 0);
-  const studCheckedIn = INIT_ATTENDANCE_STUDENTS.filter((s) => s.status === "Checked In").length;
-  const studTotal = INIT_ATTENDANCE_STUDENTS.length;
+  const checkInStudent = (id) => setStudents((prev) => prev.map((s) => s.id !== id ? s : { ...s, status: "Checked In", time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), method: "Manual" }));
+  const checkInCompany = (booth) => setCompanies((prev) => prev.map((c) => c.booth !== booth ? c : { ...c, checkedIn: c.delegateCount, time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), status: "Present" }));
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Total Expected" value={subTab === 0 ? compTotal : studTotal} />
+        <StatCard label="Expected" value={subTab === 0 ? compTotal : studTotal} />
         <StatCard label="Checked In" value={subTab === 0 ? compCheckedIn : studCheckedIn} color="#2959A6" />
         <StatCard label="Pending" value={subTab === 0 ? compTotal - compCheckedIn : studTotal - studCheckedIn} color="#f59e0b" />
       </div>
 
-      {/* Sub-tab bar */}
-      <div className="relative flex bg-white border border-gray-200 rounded-xl p-1 w-fit gap-1">
-        <div
-          ref={subPillRef}
-          className="absolute top-1 bottom-1 rounded-lg transition-all duration-200 pointer-events-none"
-          style={{ background: "#0E7F41", left: 0, width: 0, transition: "left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1)" }}
-        />
-        {subTabs.map((t, i) => (
-          <button
-            key={t}
-            ref={(el) => (subTabRefs.current[i] = el)}
-            onClick={() => setSubTab(i)}
-            className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 ${subTab === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
-          >{t}</button>
-        ))}
-      </div>
+      <SubTabBar tabs={["Companies", "Students"]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full text-sm min-w-[540px]">
             <thead>
-              <tr className="border-b border-gray-100">
-                {["Booth", "Company", "Delegates", "Checked In", "Time", "Status"].map((h) => (
-                  <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                {["Booth", "Company", "Delegates", "Checked In", "Time", "Status", ""].map((h, i) => (
+                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {INIT_ATTENDANCE_COMPANIES.map((row, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 pr-4 text-gray-500 text-xs font-mono">{row.booth}</td>
-                  <td className="py-3 pr-4 font-medium text-gray-800">{row.company}</td>
-                  <td className="py-3 pr-4 text-gray-600 text-center">{row.delegateCount}</td>
-                  <td className="py-3 pr-4 text-gray-600 text-center">{row.checkedIn}</td>
-                  <td className="py-3 pr-4 text-gray-500 text-xs">{row.time}</td>
-                  <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
+              {companies.map((row, i) => (
+                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
+                  <td className="px-4 py-3 text-xs font-mono text-gray-500">{row.booth}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
+                  <td className="px-4 py-3 text-center text-gray-600">{row.delegateCount}</td>
+                  <td className="px-4 py-3 text-center text-gray-600">{row.checkedIn}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500">{row.time}</td>
+                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                  <td className="px-4 py-3">
+                    {row.status !== "Present" && (
+                      <button onClick={() => checkInCompany(row.booth)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                        Check In
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -620,27 +619,30 @@ const AttendanceCheckin = () => {
       )}
 
       {subTab === 1 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[560px]">
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full text-sm min-w-[500px]">
             <thead>
-              <tr className="border-b border-gray-100">
-                {["Student ID", "Name", "Check-in Time", "Method", "Status"].map((h) => (
-                  <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                {["Student ID", "Name", "Time", "Method", "Status", ""].map((h, i) => (
+                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {INIT_ATTENDANCE_STUDENTS.map((row, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 pr-4 text-gray-500 text-xs font-mono">{row.id}</td>
-                  <td className="py-3 pr-4 font-medium text-gray-800">{row.name}</td>
-                  <td className="py-3 pr-4 text-gray-500 text-xs">{row.time}</td>
-                  <td className="py-3 pr-4">
-                    {row.method !== "—" ? (
-                      <Badge label={row.method} color={row.method === "QR" ? "blue" : "gray"} />
-                    ) : <span className="text-gray-300 text-xs">—</span>}
+              {students.map((row, i) => (
+                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
+                  <td className="px-4 py-3 text-xs font-mono text-gray-500">{row.id}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800">{row.name}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500">{row.time}</td>
+                  <td className="px-4 py-3">{row.method !== "—" ? <Badge label={row.method} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 text-xs">—</span>}</td>
+                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                  <td className="px-4 py-3">
+                    {row.status !== "Checked In" && (
+                      <button onClick={() => checkInStudent(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                        Check In
+                      </button>
+                    )}
                   </td>
-                  <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
                 </tr>
               ))}
             </tbody>
@@ -656,94 +658,104 @@ const AttendanceCheckin = () => {
 const ScheduleSlots = () => {
   const [slots, setSlots] = useState(INIT_SCHEDULE);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ start: "", end: "", title: "", host: "", location: "", capacity: "", registered: "", status: "Upcoming" });
+  const [form, setForm] = useState({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
+
+  const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = () => {
     if (!form.title.trim() || !form.start) return;
-    setSlots((prev) => [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: Number(form.registered) || 0 }]);
-    setForm({ start: "", end: "", title: "", host: "", location: "", capacity: "", registered: "", status: "Upcoming" });
+    setSlots((prev) => [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: 0 }]);
+    setForm({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
     setShowForm(false);
+  };
+
+  const cycleStatus = (id) => {
+    const cycle = ["Upcoming", "Live", "Ended"];
+    setSlots((prev) => prev.map((s) => s.id === id ? { ...s, status: cycle[(cycle.indexOf(s.status) + 1) % cycle.length] } : s));
   };
 
   const sorted = [...slots].sort((a, b) => a.start.localeCompare(b.start));
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowForm((v) => !v)}
-          className="text-sm font-medium text-white rounded-xl px-4 py-2 hover:opacity-90 transition-opacity"
-          style={{ background: "#0E7F41" }}
-        >
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {["Ended", "Live", "Upcoming"].map((s) => (
+            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500">
+              <Badge label={`${slots.filter(sl => sl.status === s).length} ${s}`} color={statusColor(s)} />
+            </span>
+          ))}
+        </div>
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0" style={{ background: "#0E7F41" }}>
           {showForm ? "Cancel" : "+ Add Slot"}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-gray-200 flex flex-col gap-3">
+        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
           <p className="text-sm font-semibold text-gray-700">New Time Slot</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Start</label>
-              <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.start} onChange={(e) => setForm((f) => ({ ...f, start: e.target.value }))} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">End</label>
-              <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.end} onChange={(e) => setForm((f) => ({ ...f, end: e.target.value }))} />
-            </div>
+            {[
+              { label: "Start", el: <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.start} onChange={F("start")} /> },
+              { label: "End", el: <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.end} onChange={F("end")} /> },
+              { label: "Host", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Host / team" value={form.host} onChange={F("host")} /> },
+              { label: "Location", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Room / area" value={form.location} onChange={F("location")} /> },
+            ].map(({ label, el }) => (
+              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
+            ))}
             <div className="flex flex-col gap-1 md:col-span-2">
-              <label className="text-xs text-gray-500 font-medium">Title</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Session title..." value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Host</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Host / company" value={form.host} onChange={(e) => setForm((f) => ({ ...f, host: e.target.value }))} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Location</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Room / area" value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} />
+              <label className="text-xs text-gray-500 font-medium">Session Title</label>
+              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="e.g. Opening Ceremony" value={form.title} onChange={F("title")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Capacity</label>
-              <input type="number" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="0" value={form.capacity} onChange={(e) => setForm((f) => ({ ...f, capacity: e.target.value }))} />
+              <input type="number" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="0" value={form.capacity} onChange={F("capacity")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Status</label>
-              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
+              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.status} onChange={F("status")}>
                 {["Upcoming", "Live", "Ended"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} className="text-sm font-medium text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save Slot</button>
+            <button onClick={handleAdd} className="text-sm font-semibold text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save Slot</button>
           </div>
         </div>
       )}
 
       <div className="flex flex-col gap-3">
         {sorted.map((slot) => (
-          <div key={slot.id} className="flex gap-4 items-start group">
-            <div className="flex flex-col items-center pt-1 min-w-[56px]">
+          <div key={slot.id} className="flex gap-4 items-start">
+            <div className="flex flex-col items-center pt-1 flex-shrink-0 w-14">
               <span className="text-xs font-bold text-gray-700">{slot.start}</span>
-              <div className="w-0.5 flex-1 bg-gray-200 my-1 min-h-[24px]" />
+              <div className="w-px flex-1 bg-gray-200 my-1 min-h-[20px]" />
               <span className="text-xs text-gray-400">{slot.end}</span>
             </div>
-            <div className={`flex-1 rounded-xl border p-4 flex flex-col gap-2 ${slot.status === "Live" ? "border-green-300 bg-green-50" : slot.status === "Ended" ? "border-gray-200 bg-gray-50" : "border-blue-200 bg-blue-50"}`}>
+            <div className={`flex-1 rounded-xl border p-4 flex flex-col gap-2 min-w-0 ${
+              slot.status === "Live" ? "border-green-300 bg-green-50"
+              : slot.status === "Ended" ? "border-gray-200 bg-gray-50"
+              : "border-blue-200 bg-blue-50"}`}>
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="font-semibold text-gray-800 text-sm">{slot.title}</span>
-                <Badge label={slot.status} color={statusColor(slot.status)} />
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <Badge label={slot.status} color={statusColor(slot.status)} />
+                  <button onClick={() => cycleStatus(slot.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
+                    →
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-                <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>
-                <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>
-                <span>Capacity: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                {slot.host && <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>}
+                {slot.location && <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>}
+                {slot.capacity > 0 && <span>Registered: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>}
               </div>
               {slot.capacity > 0 && (
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="h-1.5 rounded-full"
-                    style={{ width: `${Math.min(100, Math.round((slot.registered / slot.capacity) * 100))}%`, background: slot.status === "Live" ? "#0E7F41" : slot.status === "Ended" ? "#9ca3af" : "#2959A6" }}
-                  />
+                  <div className="h-1.5 rounded-full transition-all duration-500" style={{
+                    width: `${Math.min(100, Math.round((slot.registered / slot.capacity) * 100))}%`,
+                    background: slot.status === "Live" ? "#0E7F41" : slot.status === "Ended" ? "#9ca3af" : "#2959A6"
+                  }} />
                 </div>
               )}
             </div>
@@ -757,45 +769,60 @@ const ScheduleSlots = () => {
 // ─── Tab 8: Access & Parking Passes ───────────────────────────────────────────
 
 const AccessPasses = () => {
-  const [passes] = useState(INIT_PASSES);
+  const [passes, setPasses] = useState(INIT_PASSES);
+  const [filter, setFilter] = useState("All");
 
-  const total = passes.length;
-  const entryCount = passes.filter((p) => p.type === "Entry").length;
-  const parkingCount = passes.filter((p) => p.type === "Parking").length;
-  const vipCount = passes.filter((p) => p.type === "VIP").length;
+  const types = ["All", "Entry", "Parking", "VIP"];
+  const shown = filter === "All" ? passes : passes.filter((p) => p.type === filter);
+
+  const revokePass = (id) => setPasses((prev) => prev.map((p) => p.id === id ? { ...p, status: "Revoked" } : p));
+  const activatePass = (id) => setPasses((prev) => prev.map((p) => p.id === id ? { ...p, status: "Active" } : p));
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Total Issued" value={total} />
-        <StatCard label="Entry Passes" value={entryCount} color="#2959A6" />
-        <StatCard label="Parking Passes" value={parkingCount} color="#f59e0b" />
-        <StatCard label="VIP Passes" value={vipCount} color="#8b5cf6" />
+        <StatCard label="Total Issued" value={passes.length} />
+        <StatCard label="Entry Passes" value={passes.filter(p => p.type === "Entry").length} color="#2959A6" />
+        <StatCard label="Parking Passes" value={passes.filter(p => p.type === "Parking").length} color="#f59e0b" />
+        <StatCard label="VIP Passes" value={passes.filter(p => p.type === "VIP").length} color="#8b5cf6" />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[640px]">
+      {/* Filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {types.map((t) => (
+          <button key={t} onClick={() => setFilter(t)} className={`text-xs font-semibold rounded-full px-3 py-1.5 transition-all duration-150 ${filter === t ? "text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+            style={filter === t ? { background: "#0E7F41" } : {}}>
+            {t} {t !== "All" && `(${passes.filter(p => p.type === t).length})`}
+          </button>
+        ))}
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-gray-100">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
-            <tr className="border-b border-gray-100">
-              {["Company", "Delegate", "Pass Type", "Code", "Issued", "Status"].map((h) => (
-                <th key={h} className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4">{h}</th>
+            <tr className="bg-gray-50 border-b border-gray-100">
+              {["Company", "Delegate", "Type", "Code", "Issued", "Status", ""].map((h, i) => (
+                <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {passes.map((row) => (
-              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                <td className="py-3 pr-4 font-medium text-gray-800">{row.company}</td>
-                <td className="py-3 pr-4 text-gray-700">{row.delegate}</td>
-                <td className="py-3 pr-4">
-                  <Badge
-                    label={row.type}
-                    color={row.type === "VIP" ? "purple" : row.type === "Parking" ? "yellow" : "blue"}
-                  />
+            {shown.map((row) => (
+              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
+                <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
+                <td className="px-4 py-3 text-gray-700">{row.delegate}</td>
+                <td className="px-4 py-3"><Badge label={row.type} color={row.type === "VIP" ? "purple" : row.type === "Parking" ? "yellow" : "blue"} /></td>
+                <td className="px-4 py-3 text-gray-500 text-xs font-mono">{row.code}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs">{row.issued}</td>
+                <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <td className="px-4 py-3">
+                  {row.status === "Active" && (
+                    <button onClick={() => revokePass(row.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 text-red-500 transition-colors">Revoke</button>
+                  )}
+                  {row.status === "Revoked" && (
+                    <button onClick={() => activatePass(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 text-gray-500 transition-colors">Reactivate</button>
+                  )}
                 </td>
-                <td className="py-3 pr-4 text-gray-500 text-xs font-mono">{row.code}</td>
-                <td className="py-3 pr-4 text-gray-500 text-xs">{row.issued}</td>
-                <td className="py-3 pr-4"><Badge label={row.status} color={statusColor(row.status)} /></td>
               </tr>
             ))}
           </tbody>
@@ -807,95 +834,73 @@ const AccessPasses = () => {
 
 // ─── Tab 9: Post-Event Reporting & Analytics ──────────────────────────────────
 
-const PostEventReporting = () => {
-  const maxScore = 5;
+const PostEventReporting = () => (
+  <div className="flex flex-col gap-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <StatCard label="Total Companies" value={ANALYTICS_STATS.totalCompanies} sub="Participated" />
+      <StatCard label="Total Students" value={ANALYTICS_STATS.totalStudents.toLocaleString()} sub="Registered" color="#2959A6" />
+      <StatCard label="Check-in Rate" value={`${ANALYTICS_STATS.checkinRate}%`} sub="Overall attendance" />
+      <StatCard label="Applications Made" value={ANALYTICS_STATS.applications.toLocaleString()} sub="During the event" color="#8b5cf6" />
+      <StatCard label="Booths Utilized" value={`${ANALYTICS_STATS.boothsUtilized}/${ANALYTICS_STATS.totalCompanies}`} sub="Active booths" color="#f59e0b" />
+      <StatCard label="Avg Feedback" value={`${ANALYTICS_STATS.avgFeedback} / 5`} sub="Based on 312 responses" color="#0891b2" />
+    </div>
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Summary stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard label="Total Companies" value={ANALYTICS_STATS.totalCompanies} sub="Participated" />
-        <StatCard label="Total Students" value={ANALYTICS_STATS.totalStudents.toLocaleString()} sub="Registered" color="#2959A6" />
-        <StatCard label="Check-in Rate" value={`${ANALYTICS_STATS.checkinRate}%`} sub="Overall attendance" color="#0E7F41" />
-        <StatCard label="Applications Made" value={ANALYTICS_STATS.applications.toLocaleString()} sub="During the event" color="#8b5cf6" />
-        <StatCard label="Booths Utilized" value={`${ANALYTICS_STATS.boothsUtilized} / ${ANALYTICS_STATS.totalCompanies}`} sub="Active booths" color="#f59e0b" />
-        <StatCard label="Avg Feedback Score" value={`${ANALYTICS_STATS.avgFeedback} / 5`} sub="Based on 312 responses" color="#0891b2" />
-      </div>
-
-      {/* Feedback bar chart (CSS only) */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-4">Feedback Breakdown by Category</p>
-        <div className="flex flex-col gap-3">
-          {FEEDBACK_CATEGORIES.map((cat) => {
-            const pct = Math.round((cat.score / maxScore) * 100);
-            return (
-              <div key={cat.label} className="flex items-center gap-3">
-                <div className="w-40 text-xs text-gray-600 text-right flex-shrink-0">{cat.label}</div>
-                <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                  <div
-                    className="h-4 rounded-full flex items-center justify-end pr-2"
-                    style={{ width: `${pct}%`, background: "#0E7F41", minWidth: "2rem" }}
-                  >
-                    <span className="text-white text-[10px] font-bold">{cat.score}</span>
-                  </div>
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p className="text-sm font-semibold text-gray-700 mb-4">Feedback Breakdown by Category</p>
+      <div className="flex flex-col gap-3">
+        {FEEDBACK_CATEGORIES.map((cat) => {
+          const pct = Math.round((cat.score / 5) * 100);
+          return (
+            <div key={cat.label} className="flex items-center gap-3">
+              <div className="w-36 text-xs text-gray-600 text-right flex-shrink-0">{cat.label}</div>
+              <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
+                <div className="h-5 rounded-full flex items-center justify-end pr-2 transition-all duration-700" style={{ width: `${pct}%`, background: "#0E7F41", minWidth: "2rem" }}>
+                  <span className="text-white text-[10px] font-bold">{cat.score}</span>
                 </div>
-                <div className="w-8 text-xs text-gray-400 flex-shrink-0">{pct}%</div>
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Export buttons */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-3">Export Reports</p>
-        <div className="flex flex-wrap gap-3">
-          <button
-            className="flex items-center gap-2 text-sm font-medium border rounded-xl px-4 py-2 transition-colors hover:bg-green-50"
-            style={{ borderColor: "#0E7F41", color: "#0E7F41" }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Companies CSV
-          </button>
-          <button
-            className="flex items-center gap-2 text-sm font-medium border rounded-xl px-4 py-2 transition-colors hover:bg-blue-50"
-            style={{ borderColor: "#2959A6", color: "#2959A6" }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Students CSV
-          </button>
-          <button
-            className="flex items-center gap-2 text-sm font-medium text-white rounded-xl px-4 py-2 transition-opacity hover:opacity-90"
-            style={{ background: "#2959A6" }}
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            Export Full Report PDF
-          </button>
-        </div>
+              <div className="w-9 text-xs text-gray-400 flex-shrink-0">{pct}%</div>
+            </div>
+          );
+        })}
       </div>
     </div>
-  );
-};
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+      <p className="text-sm font-semibold text-gray-700 mb-3">Export Reports</p>
+      <div className="flex flex-wrap gap-3">
+        {[
+          { label: "Export Companies CSV", color: "#0E7F41", bg: false },
+          { label: "Export Students CSV", color: "#2959A6", bg: false },
+          { label: "Export Full Report PDF", color: "#fff", bg: "#2959A6" },
+        ].map(({ label, color, bg }) => (
+          <button key={label} className="flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-all hover:opacity-90 border"
+            style={bg ? { background: bg, color, borderColor: bg } : { background: "white", color, borderColor: color }}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+// ─── Tab definitions ──────────────────────────────────────────────────────────
 
 const TABS = [
-  { label: "Venue & Booths", component: VenueMapping },
-  { label: "Banners & Branding", component: BannerBranding },
-  { label: "Special Requirements", component: SpecialRequirements },
-  { label: "Equipment & Logistics", component: EquipmentLogistics },
-  { label: "Delegate List", component: DelegateList },
-  { label: "Attendance", component: AttendanceCheckin },
-  { label: "Schedule", component: ScheduleSlots },
-  { label: "Access Passes", component: AccessPasses },
-  { label: "Post-Event Report", component: PostEventReporting },
+  { label: "Venue & Booths",        icon: "🏛️",  component: VenueMapping },
+  { label: "Banners & Branding",    icon: "🎨",  component: BannerBranding },
+  { label: "Special Requirements",  icon: "⭐",  component: SpecialRequirements },
+  { label: "Equipment & Logistics", icon: "📦",  component: EquipmentLogistics },
+  { label: "Delegate List",         icon: "👥",  component: DelegateList },
+  { label: "Attendance",            icon: "✅",  component: AttendanceCheckin },
+  { label: "Schedule",              icon: "🗓️",  component: ScheduleSlots },
+  { label: "Access Passes",         icon: "🎫",  component: AccessPasses },
+  { label: "Post-Event Report",     icon: "📊",  component: PostEventReporting },
 ];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const EventSettings = () => {
   const { user } = useAuthContext();
@@ -903,48 +908,76 @@ const EventSettings = () => {
   const tabRefs = useRef([]);
   const pillRef = useRef(null);
 
-  useEffect(() => {
+  // useLayoutEffect so pill is positioned before first paint
+  useLayoutEffect(() => {
     const btn = tabRefs.current[activeTab];
     const pill = pillRef.current;
     if (!btn || !pill) return;
-    pill.style.left = `${btn.offsetLeft}px`;
-    pill.style.width = `${btn.offsetWidth}px`;
+    // First render: set without transition so it doesn't fly in from 0
+    if (activeTab === 0) {
+      pill.style.transition = "none";
+      pill.style.left = `${btn.offsetLeft}px`;
+      pill.style.width = `${btn.offsetWidth}px`;
+      requestAnimationFrame(() => {
+        pill.style.transition = "left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1)";
+      });
+    } else {
+      pill.style.left = `${btn.offsetLeft}px`;
+      pill.style.width = `${btn.offsetWidth}px`;
+    }
   }, [activeTab]);
 
   const ActiveComponent = TABS[activeTab].component;
 
   return (
     <PageContainer user={user} title="Event Settings">
-      <div className="flex flex-col gap-4 overflow-y-auto">
-        {/* Tab bar */}
-        <div className="overflow-x-auto pb-1">
-          <div className="relative flex bg-white border border-gray-200 rounded-xl p-1 gap-1 w-max min-w-full">
-            {/* Sliding pill */}
-            <div
-              ref={pillRef}
-              className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
-              style={{
-                background: "#0E7F41",
-                left: 0,
-                width: 0,
-                transition: "left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1)",
-              }}
-            />
+      <div className="flex flex-col gap-4">
+        {/* Tab bar — 3-col grid on mobile, scrollable row on md+ */}
+        <div className="relative">
+          {/* md+: horizontal scrollable pill bar */}
+          <div className="hidden md:flex overflow-x-auto pb-1 relative">
+            <div className="relative flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
+              <div
+                ref={pillRef}
+                className="absolute top-1 bottom-1 rounded-lg pointer-events-none z-0"
+                style={{ background: "#0E7F41", left: 0, width: 0 }}
+              />
+              {TABS.map((tab, i) => (
+                <button
+                  key={tab.label}
+                  ref={(el) => (tabRefs.current[i] = el)}
+                  onClick={() => setActiveTab(i)}
+                  className={`relative z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
+                    activeTab === i ? "text-white" : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* mobile: 3-col grid of pill buttons */}
+          <div className="md:hidden grid grid-cols-3 gap-2">
             {TABS.map((tab, i) => (
               <button
                 key={tab.label}
-                ref={(el) => (tabRefs.current[i] = el)}
                 onClick={() => setActiveTab(i)}
-                className={`relative z-10 whitespace-nowrap px-3 py-2 text-xs font-semibold rounded-lg transition-colors duration-200 ${activeTab === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
+                className="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 border"
+                style={activeTab === i
+                  ? { background: "#0E7F41", color: "#fff", borderColor: "#0E7F41" }
+                  : { background: "#fff", color: "#6b7280", borderColor: "#e5e7eb" }}
               >
-                {tab.label}
+                <span className="text-base leading-none">{tab.icon}</span>
+                <span className="text-center leading-tight">{tab.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Tab content */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        {/* Content — plain flow, PageContainer handles the scroll */}
+        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
           <ActiveComponent />
         </div>
       </div>
