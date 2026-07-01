@@ -127,15 +127,24 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
     const reposition = useCallback(() => {
         const el = document.querySelector(`[data-tour="${current.target}"]`);
         if (!el) return;
-        const r = computePosition(el, boxRef.current);
-        if (r) setPos(r);
-        const br = el.getBoundingClientRect();
-        setSpotRect({ top: br.top, left: br.left, width: br.width, height: br.height });
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        const measure = () => {
+            const br = el.getBoundingClientRect();
+            setSpotRect({ top: br.top, left: br.left, width: br.width, height: br.height });
+            const r = computePosition(el, boxRef.current);
+            if (r) setPos(r);
+        };
+        // Double rAF so layout is settled after scrollIntoView
+        requestAnimationFrame(() => requestAnimationFrame(measure));
     }, [current?.target]);
 
     useLayoutEffect(() => { if (!show) return; const id = requestAnimationFrame(() => reposition()); return () => cancelAnimationFrame(id); }, [show, step, reposition]);
-    useEffect(() => { if (!show) return; window.addEventListener('resize', reposition); return () => window.removeEventListener('resize', reposition); }, [show, reposition]);
+    useEffect(() => {
+        if (!show) return;
+        window.addEventListener('resize', reposition);
+        window.addEventListener('scroll', reposition, true);
+        return () => { window.removeEventListener('resize', reposition); window.removeEventListener('scroll', reposition, true); };
+    }, [show, reposition]);
     useEffect(() => {
         if (!show) return;
         const onKey = (e) => { if (e.key === 'Escape') onDone(); if (e.key === 'ArrowRight') advance(); if (e.key === 'ArrowLeft' && step > 0) setStep(s => s - 1); };

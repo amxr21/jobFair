@@ -382,8 +382,9 @@ const MainBanner = ({link}) => {
             titleExtra={user && (
                 <div className="flex flex-wrap gap-1.5 items-center">
                     {/* Search — local filter + highlight, no API call */}
-                    <div data-tour="tour-search" className="relative flex items-center">
+                    <div className="relative flex items-center">
                         <input
+                            data-tour="tour-search"
                             type="text"
                             placeholder="Search by name…"
                             value={searchQuery}

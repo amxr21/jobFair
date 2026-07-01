@@ -712,8 +712,9 @@ const Managers = ({link}) => {
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
                 <div className="flex flex-wrap gap-1.5 items-center">
                     {/* Search — name-only, filter + highlight */}
-                    <div data-tour="tour-search" className="relative flex items-center">
+                    <div className="relative flex items-center">
                         <input
+                            data-tour="tour-search"
                             type="text"
                             placeholder="Search by name…"
                             value={searchQuery}
