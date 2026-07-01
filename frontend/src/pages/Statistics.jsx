@@ -8,9 +8,11 @@ import { useAuthContext } from "../Hooks/useAuthContext";
 import { StatsticTypeProvider } from "../Context/StatsticTypeContext"
 
 import { StarIcon, LightningIcon, TrendIcon, GraduationIcon, ChartIcon } from "../components/Icons";
+import { useToast } from "../components/Toast";
 
 const Statistics = ({ link }) => {
   const path = useLocation();
+  const toast = useToast();
   const [data, setData] = useState({ applicants: [], managers: [] });
   const [sectors, setSectors] = useState({});
   const [number, setNumber] = useState(0);
@@ -180,25 +182,30 @@ const Statistics = ({ link }) => {
     <div className="flex flex-col gap-y-2 flex-1 min-w-0 h-full max-h-[100vh] overflow-hidden p-2 md:p-0">
       {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
 
-      {/* View Mode Toggle */}
+      {/* View Mode Toggle — sliding pill */}
       <div className="flex justify-end px-0.5 shrink-0">
-        <div className="flex bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+        <div className="relative flex bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+          {/* Sliding pill */}
+          <div
+            className="absolute top-0.5 bottom-0.5 rounded-md bg-[#0E7F41] shadow-md"
+            style={{
+              width: '50%',
+              left: viewMode === 'basic' ? '2px' : '50%',
+              transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+            }}
+          />
           <button
-            onClick={() => setViewMode('basic')}
-            className={`px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
-              viewMode === 'basic'
-                ? 'bg-[#0E7F41] text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
+            onClick={() => { setViewMode('basic'); toast('Switched to Overview', { type: 'info', duration: 1600 }); }}
+            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 ${
+              viewMode === 'basic' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             Overview
           </button>
           <button
-            onClick={() => setViewMode('advanced')}
-            className={`px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
-              viewMode === 'advanced'
-                ? 'bg-[#0E7F41] text-white shadow-md'
-                : 'text-gray-600 hover:bg-gray-50'
+            onClick={() => { setViewMode('advanced'); toast('Switched to Advanced Analytics', { type: 'info', duration: 1600 }); }}
+            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 ${
+              viewMode === 'advanced' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
             }`}
           >
             <span className="hidden sm:inline">Advanced </span>Analytics

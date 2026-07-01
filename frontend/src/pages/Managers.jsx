@@ -4,11 +4,10 @@ import { createPortal } from "react-dom";
 
 import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
 import { useAuthContext } from "../Hooks/useAuthContext";
-import TourGuide from "../components/TourGuide";
+import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
+import { useToast } from "../components/Toast";
 
 import { CircularProgress } from "@mui/material";
-
-const MANAGERS_TOUR_KEY = 'managers_tour_v1';
 
 
 // Company Filter Dropdown Component
@@ -118,7 +117,7 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`border rounded-xl w-10 h-10 flex items-center justify-center transition-all duration-200 ${
+                className={`border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
@@ -413,8 +412,9 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
 
 const Managers = ({link}) => {
 
-    const [companies, setCompanies ] = useState([]); // State to store the list of companies
-    const { user } = useAuthContext(); // Access the authenticated user context
+    const [companies, setCompanies ] = useState([]);
+    const { user } = useAuthContext();
+    const toast = useToast();
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
@@ -516,6 +516,12 @@ const Managers = ({link}) => {
 
     const handleFilterChange = (filters) => {
         setActiveFilters(filters);
+        const count = Object.keys(filters).length;
+        if (count > 0) {
+            toast(`${count} filter${count > 1 ? 's' : ''} applied`, { type: 'success', duration: 2000 });
+        } else {
+            toast('Filters cleared', { type: 'info', duration: 1800 });
+        }
     };
 
     useEffect(() => {
@@ -814,6 +820,7 @@ const Managers = ({link}) => {
 
         <TourGuide
             show={showTour}
+            variant="managers"
             onDone={() => {
                 setShowTour(false);
                 localStorage.setItem(MANAGERS_TOUR_KEY, '1');
