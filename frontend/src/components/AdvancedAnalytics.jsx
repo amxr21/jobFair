@@ -82,6 +82,21 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
 
 const AdvancedAnalytics = ({ applicants, companies }) => {
     const [activeTab, setActiveTab] = useState('demographics');
+    const tabRefs = useRef({});
+    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0, opacity: 0 });
+
+    useEffect(() => {
+        const el = tabRefs.current[activeTab];
+        if (!el) return;
+        const parent = el.parentElement;
+        const parentRect = parent.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        setPillStyle({
+            width: elRect.width,
+            left: elRect.left - parentRect.left + parent.scrollLeft,
+            opacity: 1,
+        });
+    }, [activeTab]);
 
     // Get unique applicants by uniId
     const uniqueApplicants = useMemo(() => {
@@ -500,16 +515,25 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
 
     return (
         <div className="bg-[#F3F6FF] rounded-xl p-4 h-full overflow-hidden flex flex-col">
-            {/* Tab Navigation - No icons */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            {/* Tab Navigation — sliding pill */}
+            <div className="relative flex gap-1 mb-4 overflow-x-auto pb-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+                {/* Sliding pill */}
+                <div
+                    className="absolute top-1 bottom-1 rounded-lg bg-[#0E7F41] shadow-md pointer-events-none"
+                    style={{
+                        width: pillStyle.width,
+                        left: pillStyle.left + 4,
+                        opacity: pillStyle.opacity,
+                        transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.15s ease',
+                    }}
+                />
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
+                        ref={el => tabRefs.current[tab.id] = el}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                            activeTab === tab.id
-                                ? 'bg-[#0E7F41] text-white shadow-md'
-                                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                        className={`relative z-10 px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
+                            activeTab === tab.id ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                         }`}
                     >
                         {tab.label}

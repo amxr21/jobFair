@@ -9,6 +9,7 @@ import { MobileNav, MobileRegisterFAB } from "./components/index";
 import { useAuthContext } from "./Hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
+import { ToastProvider } from "./components/Toast";
 
 const AnimatedRoutes = ({ children }) => {
     const location = useLocation();
@@ -90,9 +91,11 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <BrowserRouter>
-                <AppLayout user={user} isCASTO={isCASTO} />
-            </BrowserRouter>
+            <ToastProvider>
+                <BrowserRouter>
+                    <AppLayout user={user} isCASTO={isCASTO} />
+                </BrowserRouter>
+            </ToastProvider>
         </PrimeReactProvider>
     )
 }
