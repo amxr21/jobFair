@@ -1,8 +1,35 @@
 const path = require("path");
+const fs = require("fs");
 const bcrypt = require("bcrypt");
 
-// Load sample data once at startup
-const sampleData = require(path.join(__dirname, "../../sampleData.json"));
+// sampleData.json is gitignored (holds realistic demo credentials for local
+// dev) so it won't exist on a fresh clone or in CI. Fall back to a minimal
+// built-in seed in that case, so demo mode always boots.
+const sampleDataPath = path.join(__dirname, "../../sampleData.json");
+const FALLBACK_SAMPLE_DATA = {
+    applicants: [
+        {
+            applicantDetails: {
+                uniId: "20000001", fullName: "Test Applicant", nationality: "United Arab Emirates",
+                major: "Computer Science", cgpa: "3.5", gender: "Male",
+            },
+            cv: null, flags: [], shortlistedBy: [], rejectedBy: [], user_id: [], attended: false,
+        },
+    ],
+    users: {
+        mainManager: { email: "casto@sharjah.ac.ae", password: "ci-test-password", fields: "", representitives: "" },
+        managers: [
+            { companyName: "Test Company", email: "manager@test.local", password: "ci-test-password", fields: "Technology", representitives: "Test Rep", sector: "Private", city: "Sharjah", noOfPositions: "1", surveyResult: [] },
+        ],
+        viewers: [],
+    },
+};
+
+// Tests force the fallback seed so they're deterministic regardless of
+// whether a developer's local sampleData.json happens to exist
+const sampleData = (process.env.NODE_ENV !== "test" && fs.existsSync(sampleDataPath))
+    ? require(sampleDataPath)
+    : FALLBACK_SAMPLE_DATA;
 
 // ---------------------------------------------------------------------------
 // Helpers
