@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -18,7 +18,12 @@ export function ToastProvider({ children }) {
 
     const toast = useCallback((message, { type = 'info', duration = 2800 } = {}) => {
         const id = ++idCounter;
-        setToasts(ts => [...ts, { id, message, type, leaving: false }]);
+        // Mounts as "entering" so the enter transition below has a from-state to
+        // animate away from, instead of appearing at full opacity instantly
+        setToasts(ts => [...ts, { id, message, type, leaving: false, entering: true }]);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            setToasts(ts => ts.map(t => t.id === id ? { ...t, entering: false } : t));
+        }));
         timers.current[id] = setTimeout(() => dismiss(id), duration);
         return id;
     }, [dismiss]);
@@ -27,7 +32,7 @@ export function ToastProvider({ children }) {
         <ToastContext.Provider value={toast}>
             {children}
             {createPortal(
-                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[999999] flex flex-col-reverse gap-2 items-center pointer-events-none">
+                <div className="fixed top-4 right-4 z-[999999] flex flex-col gap-2 items-end pointer-events-none">
                     {toasts.map(t => (
                         <ToastItem key={t.id} {...t} onDismiss={() => dismiss(t.id)} />
                     ))}
@@ -70,16 +75,19 @@ const STYLES = {
     warning: 'bg-amber-500 text-white',
 };
 
-function ToastItem({ message, type, leaving, onDismiss }) {
+function ToastItem({ message, type, leaving, entering, onDismiss }) {
+    // entering (pre-animation) and leaving both collapse to the same off-state,
+    // so a toast always slides in from the right and slides back out the same way
+    const settled = !entering && !leaving;
     return (
         <div
             onClick={onDismiss}
             className={`
                 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl shadow-lg text-sm font-medium
                 cursor-pointer pointer-events-auto select-none
-                transition-all duration-300
+                transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
                 ${STYLES[type] ?? STYLES.info}
-                ${leaving ? 'opacity-0 translate-y-2 scale-95' : 'opacity-100 translate-y-0 scale-100'}
+                ${settled ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-4 scale-95'}
             `}
             style={{ minWidth: 180, maxWidth: 340 }}
         >

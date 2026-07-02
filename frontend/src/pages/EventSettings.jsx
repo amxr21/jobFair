@@ -1,9 +1,10 @@
-import { useState, useRef, useMemo, useLayoutEffect } from "react";
+import { useState, useRef, useMemo, useLayoutEffect, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useEventOps, formatWhen } from "../context/EventOpsContext";
 import { useToast } from "../components/Toast";
+import CompactSelect from "../components/CompactSelect";
 
 // ─── Small building blocks ─────────────────────────────────────────────────────
 
@@ -258,13 +259,19 @@ const VenueMapping = () => {
                 </div>
                 {assigningId === booth.id ? (
                   <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
-                    <select className={`text-xs ${inputCls}`} value={formCompany} onChange={(e) => setFormCompany(e.target.value)}>
-                      <option value="">— Unassigned —</option>
-                      {companies.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select className={`text-xs ${inputCls}`} value={formType} onChange={(e) => setFormType(e.target.value)}>
-                      {["Standard", "Premium", "Corner"].map((t) => <option key={t}>{t}</option>)}
-                    </select>
+                    <CompactSelect
+                      className="text-xs"
+                      value={formCompany}
+                      onChange={(e) => setFormCompany(e.target.value)}
+                      placeholder="— Unassigned —"
+                      options={[{ value: "", label: "— Unassigned —" }, ...companies.map((c) => ({ value: c, label: c }))]}
+                    />
+                    <CompactSelect
+                      className="text-xs"
+                      value={formType}
+                      onChange={(e) => setFormType(e.target.value)}
+                      options={["Standard", "Premium", "Corner"]}
+                    />
                     <div className="flex gap-1.5">
                       <button onClick={() => saveAssign(booth)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-white" style={{ background: "#0E7F41" }}>Save</button>
                       <button onClick={cancelAssign} className="flex-1 text-xs rounded-lg py-1.5 font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
@@ -464,9 +471,9 @@ const SpecialRequirements = () => {
           <p className="text-sm font-semibold text-gray-700">New Requirement</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { label: "Company", el: <select className={inputCls} value={form.company} onChange={F("company")}><option value="">Select…</option>{companies.map((c) => <option key={c}>{c}</option>)}</select> },
+              { label: "Company", el: <CompactSelect value={form.company} onChange={F("company")} placeholder="Select…" options={companies} /> },
               { label: "Category", el: <input className={inputCls} placeholder="e.g. AV Equipment" value={form.category} onChange={F("category")} /> },
-              { label: "Priority", el: <select className={inputCls} value={form.priority} onChange={F("priority")}>{["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}</select> },
+              { label: "Priority", el: <CompactSelect value={form.priority} onChange={F("priority")} options={["Low", "Medium", "High", "Critical"]} /> },
             ].map(({ label, el }) => (
               <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
             ))}
@@ -841,9 +848,7 @@ const ScheduleSlots = () => {
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Status</label>
-              <select className={inputCls} value={form.status} onChange={F("status")}>
-                {["Upcoming", "Live", "Ended"].map((s) => <option key={s}>{s}</option>)}
-              </select>
+              <CompactSelect value={form.status} onChange={F("status")} options={["Upcoming", "Live", "Ended"]} />
             </div>
           </div>
           <div className="flex justify-end">
@@ -1110,11 +1115,34 @@ const TABS = [
 
 const ActivityPanel = ({ open, onClose }) => {
   const { data } = useEventOps();
-  if (!open) return null;
+  const [mounted, setMounted] = useState(open);
+  const [phase, setPhase] = useState(open ? "open" : "closed");
+  const closeTimer = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      clearTimeout(closeTimer.current);
+      setMounted(true);
+      setPhase("opening");
+      const id = requestAnimationFrame(() => requestAnimationFrame(() => setPhase("open")));
+      return () => cancelAnimationFrame(id);
+    } else if (mounted) {
+      setPhase("closing");
+      closeTimer.current = setTimeout(() => setMounted(false), 240);
+    }
+    return () => clearTimeout(closeTimer.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  if (!mounted) return null;
+
+  const backdropState = phase === "open" ? "backdrop-open" : phase === "closing" ? "backdrop-close" : "";
+  const drawerState = phase === "open" ? "drawer-open" : phase === "closing" ? "drawer-close" : "";
+
   return (
     <>
-      <div className="fixed inset-0 bg-black/30 z-[300]" onClick={onClose} />
-      <div className="fixed right-0 top-0 bottom-0 w-[320px] max-w-[85vw] bg-white z-[301] shadow-2xl flex flex-col animate-fadeIn">
+      <div className={`expandDetails-backdrop fixed inset-0 bg-black/30 z-[300] ${backdropState}`} onClick={onClose} />
+      <div className={`drawerPanel fixed right-0 top-0 bottom-0 w-[320px] max-w-[85vw] bg-white z-[301] shadow-2xl flex flex-col ${drawerState}`}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <p className="text-sm font-bold text-gray-800">Recent Activity</p>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>

@@ -165,6 +165,31 @@
     animation: backdropFadeOut 0.22s ease-in forwards;
 }
 
+/* Side drawer (e.g. Activity Log panel) — slides in/out from the right,
+   shares the same backdrop fade as centered modals for one consistent feel */
+@keyframes drawerSlideIn {
+    0%   { opacity: 0; transform: translateX(100%); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes drawerSlideOut {
+    0%   { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+
+.drawerPanel {
+    transform: translateX(100%);
+    will-change: transform, opacity;
+}
+
+.drawerPanel.drawer-open {
+    animation: drawerSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.drawerPanel.drawer-close {
+    animation: drawerSlideOut 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
 
 
 /* body {
