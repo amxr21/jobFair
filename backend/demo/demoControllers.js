@@ -389,7 +389,21 @@ const findStaffer = (code) =>
 const verifyAttendanceStaff = (req, res) => {
     const staffer = findStaffer(req.body.code);
     if (!staffer) return res.status(401).json({ error: "Invalid access code" });
-    res.status(200).json({ id: staffer.id, name: staffer.name });
+    res.status(200).json({ id: staffer.id, name: staffer.name, email: staffer.email, phone: staffer.phone, status: staffer.status });
+};
+
+const updateAttendanceStaffProfile = (req, res) => {
+    const { code, phone } = req.body;
+    const staffer = findStaffer(code);
+    if (!staffer) return res.status(401).json({ error: "Invalid access code" });
+
+    EVENT_OPS = {
+        ...EVENT_OPS,
+        attendanceStaff: (EVENT_OPS.attendanceStaff || []).map((s) =>
+            s.id === staffer.id ? { ...s, phone: phone ?? s.phone, status: "active" } : s),
+    };
+    const updated = EVENT_OPS.attendanceStaff.find((s) => s.id === staffer.id);
+    res.status(200).json({ id: updated.id, name: updated.name, email: updated.email, phone: updated.phone, status: updated.status });
 };
 
 const checkinByStaff = (req, res) => {
@@ -584,7 +598,7 @@ module.exports = {
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     // settings
     getSettings, updateSettings, getEventOps, updateEventOps,
-    verifyAttendanceStaff, checkinByStaff,
+    verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile,
     // user auth
     loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany,
     // middleware

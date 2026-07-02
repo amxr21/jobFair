@@ -902,7 +902,25 @@ const verifyAttendanceStaff = async (req, res) => {
         const eventOps = await SettingsModel.getSetting('eventOps', null);
         const staffer = findStaffer(eventOps, req.body.code);
         if (!staffer) return res.status(401).json({ error: "Invalid access code" });
-        res.status(200).json({ id: staffer.id, name: staffer.name });
+        res.status(200).json({ id: staffer.id, name: staffer.name, email: staffer.email, phone: staffer.phone, status: staffer.status });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Public, code-gated: a staffer completes their own profile after first login
+const updateAttendanceStaffProfile = async (req, res) => {
+    try {
+        const { code, phone } = req.body;
+        const eventOps = await SettingsModel.getSetting('eventOps', null);
+        const staffer = findStaffer(eventOps, code);
+        if (!staffer) return res.status(401).json({ error: "Invalid access code" });
+
+        const next = (eventOps.attendanceStaff || []).map((s) =>
+            s.id === staffer.id ? { ...s, phone: phone ?? s.phone, status: "active" } : s);
+        const saved = await SettingsModel.setSetting('eventOps', { ...eventOps, attendanceStaff: next }, staffer.name);
+        const updated = saved.value.attendanceStaff.find((s) => s.id === staffer.id);
+        res.status(200).json({ id: updated.id, name: updated.name, email: updated.email, phone: updated.phone, status: updated.status });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -987,4 +1005,4 @@ const unflagApplicant = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings, getEventOps, updateEventOps, verifyAttendanceStaff, checkinByStaff}
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings, getEventOps, updateEventOps, verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile}

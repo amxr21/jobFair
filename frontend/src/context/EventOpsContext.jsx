@@ -15,6 +15,7 @@ export const MODULE_LABELS = {
     equipment: "Equipment & Logistics",
     delegates: "Delegate List",
     attendance: "Attendance",
+    manageStaff: "Manage Staff",
     schedule: "Schedule",
     passes: "Access Passes",
     report: "Post-Event Report",
@@ -128,12 +129,15 @@ const SEED = {
         { id: 7, company: "DP World",     delegate: "Logistics Lead",    type: "Parking", code: "PRK-DPW-001", issued: "2026-06-18", status: "Active",  slot: "P2-03", location: "Level 2, South Lot, ramp entrance", ...stamp("Yousef", t(18, 9, 10)) },
         { id: 8, company: "DP World",     delegate: "HR Director",       type: "Entry",   code: "ENT-DPW-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 12)) },
     ],
-    // CASTO-issued codes for non-CASTO helpers to check students in without a
-    // full account. checkinLog records who they scanned, so each staffer can
-    // see their own list.
+    // Attendance staff: helpers who check students in at the door without a
+    // full CASTO account. Rana creates the record with just name + email;
+    // the access code is their only credential (no password) and doubles as
+    // the "invite" — a staffer is 'active' once they've logged in with it at
+    // least once. checkinLog records who they scanned, so each staffer sees
+    // only their own list.
     attendanceStaff: [
-        { id: 1, name: "Volunteer Desk 1", code: "DESK1", ...stamp("Maha", t(28, 9, 0)) },
-        { id: 2, name: "Volunteer Desk 2", code: "DESK2", ...stamp("Maha", t(28, 9, 1)) },
+        { id: 1, name: "Volunteer Desk 1", email: "volunteer1@example.com", code: "DESK1", status: "active", ...stamp("Maha", t(28, 9, 0)) },
+        { id: 2, name: "Volunteer Desk 2", email: "volunteer2@example.com", code: "DESK2", status: "invited", ...stamp("Maha", t(28, 9, 1)) },
     ],
     checkinLog: [],
     audit: [
@@ -240,16 +244,24 @@ export const EventOpsProvider = ({ children }) => {
         localStorage.setItem(ACTING_KEY, id);
     };
 
-    // Add/remove attendance staff codes — CASTO-only, from Event Settings
-    const addStaffer = useCallback((name) => {
+    // Rana creates the account with just name + email; everything else
+    // (phone, notes) the staffer fills in themselves from their check-in
+    // session the first time they log in with the code
+    const addStaffer = useCallback((name, email) => {
         const code = Math.random().toString(36).slice(2, 7).toUpperCase();
-        update("attendanceStaff", `Issued a check-in code to ${name}`, (rows, who) =>
-            [...(rows || []), { id: Date.now(), name, code, ...who }]);
+        update("attendanceStaff", `Created a staff account for ${name} (${email})`, (rows, who) =>
+            [...(rows || []), { id: Date.now(), name, email, code, status: "invited", phone: "", ...who }]);
         return code;
     }, [update]);
 
     const removeStaffer = useCallback((id) => {
         update("attendanceStaff", "Revoked a check-in access code", (rows) => (rows || []).filter((s) => s.id !== id));
+    }, [update]);
+
+    // A staffer fills in their own remaining details after their first login
+    const updateStafferProfile = useCallback((id, patch) => {
+        update("attendanceStaff", `${patch.name || "A staffer"} updated their profile`, (rows) =>
+            (rows || []).map((s) => (s.id === id ? { ...s, ...patch, status: "active" } : s)));
     }, [update]);
 
     // Refresh checkinLog periodically — staffers write to it through a public
@@ -283,7 +295,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView, addStaffer, removeStaffer }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView, addStaffer, removeStaffer, updateStafferProfile }}>
             {children}
         </EventOpsContext.Provider>
     );
