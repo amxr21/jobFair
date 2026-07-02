@@ -19,7 +19,7 @@ const MiniBadge = ({ label, tone = "gray" }) => {
     return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${tones[tone] || tones.gray}`}>{label}</span>;
 };
 
-const passTone = (t) => (t === "VIP" ? "purple" : t === "Parking" ? "yellow" : "blue");
+const passTone = (t) => (t === "Parking" ? "yellow" : "blue");
 const statusTone = (s) => ({
     Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
     Fulfilled: "green", "In Progress": "blue", Open: "yellow", Partial: "yellow", Pending: "gray",
@@ -136,6 +136,9 @@ const EventDaySection = ({ companyName }) => {
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
                                         <p className="text-[10px] font-mono text-gray-400">{p.code}</p>
+                                        {p.type === "Parking" && p.slot && (
+                                            <p className="text-[10px] text-amber-600 mt-0.5">Slot {p.slot} · {p.location}</p>
+                                        )}
                                     </div>
                                     <div className="flex flex-col items-end gap-1 shrink-0">
                                         <MiniBadge label={p.type} tone={passTone(p.type)} />

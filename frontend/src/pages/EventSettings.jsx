@@ -659,12 +659,24 @@ const DelegateList = () => {
 const boothQrValue = (booth) => `jobfair:attendance:${booth.number}`;
 
 const AttendanceCheckin = () => {
-  const { data, update } = useEventOps();
+  const { data, update, addStaffer, removeStaffer } = useEventOps();
   const toast = useToast();
   const [subTab, setSubTab] = useState(0);
   const students = data.attendanceStudents;
   const companies = data.attendanceCompanies;
   const booths = data.booths.filter((b) => b.company);
+  const staff = data.attendanceStaff || [];
+  const checkinLog = data.checkinLog || [];
+  const [newStafferName, setNewStafferName] = useState("");
+  const [revealedCode, setRevealedCode] = useState(null); // { name, code } — shown once after creation
+
+  const handleAddStaffer = () => {
+    if (!newStafferName.trim()) return;
+    const code = addStaffer(newStafferName.trim());
+    setRevealedCode({ name: newStafferName.trim(), code });
+    setNewStafferName("");
+    toast(`Code generated for ${newStafferName.trim()}`, { type: "success" });
+  };
 
   const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
   const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
@@ -689,7 +701,7 @@ const AttendanceCheckin = () => {
         <StatCard label="Pending" value={subTab === 1 ? students.length - studCheckedIn : compTotal - compCheckedIn} color="#f59e0b" />
       </div>
 
-      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes"]} active={subTab} onChange={setSubTab} />
+      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes", "Staff Codes"]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
         <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -777,6 +789,73 @@ const AttendanceCheckin = () => {
                 <span className="text-[10px] font-mono text-gray-400">{boothQrValue(b)}</span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {subTab === 3 && (
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            Issue a short access code to a volunteer or helper so they can check students in at
+            <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/student-checkin</a>
+            without needing a CASTO or company account. Each code's check-ins are logged separately below.
+          </p>
+
+          <div className="flex gap-2 items-start flex-wrap">
+            <input
+              value={newStafferName}
+              onChange={(e) => setNewStafferName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddStaffer()}
+              placeholder="Staffer or desk name (e.g. Volunteer Desk 3)"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px] focus:outline-none focus:ring-1 focus:ring-green-500"
+            />
+            <button onClick={handleAddStaffer} disabled={!newStafferName.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
+              Generate Code
+            </button>
+          </div>
+
+          {revealedCode && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold text-green-800">Code for {revealedCode.name}</p>
+                <p className="text-2xl font-mono font-bold text-green-700 tracking-widest">{revealedCode.code}</p>
+                <p className="text-[11px] text-green-600 mt-1">Share this with them now — it won't be shown again here.</p>
+              </div>
+              <button onClick={() => setRevealedCode(null)} className="text-xs font-medium text-green-700 hover:text-green-900">Dismiss</button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {staff.map((s) => {
+              const theirCheckins = checkinLog.filter((c) => c.byId === s.id);
+              return (
+                <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{s.name}</p>
+                      <p className="text-xs font-mono text-gray-400">Code: {s.code}</p>
+                    </div>
+                    <button onClick={() => removeStaffer(s.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors">
+                      Revoke
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-gray-400">Checked in {theirCheckins.length} student{theirCheckins.length === 1 ? "" : "s"}</span>
+                  </div>
+                  {theirCheckins.length > 0 && (
+                    <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pr-1">
+                      {theirCheckins.slice(0, 8).map((c) => (
+                        <div key={c.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
+                          <span className="text-gray-700 truncate">{c.name || c.uniId}</span>
+                          <span className="text-gray-400 text-[10px] shrink-0">{formatWhen(c.at)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {staff.length === 0 && <p className="text-xs text-gray-400 col-span-2 text-center py-6">No staff codes issued yet.</p>}
           </div>
         </div>
       )}
@@ -908,8 +987,10 @@ const AccessPasses = () => {
   const passes = data.passes;
   const [filter, setFilter] = useState("All");
   const [view, setView] = useState(0); // 0 = table, 1 = by company
+  const [editingParking, setEditingParking] = useState(null); // pass id
+  const [parkingForm, setParkingForm] = useState({ slot: "", location: "" });
 
-  const types = ["All", "Entry", "Parking", "VIP"];
+  const types = ["All", "Entry", "Parking"];
   const shown = filter === "All" ? passes : passes.filter((p) => p.type === filter);
   const byCompany = useMemo(() => {
     const m = new Map();
@@ -923,13 +1004,24 @@ const AccessPasses = () => {
     toast(`Pass ${row.code} ${status.toLowerCase()}`, { type: status === "Revoked" ? "warning" : "success" });
   };
 
+  const startEditParking = (row) => {
+    setEditingParking(row.id);
+    setParkingForm({ slot: row.slot || "", location: row.location || "" });
+  };
+
+  const saveParking = (row) => {
+    update("passes", `Set parking slot ${parkingForm.slot || "—"} for ${row.company}`, (prev, who) =>
+      prev.map((p) => (p.id === row.id ? { ...p, slot: parkingForm.slot, location: parkingForm.location, ...who } : p)));
+    toast("Parking assignment saved", { type: "success" });
+    setEditingParking(null);
+  };
+
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <StatCard label="Total Issued" value={passes.length} />
         <StatCard label="Entry Passes" value={passes.filter(p => p.type === "Entry").length} color="#2959A6" />
         <StatCard label="Parking Passes" value={passes.filter(p => p.type === "Parking").length} color="#f59e0b" />
-        <StatCard label="VIP Passes" value={passes.filter(p => p.type === "VIP").length} color="#8b5cf6" />
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -946,10 +1038,10 @@ const AccessPasses = () => {
 
       {view === 0 ? (
         <div className="overflow-x-auto rounded-xl border border-gray-100">
-          <table className="w-full text-sm min-w-[680px]">
+          <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Company", "Delegate", "Type", "Code", "Issued", "Status", "Last change", ""].map((h, i) => (
+                {["Company", "Delegate", "Type", "Parking Slot & Location", "Code", "Issued", "Status", "Last change", ""].map((h, i) => (
                   <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -959,7 +1051,27 @@ const AccessPasses = () => {
                 <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
                   <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
                   <td className="px-4 py-3 text-gray-700">{row.delegate}</td>
-                  <td className="px-4 py-3"><Badge label={row.type} color={row.type === "VIP" ? "purple" : row.type === "Parking" ? "yellow" : "blue"} /></td>
+                  <td className="px-4 py-3"><Badge label={row.type} color={row.type === "Parking" ? "yellow" : "blue"} /></td>
+                  <td className="px-4 py-3">
+                    {row.type !== "Parking" ? (
+                      <span className="text-gray-300 text-xs">—</span>
+                    ) : editingParking === row.id ? (
+                      <div className="flex items-center gap-1.5">
+                        <input value={parkingForm.slot} onChange={(e) => setParkingForm((f) => ({ ...f, slot: e.target.value }))} placeholder="Slot e.g. P1-14" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                        <input value={parkingForm.location} onChange={(e) => setParkingForm((f) => ({ ...f, location: e.target.value }))} placeholder="Exact location" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-40 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                        <button onClick={() => saveParking(row)} className="text-xs font-semibold text-white rounded-lg px-2 py-1" style={{ background: "#0E7F41" }}>Save</button>
+                      </div>
+                    ) : row.slot ? (
+                      <button onClick={() => startEditParking(row)} className="text-left hover:underline">
+                        <span className="font-mono text-xs font-semibold text-gray-700">{row.slot}</span>
+                        <span className="text-[11px] text-gray-400 block">{row.location}</span>
+                      </button>
+                    ) : (
+                      <button onClick={() => startEditParking(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors">
+                        Assign slot
+                      </button>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-gray-500 text-xs font-mono">{row.code}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{row.issued}</td>
                   <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
@@ -992,9 +1104,10 @@ const AccessPasses = () => {
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
                       <p className="text-[10px] font-mono text-gray-400">{p.code}</p>
+                      {p.type === "Parking" && p.slot && <p className="text-[10px] text-amber-600 mt-0.5">Slot {p.slot} · {p.location}</p>}
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge label={p.type} color={p.type === "VIP" ? "purple" : p.type === "Parking" ? "yellow" : "blue"} />
+                      <Badge label={p.type} color={p.type === "Parking" ? "yellow" : "blue"} />
                       <Badge label={p.status} color={statusColor(p.status)} />
                     </div>
                   </div>
