@@ -6,13 +6,29 @@ import { API_URL } from "../config/api";
 // One CASTO account, several employees: each gets their own view (focus modules),
 // and every change is recorded under the employee who made it.
 
-export const TEAM = [
-    { id: "rana",    name: "Rana",    role: "Event Lead",              focus: ["venue", "schedule", "report"] },
-    { id: "prithba", name: "Prithba", role: "Logistics & Equipment",   focus: ["equipment", "requirements"] },
-    { id: "aseel",   name: "Aseel",   role: "Branding & Media",        focus: ["banners"] },
-    { id: "maha",    name: "Maha",    role: "Attendance & Check-in",   focus: ["attendance", "delegates"] },
-    { id: "yousef",  name: "Yousef",  role: "Access & Passes",         focus: ["passes"] },
+// Human names for every module a team member can own — shown in the
+// responsibilities panel and the role-reassignment picker
+export const MODULE_LABELS = {
+    venue: "Venue & Booths",
+    banners: "Banners & Branding",
+    requirements: "Special Requirements",
+    equipment: "Equipment & Logistics",
+    delegates: "Delegate List",
+    attendance: "Attendance",
+    schedule: "Schedule",
+    passes: "Access Passes",
+    report: "Post-Event Report",
+};
+
+const DEFAULT_TEAM = [
+    { id: "rana",    name: "Rana",    role: "Event Lead",              focus: ["venue", "schedule", "report"], responsibilities: "Owns the venue floor plan and booth assignments, builds the event-day schedule, and compiles the post-event report. Final point of contact for anything not covered by another module." },
+    { id: "prithba", name: "Prithba", role: "Logistics & Equipment",   focus: ["equipment", "requirements"], responsibilities: "Handles all equipment requests (tables, chairs, power, screens) and special requirements raised by companies (accessibility, AV, custom setups)." },
+    { id: "aseel",   name: "Aseel",   role: "Branding & Media",        focus: ["banners"], responsibilities: "Tracks every company's banner and branding assets from submission through printing to placement on-site." },
+    { id: "maha",    name: "Maha",    role: "Attendance & Check-in",   focus: ["attendance", "delegates"], responsibilities: "Runs check-in on event day (booth QR scans and student check-in) and manages the company delegate list and badge printing." },
+    { id: "yousef",  name: "Yousef",  role: "Access & Passes",         focus: ["passes"], responsibilities: "Issues and manages entry, parking, and VIP access passes for every company delegate." },
 ];
+
+const TEAM_STORAGE_KEY = "event_ops_team_v1";
 
 // ─── Seed data ─────────────────────────────────────────────────────────────────
 
@@ -143,7 +159,21 @@ export const EventOpsProvider = ({ children }) => {
         } catch { /* corrupted cache — fall back to seed */ }
         return SEED;
     });
-    const [actingAs, setActingAsState] = useState(() => localStorage.getItem(ACTING_KEY) || TEAM[0].id);
+    const [team, setTeam] = useState(() => {
+        try {
+            const cached = JSON.parse(localStorage.getItem(TEAM_STORAGE_KEY));
+            if (Array.isArray(cached) && cached.length === DEFAULT_TEAM.length) {
+                // Merge saved focus assignments onto the current default shape, so
+                // adding/renaming a responsibilities blurb later doesn't get lost
+                return DEFAULT_TEAM.map((m) => {
+                    const saved = cached.find((c) => c.id === m.id);
+                    return saved ? { ...m, focus: saved.focus } : m;
+                });
+            }
+        } catch { /* corrupted cache — fall back to default */ }
+        return DEFAULT_TEAM;
+    });
+    const [actingAs, setActingAsState] = useState(() => localStorage.getItem(ACTING_KEY) || DEFAULT_TEAM[0].id);
     const [realCompanies, setRealCompanies] = useState([]);
     const saveTimer = useRef(null);
 
@@ -176,7 +206,17 @@ export const EventOpsProvider = ({ children }) => {
         }, 800);
     }, []);
 
-    const employee = TEAM.find((e) => e.id === actingAs) || TEAM[0];
+    const employee = team.find((e) => e.id === actingAs) || team[0];
+
+    // Reassign which modules a team member owns. Gated behind verification in
+    // the UI (Rana only) — this just applies the change once approved.
+    const updateTeamFocus = useCallback((memberId, newFocus) => {
+        setTeam((prev) => {
+            const next = prev.map((m) => (m.id === memberId ? { ...m, focus: newFocus } : m));
+            try { localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+            return next;
+        });
+    }, []);
 
     // Central mutation: applies the change, stamps who/when, records an audit entry
     const update = useCallback((section, message, updater) => {
@@ -243,7 +283,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team: TEAM, companies, companyView, addStaffer, removeStaffer }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView, addStaffer, removeStaffer }}>
             {children}
         </EventOpsContext.Provider>
     );
