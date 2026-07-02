@@ -115,16 +115,27 @@ const SEED = {
         { id: 5, start: "13:00", end: "15:30", title: "Resume Drop & Interview Sessions",      host: "All Companies",        location: "Exhibition Floor", capacity: 1000, registered: 760, status: "Upcoming", ...stamp("Rana", t(20, 10, 20)) },
         { id: 6, start: "15:30", end: "16:00", title: "Closing & Prize Distribution",          host: "Event Coordinator",    location: "Main Stage",       capacity: 300,  registered: 210, status: "Upcoming", ...stamp("Rana", t(20, 10, 25)) },
     ],
+    // Parking passes carry an exact slot + location so a company knows precisely
+    // where to park instead of a generic "Parking" perk. VIP was removed — it had
+    // no distinct function beyond Entry.
     passes: [
-        { id: 1, company: "Emirates NBD", delegate: "Sara Al Mansouri",  type: "VIP",     code: "VIP-ENB-001", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 0)) },
+        { id: 1, company: "Emirates NBD", delegate: "Sara Al Mansouri",  type: "Entry",   code: "ENT-ENB-001", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 0)) },
         { id: 2, company: "Emirates NBD", delegate: "Khalid Rashid",     type: "Entry",   code: "ENT-ENB-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 2)) },
         { id: 3, company: "Etisalat",     delegate: "Aisha Noor",        type: "Entry",   code: "ENT-ETS-001", issued: "2026-06-18", status: "Used",    ...stamp("Yousef", t(18, 9, 4)) },
-        { id: 4, company: "Etisalat",     delegate: "Mohammed Al Ali",   type: "Parking", code: "PRK-ETS-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 6)) },
+        { id: 4, company: "Etisalat",     delegate: "Mohammed Al Ali",   type: "Parking", code: "PRK-ETS-002", issued: "2026-06-18", status: "Active",  slot: "P1-14", location: "Level 1, North Lot, near Gate B", ...stamp("Yousef", t(18, 9, 6)) },
         { id: 5, company: "Etisalat",     delegate: "Fatima Hamdan",     type: "Entry",   code: "ENT-ETS-003", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 8)) },
-        { id: 6, company: "Dubai Police", delegate: "Maj. Ahmed Karimi", type: "VIP",     code: "VIP-DXB-001", issued: "2026-06-18", status: "Revoked", ...stamp("Yousef", t(19, 14, 30)) },
-        { id: 7, company: "DP World",     delegate: "Logistics Lead",    type: "Parking", code: "PRK-DPW-001", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 10)) },
-        { id: 8, company: "DP World",     delegate: "HR Director",       type: "VIP",     code: "VIP-DPW-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 12)) },
+        { id: 6, company: "Dubai Police", delegate: "Maj. Ahmed Karimi", type: "Entry",   code: "ENT-DXB-001", issued: "2026-06-18", status: "Revoked", ...stamp("Yousef", t(19, 14, 30)) },
+        { id: 7, company: "DP World",     delegate: "Logistics Lead",    type: "Parking", code: "PRK-DPW-001", issued: "2026-06-18", status: "Active",  slot: "P2-03", location: "Level 2, South Lot, ramp entrance", ...stamp("Yousef", t(18, 9, 10)) },
+        { id: 8, company: "DP World",     delegate: "HR Director",       type: "Entry",   code: "ENT-DPW-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 12)) },
     ],
+    // CASTO-issued codes for non-CASTO helpers to check students in without a
+    // full account. checkinLog records who they scanned, so each staffer can
+    // see their own list.
+    attendanceStaff: [
+        { id: 1, name: "Volunteer Desk 1", code: "DESK1", ...stamp("Maha", t(28, 9, 0)) },
+        { id: 2, name: "Volunteer Desk 2", code: "DESK2", ...stamp("Maha", t(28, 9, 1)) },
+    ],
+    checkinLog: [],
     audit: [
         { id: 1, at: t(30, 12, 45), by: "Rana",    section: "Venue & Booths",   message: "Assigned booth B11 to ADNOC" },
         { id: 2, at: t(30, 13, 15), by: "Aseel",   section: "Banners",          message: "Marked Etisalat backdrop as Printed" },
@@ -229,6 +240,30 @@ export const EventOpsProvider = ({ children }) => {
         localStorage.setItem(ACTING_KEY, id);
     };
 
+    // Add/remove attendance staff codes — CASTO-only, from Event Settings
+    const addStaffer = useCallback((name) => {
+        const code = Math.random().toString(36).slice(2, 7).toUpperCase();
+        update("attendanceStaff", `Issued a check-in code to ${name}`, (rows, who) =>
+            [...(rows || []), { id: Date.now(), name, code, ...who }]);
+        return code;
+    }, [update]);
+
+    const removeStaffer = useCallback((id) => {
+        update("attendanceStaff", "Revoked a check-in access code", (rows) => (rows || []).filter((s) => s.id !== id));
+    }, [update]);
+
+    // Refresh checkinLog periodically — staffers write to it through a public
+    // endpoint the CASTO session never calls, so polling is how it shows up here
+    useEffect(() => {
+        const poll = setInterval(async () => {
+            try {
+                const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
+                if (res?.data?.checkinLog) setData((prev) => ({ ...prev, checkinLog: res.data.checkinLog }));
+            } catch { /* ignore — next tick retries */ }
+        }, 15000);
+        return () => clearInterval(poll);
+    }, []);
+
     // All assignable company names: seeds + real registered companies
     const companies = [...new Set([...SEED_COMPANIES, ...realCompanies])];
 
@@ -248,7 +283,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView, addStaffer, removeStaffer }}>
             {children}
         </EventOpsContext.Provider>
     );

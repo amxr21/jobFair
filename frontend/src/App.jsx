@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound, EventSettings } from "./pages/index";
+import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound, EventSettings, StudentCheckin } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
@@ -56,7 +56,7 @@ const AnimatedRoutes = ({ children }) => {
     );
 };
 
-const noPaddingRoutes = ['/login', '/signup', '/confirm-attendance'];
+const noPaddingRoutes = ['/login', '/signup', '/confirm-attendance', '/student-checkin'];
 
 const ConditionalNavBar = ({ link }) => {
     const location = useLocation();
@@ -91,6 +91,7 @@ const AppLayout = ({ user, isCASTO }) => {
                         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" replace />} />
                         <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
+                        <Route path="/student-checkin" element={<StudentCheckin />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </ErrorBoundary>

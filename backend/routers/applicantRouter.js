@@ -34,6 +34,7 @@ const {
     submitSurvey, deleteApplicant, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     getSettings, updateSettings, getEventOps, updateEventOps,
+    verifyAttendanceStaff, checkinByStaff,
 } = controllers;
 
 const router = express.Router();
@@ -60,6 +61,10 @@ router.post("/email", emailRequest);
 router.post("/applicants", upload.single("cvfile"), addApplicantPublic);
 router.get("/confirm-attendance/:token", confirmCompanyAttendance);
 router.get("/settings", getSettings);
+// Attendance staff: code-gated, deliberately not behind requireAuth so a
+// staffer can check students in without a CASTO/company account
+router.post("/attendance-staff/verify", verifyAttendanceStaff);
+router.patch("/attendance-staff/checkin", checkinByStaff);
 
 // Protected routes
 router.use(requireAuth);
