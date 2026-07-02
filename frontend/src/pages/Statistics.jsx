@@ -223,12 +223,16 @@ const Statistics = ({ link }) => {
               ))}
             </div>
 
-            {/* Row 2 - Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-1.5 md:gap-2 flex-1 min-h-[200px]">
+            {/* Row 2a - Pie charts, side by side in their own band */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 md:gap-2 shrink-0">
               <StatsticTypeProvider>
                 <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title="Number of" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
                 <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title="Companies By" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
               </StatsticTypeProvider>
+            </div>
+
+            {/* Row 2b - Bar chart, full width with real room to breathe */}
+            <div className="flex-1 min-h-[280px]">
               <BarChartElement dataset={sectors} />
             </div>
 

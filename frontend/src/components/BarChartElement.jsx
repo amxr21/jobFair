@@ -47,7 +47,7 @@ const BarChartElement = ({ dataset }) => {
     const values = entries.map(([, value]) => value);
 
     return (
-        <div ref={containerRef} className="col-span-1 lg:col-span-6 bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[280px]">
+        <div ref={containerRef} className="bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[280px]">
             <div className="flex items-center justify-between mb-1">
                 <h2 className="text-xs font-medium text-gray-700">Companies by Industry Field</h2>
                 <span className="text-[10px] text-gray-400">Top {entries.length}</span>

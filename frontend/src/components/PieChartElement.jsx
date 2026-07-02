@@ -29,7 +29,7 @@ const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
     const { data: currentData, colors: currentColors } = getCurrentData();
 
     return (
-        <div className="col-span-1 lg:col-span-3 bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
+        <div className="bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
             {/* Header with title and filter in same row */}
             <div className="flex items-center justify-between mb-1">
                 <h2 className="text-xs font-medium text-gray-700">{title}</h2>
@@ -41,20 +41,20 @@ const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
                 <div className="flex-shrink-0">
                     <PieChart
                         sx={{ "& .MuiChartsLegend-root": { display: "none" }}}
-                        height={170}
-                        width={170}
+                        height={190}
+                        width={190}
                         colors={currentColors}
                         series={[
                             {
                                 data: currentData,
-                                innerRadius: 30,
-                                outerRadius: 72,
+                                innerRadius: 34,
+                                outerRadius: 80,
                                 paddingAngle: 4,
                                 cornerRadius: 4,
                                 startAngle: 90,
                                 endAngle: 450,
-                                cx: 85,
-                                cy: 85,
+                                cx: 95,
+                                cy: 95,
                             }
                         ]}
                         tooltip={{ trigger: 'none' }}
