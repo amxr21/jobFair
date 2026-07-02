@@ -4,6 +4,7 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 
 import { useAuthContext } from "../hooks/useAuthContext"
 import Success from "./Success";
+import Modal from "./Modal";
 
 
 const BarButtons = ({link}) => {
@@ -122,58 +123,45 @@ const toggleAttendanceScanner = () => {
 
 
 
-    const [isClosing, setIsClosing] = useState(false);
-
-    // Sync modal visibility with camera states
-    const isModalVisible = isCameraOn || isCameraOn2 || isClosing;
+    // Sync modal visibility with camera states — Modal itself owns the
+    // open/close animation timing, this just tells it when to be open
+    const isModalVisible = isCameraOn || isCameraOn2;
 
     const closeModal = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            if (isCameraOn) {
-                setIsCameraOn(false);
-                scanner?.clear();
-                openCamera.current.textContent = "Register an Applicant";
-            }
-            if (isCameraOn2) {
-                setIsCameraOn2(false);
-                scanner?.clear();
-                confirmAttendanceButton.current.textContent = "Confirm Attendance";
-            }
-            setIsClosing(false);
-        }, 300);
+        if (isCameraOn) {
+            setIsCameraOn(false);
+            scanner?.clear();
+            openCamera.current.textContent = "Register an Applicant";
+        }
+        if (isCameraOn2) {
+            setIsCameraOn2(false);
+            scanner?.clear();
+            confirmAttendanceButton.current.textContent = "Confirm Attendance";
+        }
     };
 
     return (
         <>
             {/* QR Scanner Modal Overlay */}
-            {isModalVisible && (
-                <div className="fixed inset-0 z-[99999] flex items-center justify-center">
-                    <div
-                        className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
-                        onClick={closeModal}
-                    />
-                    <div className={`relative bg-white rounded-xl p-4 pb-12 shadow-2xl z-10 min-w-[280px] transition-all duration-300 ${isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                        <p className="text-sm font-semibold text-center mb-3">
-                            {isCameraOn ? "Register Applicant" : "Confirm Attendance"}
-                        </p>
-                        {isCameraOn2 && <div id="reader2"></div>}
-                        {isCameraOn && (
-                            scannerResult
-                            ? <Success result={scannerResult} />
-                            : <div id="reader"></div>
-                        )}
-                        <button
-                            onClick={closeModal}
-                            className="absolute bottom-2 left-1/2 -translate-x-1/4 w-8 h-8 text-white rounded-xl text-sm flex items-center justify-center"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="black" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            )}
+            <Modal visible={isModalVisible} onClose={closeModal} maxWidth="max-w-xs" contentClassName="p-4 pb-12">
+                <p className="text-sm font-semibold text-center mb-3">
+                    {isCameraOn ? "Register Applicant" : "Confirm Attendance"}
+                </p>
+                {isCameraOn2 && <div id="reader2"></div>}
+                {isCameraOn && (
+                    scannerResult
+                    ? <Success result={scannerResult} />
+                    : <div id="reader"></div>
+                )}
+                <button
+                    onClick={closeModal}
+                    className="absolute bottom-2 left-1/2 -translate-x-1/4 w-8 h-8 text-white rounded-xl text-sm flex items-center justify-center"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="black" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                    </svg>
+                </button>
+            </Modal>
 
             <div className="flex md:flex-row flex-col items-center w-fit grow justify-end gap-x-3">
                 <div className="flex text-black w-fit gap-x-2">

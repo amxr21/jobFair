@@ -4,6 +4,7 @@ import axios from "axios";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useLocation } from "react-router-dom";
 import Success from "./Success";
+import Modal from "./Modal";
 import { API_URL as link } from "../config/api";
 
 const MobileRegisterFAB = () => {
@@ -13,7 +14,6 @@ const MobileRegisterFAB = () => {
     const [scannerResult, setScannerResult] = useState(null);
     const [isCameraOn, setIsCameraOn] = useState(false);
     const [isCameraOn2, setIsCameraOn2] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
 
     // Hide on certain routes
@@ -99,16 +99,12 @@ const MobileRegisterFAB = () => {
         };
     }, [isCameraOn2, user, shouldHide]);
 
-    const isModalVisible = isCameraOn || isCameraOn2 || isClosing;
+    const isModalVisible = isCameraOn || isCameraOn2;
 
     const closeModal = () => {
-        setIsClosing(true);
-        setTimeout(() => {
-            setIsCameraOn(false);
-            setIsCameraOn2(false);
-            setScannerResult(null);
-            setIsClosing(false);
-        }, 300);
+        setIsCameraOn(false);
+        setIsCameraOn2(false);
+        setScannerResult(null);
     };
 
     const handleRegister = () => {
@@ -129,35 +125,27 @@ const MobileRegisterFAB = () => {
     return (
         <>
             {/* QR Scanner Modal */}
-            {isModalVisible && (
-                <div className="md:hidden fixed inset-0 z-[99999] flex items-center justify-center">
-                    <div
-                        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isClosing ? 'opacity-0' : 'opacity-100'}`}
+            <Modal visible={isModalVisible} onClose={closeModal} maxWidth="max-w-[320px]" wrapperClassName="md:hidden" contentClassName="p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold">
+                        {isCameraOn ? "Register Applicant" : "Confirm Attendance"}
+                    </p>
+                    <button
                         onClick={closeModal}
-                    />
-                    <div className={`relative bg-white rounded-2xl p-4 shadow-2xl z-10 w-[90vw] max-w-[320px] transition-all duration-300 ${isClosing ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
-                        <div className="flex items-center justify-between mb-3">
-                            <p className="text-sm font-semibold">
-                                {isCameraOn ? "Register Applicant" : "Confirm Attendance"}
-                            </p>
-                            <button
-                                onClick={closeModal}
-                                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        {isCameraOn2 && <div id="mobile-reader2"></div>}
-                        {isCameraOn && (
-                            scannerResult
-                                ? <Success result={scannerResult} />
-                                : <div id="mobile-reader"></div>
-                        )}
-                    </div>
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-            )}
+                {isCameraOn2 && <div id="mobile-reader2"></div>}
+                {isCameraOn && (
+                    scannerResult
+                        ? <Success result={scannerResult} />
+                        : <div id="mobile-reader"></div>
+                )}
+            </Modal>
 
             {/* Floating Action Button Menu */}
             {showMenu && (

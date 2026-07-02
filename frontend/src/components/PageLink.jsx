@@ -12,22 +12,22 @@ const ICON_MAP = {
     settings:        <SettingsIcon />,
 };
 
-const PageLink = ({ title, icon, link }) => {
+// itemRef lets the parent NavBar track this link's DOM node so a single shared
+// pill element can glide to it — no separate pill is rendered here.
+const PageLink = ({ title, icon, link, itemRef }) => {
     const path = useLocation().pathname;
     const cleanPath = path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
     const cleanLink = link.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
     const isActive = cleanPath === cleanLink;
 
     return (
-        <Link to={link}>
-            <div className="page-link group cursor-pointer flex gap-x-3 items-center">
+        <Link to={link} ref={itemRef} data-active={isActive || undefined} className="relative block">
+            <div className="page-link cursor-pointer flex gap-x-3 items-center relative z-10">
                 <div
                     className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 [&>svg]:w-4 [&>svg]:h-4"
                     style={{
-                        backgroundColor: isActive ? '#0E7F41' : 'transparent',
                         color: isActive ? '#ffffff' : '#9ca3af',
-                        boxShadow: isActive ? '0 2px 10px rgba(14,127,65,0.4)' : 'none',
-                        transition: 'background-color 0.25s cubic-bezier(0.4,0,0.2,1), color 0.25s ease, box-shadow 0.25s ease',
+                        transition: 'color 0.2s ease 0.05s',
                     }}
                 >
                     {ICON_MAP[icon] ?? <Survey />}
