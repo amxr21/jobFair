@@ -182,21 +182,21 @@ const Statistics = ({ link }) => {
     <div className="flex flex-col gap-y-2 flex-1 min-w-0 h-full max-h-[100vh] overflow-hidden p-2 md:p-0">
       {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
 
-      {/* View Mode Toggle — sliding pill */}
+      {/* View Mode Toggle — sliding pill over two equal-width cells */}
       <div className="flex justify-end px-0.5 shrink-0">
-        <div className="relative flex bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
-          {/* Sliding pill */}
+        <div className="relative grid grid-cols-2 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+          {/* Sliding pill — buttons share the same width, so 50% always matches */}
           <div
             className="absolute top-0.5 bottom-0.5 rounded-md bg-[#0E7F41] shadow-md"
             style={{
-              width: '50%',
-              left: viewMode === 'basic' ? '2px' : '50%',
+              width: 'calc(50% - 2px)',
+              left: viewMode === 'basic' ? '2px' : 'calc(50% + 0px)',
               transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
             }}
           />
           <button
             onClick={() => { setViewMode('basic'); toast('Switched to Overview', { type: 'info', duration: 1600 }); }}
-            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 ${
+            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
               viewMode === 'basic' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
             }`}
           >
@@ -204,7 +204,7 @@ const Statistics = ({ link }) => {
           </button>
           <button
             onClick={() => { setViewMode('advanced'); toast('Switched to Advanced Analytics', { type: 'info', duration: 1600 }); }}
-            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium transition-colors duration-200 ${
+            className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
               viewMode === 'advanced' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
             }`}
           >
