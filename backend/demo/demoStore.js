@@ -58,7 +58,7 @@ function seedUser(raw, role) {
         opportunityTypes: raw.opportunityTypes || [],
         preferredQualities: raw.preferredQualities || "",
         surveyResult: cloneDeep(raw.surveyResult || []),
-        status: "Confirmed",
+        status: raw.status || "Confirmed",
         role: role || "manager",
         confirmationToken: null,
         confirmationTokenExpiry: null,
