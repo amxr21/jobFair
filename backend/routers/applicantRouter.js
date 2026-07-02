@@ -33,7 +33,7 @@ const {
     rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant,
     submitSurvey, deleteApplicant, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
-    getSettings, updateSettings,
+    getSettings, updateSettings, getEventOps, updateEventOps,
 } = controllers;
 
 const router = express.Router();
@@ -65,6 +65,8 @@ router.get("/settings", getSettings);
 router.use(requireAuth);
 
 router.patch("/settings", updateSettings);
+router.get("/event-ops", getEventOps);
+router.put("/event-ops", updateEventOps);
 router.post("/companies/send-reminders", sendCompanyReminders);
 router.patch("/companies/:id/status", updateCompanyStatus);
 router.delete("/companies/:id", deleteCompany);

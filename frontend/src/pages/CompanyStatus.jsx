@@ -1,10 +1,155 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { QRCodeSVG } from "qrcode.react";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL } from "../config/api";
 import SectionCard from "../components/SectionCard";
 import TagPill from "../components/TagPill";
 import StatCard from "../components/StatCard";
+import { useEventOps, formatWhen } from "../context/EventOpsContext";
+
+const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
+
+const MiniBadge = ({ label, tone = "gray" }) => {
+    const tones = {
+        green: "bg-green-100 text-green-700", yellow: "bg-amber-100 text-amber-700",
+        red: "bg-red-100 text-red-600", gray: "bg-gray-100 text-gray-500",
+        blue: "bg-blue-100 text-blue-700", purple: "bg-purple-100 text-purple-700",
+    };
+    return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${tones[tone] || tones.gray}`}>{label}</span>;
+};
+
+const passTone = (t) => (t === "VIP" ? "purple" : t === "Parking" ? "yellow" : "blue");
+const statusTone = (s) => ({
+    Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
+    Fulfilled: "green", "In Progress": "blue", Open: "yellow", Partial: "yellow", Pending: "gray",
+    Active: "green", Used: "gray", Revoked: "red", Present: "green", Absent: "red",
+}[s] || "gray");
+
+// Everything CASTO manages for this company in Event Settings, mirrored live here
+const EventDaySection = ({ companyName }) => {
+    const { companyView } = useEventOps();
+    const view = companyView(companyName);
+    if (!view) return null;
+
+    const { booth, banners, requirements, equipment, attendance, passes } = view;
+    const hasAnything = booth || banners.length || requirements.length || equipment.length || passes.length;
+
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 mt-1">
+                <h2 className="text-sm font-bold text-gray-800">Event Day</h2>
+                <span className="text-[10px] text-gray-400">Managed by the CASTO office — updates appear here automatically</span>
+            </div>
+
+            {!hasAnything && (
+                <div className="bg-white rounded-lg p-4 border border-gray-100 text-xs text-gray-400">
+                    No event-day records yet. Booth, branding, and passes will appear here once the CASTO office assigns them.
+                </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {booth && (
+                    <SectionCard title="My Booth">
+                        <div className="flex items-center gap-4">
+                            <div className="bg-white border border-gray-200 rounded-lg p-2 shrink-0">
+                                <QRCodeSVG value={`jobfair:attendance:${booth.number}`} size={84} fgColor="#111827" />
+                            </div>
+                            <div className="flex flex-col gap-1 text-xs min-w-0">
+                                <p className="text-base font-bold text-gray-800">{booth.number} · Zone {booth.zone}</p>
+                                <p className="text-gray-500">{booth.type} booth · {booth.ring === "center" ? "Center island" : "Outer ring"}</p>
+                                {attendance ? (
+                                    <div className="flex items-center gap-1.5">
+                                        <MiniBadge label={attendance.status} tone={statusTone(attendance.status)} />
+                                        {attendance.time !== "—" && <span className="text-gray-400">since {attendance.time}</span>}
+                                    </div>
+                                ) : <MiniBadge label="Attendance pending" tone="gray" />}
+                                <p className="text-[10px] text-gray-400 leading-relaxed mt-1">
+                                    This QR code is printed at your booth. Scan it on arrival to confirm your attendance.
+                                </p>
+                            </div>
+                        </div>
+                    </SectionCard>
+                )}
+
+                {banners.length > 0 && (
+                    <SectionCard title="Banners & Branding">
+                        <div className="flex flex-col gap-2.5">
+                            {banners.map((b) => {
+                                const si = BANNER_STEPS.indexOf(b.status);
+                                return (
+                                    <div key={b.id} className="flex flex-col gap-1.5">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="text-xs font-semibold text-gray-700 truncate">{b.material} · {b.size} · ×{b.quantity}</p>
+                                            <MiniBadge label={b.status} tone={statusTone(b.status)} />
+                                        </div>
+                                        <div className="flex items-center gap-0.5">
+                                            {BANNER_STEPS.map((s, i) => (
+                                                <div key={s} className={`h-1 flex-1 rounded-full ${i <= si ? "bg-green-500" : "bg-gray-200"}`} title={s} />
+                                            ))}
+                                        </div>
+                                        <p className="text-[10px] text-gray-400">Deadline {b.deadline} · Last update by {b.updatedBy} · {formatWhen(b.updatedAt)}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </SectionCard>
+                )}
+
+                {equipment.length > 0 && (
+                    <SectionCard title="Logistics & Equipment">
+                        <div className="flex flex-col gap-1.5">
+                            {equipment.map((r) => (
+                                <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
+                                    <span className="text-gray-700 truncate">{r.item}</span>
+                                    <span className="flex items-center gap-2 shrink-0">
+                                        <span className="font-mono text-gray-500">{r.qtyFul}/{r.qtyReq}</span>
+                                        <MiniBadge label={r.status} tone={statusTone(r.status)} />
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </SectionCard>
+                )}
+
+                {requirements.length > 0 && (
+                    <SectionCard title="Special Requirements">
+                        <div className="flex flex-col gap-1.5">
+                            {requirements.map((r) => (
+                                <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
+                                    <span className="text-gray-700 truncate">{r.description}</span>
+                                    <MiniBadge label={r.status} tone={statusTone(r.status)} />
+                                </div>
+                            ))}
+                        </div>
+                    </SectionCard>
+                )}
+
+                {passes.length > 0 && (
+                    <SectionCard title="My Access Passes" className="md:col-span-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {passes.map((p) => (
+                                <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                                    <div className="bg-white rounded p-1 shrink-0">
+                                        <QRCodeSVG value={`jobfair:pass:${p.code}`} size={44} fgColor="#111827" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
+                                        <p className="text-[10px] font-mono text-gray-400">{p.code}</p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1 shrink-0">
+                                        <MiniBadge label={p.type} tone={passTone(p.type)} />
+                                        <MiniBadge label={p.status} tone={statusTone(p.status)} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </SectionCard>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const STATUS_CONFIG = {
     Confirmed: {
@@ -186,6 +331,8 @@ const CompanyStatus = () => {
                     </SectionCard>
                 )}
             </div>
+
+            <EventDaySection companyName={companyData?.companyName} />
 
             {companyData?.surveyResult?.length > 0 && (
                 <div className="bg-green-50 rounded-lg p-3 border border-green-200 flex items-center gap-3">

@@ -1,130 +1,11 @@
-import { useState, useRef, useEffect, useLayoutEffect } from "react";
+import { useState, useRef, useMemo, useLayoutEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
+import { useEventOps, formatWhen } from "../context/EventOpsContext";
+import { useToast } from "../components/Toast";
 
-// ─── Seed Data ────────────────────────────────────────────────────────────────
-
-const COMPANIES = ["Emirates NBD", "Etisalat", "Dubai Police", "DP World", "ADNOC"];
-
-const INIT_BOOTHS = [
-  { id: 1, number: "B01", zone: "A", company: "Emirates NBD", type: "Premium", status: "Assigned" },
-  { id: 2, number: "B02", zone: "A", company: "Etisalat", type: "Standard", status: "Assigned" },
-  { id: 3, number: "B03", zone: "A", company: null, type: "Standard", status: "Available" },
-  { id: 4, number: "B04", zone: "A", company: null, type: "Corner", status: "Available" },
-  { id: 5, number: "B05", zone: "B", company: "Dubai Police", type: "Premium", status: "Assigned" },
-  { id: 6, number: "B06", zone: "B", company: null, type: "Standard", status: "Reserved" },
-  { id: 7, number: "B07", zone: "B", company: "DP World", type: "Corner", status: "Assigned" },
-  { id: 8, number: "B08", zone: "B", company: null, type: "Standard", status: "Available" },
-  { id: 9, number: "B09", zone: "C", company: null, type: "Standard", status: "Reserved" },
-  { id: 10, number: "B10", zone: "C", company: null, type: "Standard", status: "Available" },
-  { id: 11, number: "B11", zone: "C", company: null, type: "Premium", status: "Available" },
-  { id: 12, number: "B12", zone: "C", company: null, type: "Corner", status: "Available" },
-];
-
-const INIT_BANNERS = [
-  { id: 1, company: "Emirates NBD", material: "Roll-up Banner", status: "Placed", submitted: "2024-03-10", notes: "2 roll-ups, logo updated" },
-  { id: 2, company: "Etisalat", material: "Backdrop 3×2m", status: "Printed", submitted: "2024-03-12", notes: "Awaiting delivery" },
-  { id: 3, company: "Dubai Police", material: "Table Skirt", status: "Approved", submitted: "2024-03-14", notes: "Standard green theme" },
-  { id: 4, company: "DP World", material: "Digital Screen Graphic", status: "Submitted", submitted: "2024-03-15", notes: "HD resolution required" },
-  { id: 5, company: "ADNOC", material: "Roll-up Banner", status: "Not Submitted", submitted: "—", notes: "Follow up needed" },
-];
-
-const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
-
-const INIT_REQUIREMENTS = [
-  { id: 1, company: "Emirates NBD", description: "Extra monitor for presentations", category: "AV Equipment", priority: "High", status: "In Progress", notes: "32\" screen requested" },
-  { id: 2, company: "Etisalat", description: "Wheelchair accessible booth positioning", category: "Accessibility", priority: "Critical", status: "Fulfilled", notes: "Booth B02 repositioned" },
-  { id: 3, company: "Dubai Police", description: "Uniform mannequin display", category: "Display", priority: "Medium", status: "Open", notes: "Needs stand and lighting" },
-  { id: 4, company: "DP World", description: "VIP lounge seating nearby", category: "Comfort", priority: "Low", status: "Open", notes: "Pending space review" },
-  { id: 5, company: "ADNOC", description: "Dedicated power line 30A", category: "Power", priority: "Critical", status: "In Progress", notes: "Electrician scheduled" },
-];
-
-const INIT_EQUIPMENT = [
-  { id: 1, entity: "Emirates NBD / B01", item: "Folding Table", qtyReq: 2, qtyFul: 2, status: "Fulfilled" },
-  { id: 2, entity: "Emirates NBD / B01", item: "Chair", qtyReq: 4, qtyFul: 4, status: "Fulfilled" },
-  { id: 3, entity: "Etisalat / B02", item: "Power Strip (6-way)", qtyReq: 2, qtyFul: 1, status: "Partial" },
-  { id: 4, entity: "Etisalat / B02", item: "Monitor Stand", qtyReq: 1, qtyFul: 0, status: "Pending" },
-  { id: 5, entity: "Dubai Police / B05", item: "Folding Table", qtyReq: 3, qtyFul: 3, status: "Fulfilled" },
-  { id: 6, entity: "Dubai Police / B05", item: "Display Screen 43\"", qtyReq: 1, qtyFul: 1, status: "Fulfilled" },
-  { id: 7, entity: "DP World / B07", item: "Chair", qtyReq: 6, qtyFul: 4, status: "Partial" },
-  { id: 8, entity: "DP World / B07", item: "Extension Cable 10m", qtyReq: 2, qtyFul: 2, status: "Fulfilled" },
-];
-
-const INIT_DELEGATES = [
-  {
-    company: "Emirates NBD",
-    delegates: [
-      { name: "Sara Al Mansouri", role: "HR Manager", email: "sara.m@enbd.ae", phone: "+971 50 111 2233", badge: "Printed" },
-      { name: "Khalid Rashid", role: "Recruiter", email: "k.rashid@enbd.ae", phone: "+971 55 444 5566", badge: "Pending" },
-    ],
-  },
-  {
-    company: "Etisalat",
-    delegates: [
-      { name: "Aisha Noor", role: "Talent Acquisition", email: "aisha.n@etisalat.ae", phone: "+971 52 777 8899", badge: "Printed" },
-      { name: "Mohammed Al Ali", role: "Campus Relations", email: "m.alali@etisalat.ae", phone: "+971 56 223 3445", badge: "Printed" },
-      { name: "Fatima Hamdan", role: "HR Coordinator", email: "f.hamdan@etisalat.ae", phone: "+971 50 998 1122", badge: "Pending" },
-    ],
-  },
-  {
-    company: "Dubai Police",
-    delegates: [
-      { name: "Maj. Ahmed Karimi", role: "Recruitment Officer", email: "a.karimi@dubaipolice.gov.ae", phone: "+971 4 999 0011", badge: "Printed" },
-      { name: "Lt. Hessa Al Zaabi", role: "HR Specialist", email: "h.alzaabi@dubaipolice.gov.ae", phone: "+971 4 999 0022", badge: "Pending" },
-    ],
-  },
-];
-
-const INIT_ATTENDANCE_COMPANIES = [
-  { booth: "B01", company: "Emirates NBD", delegateCount: 2, checkedIn: 2, time: "08:45", status: "Present" },
-  { booth: "B02", company: "Etisalat", delegateCount: 3, checkedIn: 2, time: "09:10", status: "Partial" },
-  { booth: "B05", company: "Dubai Police", delegateCount: 2, checkedIn: 0, time: "—", status: "Absent" },
-  { booth: "B07", company: "DP World", delegateCount: 2, checkedIn: 2, time: "08:55", status: "Present" },
-];
-
-const INIT_ATTENDANCE_STUDENTS = [
-  { id: "202110001", name: "Layla Hassan", time: "09:05", method: "QR", status: "Checked In" },
-  { id: "202110045", name: "Omar Al Farsi", time: "09:12", method: "QR", status: "Checked In" },
-  { id: "202110089", name: "Nour Ibrahim", time: "09:30", method: "Manual", status: "Checked In" },
-  { id: "202110120", name: "Reem Sultan", time: "09:44", method: "QR", status: "Checked In" },
-  { id: "202110200", name: "Faisal Ahmed", time: "—", method: "—", status: "Pending" },
-  { id: "202110234", name: "Amira Khalil", time: "10:05", method: "QR", status: "Checked In" },
-];
-
-const INIT_SCHEDULE = [
-  { id: 1, start: "08:30", end: "09:00", title: "Registration & Venue Setup", host: "Event Team", location: "Main Entrance", capacity: 300, registered: 280, status: "Ended" },
-  { id: 2, start: "09:00", end: "09:30", title: "Opening Ceremony & Welcome Address", host: "University President", location: "Main Hall", capacity: 500, registered: 420, status: "Ended" },
-  { id: 3, start: "09:30", end: "12:00", title: "Open Networking — Booth Visits", host: "All Companies", location: "Exhibition Floor", capacity: 1000, registered: 850, status: "Live" },
-  { id: 4, start: "12:00", end: "13:00", title: "Lunch Break", host: "Catering Team", location: "Cafeteria", capacity: 400, registered: 370, status: "Upcoming" },
-  { id: 5, start: "13:00", end: "15:30", title: "Resume Drop & Interview Sessions", host: "All Companies", location: "Exhibition Floor", capacity: 1000, registered: 760, status: "Upcoming" },
-  { id: 6, start: "15:30", end: "16:00", title: "Closing & Prize Distribution", host: "Event Coordinator", location: "Main Stage", capacity: 300, registered: 210, status: "Upcoming" },
-];
-
-const INIT_PASSES = [
-  { id: 1, company: "Emirates NBD", delegate: "Sara Al Mansouri", type: "VIP", code: "VIP-ENB-001", issued: "2024-03-18", status: "Active" },
-  { id: 2, company: "Emirates NBD", delegate: "Khalid Rashid", type: "Entry", code: "ENT-ENB-002", issued: "2024-03-18", status: "Active" },
-  { id: 3, company: "Etisalat", delegate: "Aisha Noor", type: "Entry", code: "ENT-ETS-001", issued: "2024-03-18", status: "Used" },
-  { id: 4, company: "Etisalat", delegate: "Mohammed Al Ali", type: "Parking", code: "PRK-ETS-002", issued: "2024-03-18", status: "Active" },
-  { id: 5, company: "Etisalat", delegate: "Fatima Hamdan", type: "Entry", code: "ENT-ETS-003", issued: "2024-03-18", status: "Active" },
-  { id: 6, company: "Dubai Police", delegate: "Maj. Ahmed Karimi", type: "VIP", code: "VIP-DXB-001", issued: "2024-03-18", status: "Revoked" },
-  { id: 7, company: "DP World", delegate: "Logistics Lead", type: "Parking", code: "PRK-DPW-001", issued: "2024-03-18", status: "Active" },
-  { id: 8, company: "DP World", delegate: "HR Director", type: "VIP", code: "VIP-DPW-002", issued: "2024-03-18", status: "Active" },
-];
-
-const ANALYTICS_STATS = {
-  totalCompanies: 24, totalStudents: 1847, checkinRate: 86,
-  applications: 1423, boothsUtilized: 22, avgFeedback: 4.3,
-};
-
-const FEEDBACK_CATEGORIES = [
-  { label: "Venue & Layout", score: 4.5 },
-  { label: "Company Variety", score: 4.2 },
-  { label: "Organization", score: 4.4 },
-  { label: "Staff Helpfulness", score: 4.7 },
-  { label: "Overall Experience", score: 4.3 },
-];
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Small building blocks ─────────────────────────────────────────────────────
 
 const BADGE_COLORS = {
   green: "bg-green-100 text-green-700",
@@ -160,11 +41,24 @@ const StatCard = ({ label, value, sub, color = "#0E7F41" }) => (
   </div>
 );
 
-const Th = ({ children }) => (
-  <th className="text-left text-xs font-semibold text-gray-500 pb-2 pr-4 whitespace-nowrap">{children}</th>
+// "Who touched this last" — shown on every editable row/card
+const LastEdited = ({ row }) => (
+  <span className="text-[10px] text-gray-400 whitespace-nowrap" title={row?.updatedAt}>
+    Updated by <span className="font-medium text-gray-500">{row?.updatedBy || "—"}</span> · {formatWhen(row?.updatedAt)}
+  </span>
 );
 
-// Sub-tab bar used inside Attendance
+const CheckIcon = () => (
+  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
+);
+
+const ChevronIcon = ({ open }) => (
+  <svg className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+);
+
+const inputCls = "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white";
+
+// Sub-tab bar (Attendance sections etc.)
 const SubTabBar = ({ tabs, active, onChange }) => {
   const btnRefs = useRef([]);
   const pillRef = useRef(null);
@@ -178,7 +72,7 @@ const SubTabBar = ({ tabs, active, onChange }) => {
   }, [active]);
 
   return (
-    <div className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit">
+    <div className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto">
       <div
         ref={pillRef}
         className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
@@ -189,28 +83,131 @@ const SubTabBar = ({ tabs, active, onChange }) => {
           key={t}
           ref={(el) => (btnRefs.current[i] = el)}
           onClick={() => onChange(i)}
-          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
+          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
         >{t}</button>
       ))}
     </div>
   );
 };
 
-// ─── Tab 1: Venue Mapping & Booth Assignment ──────────────────────────────────
+// ─── Booth floor map (circular hall, center island, hover info, hide toggle) ──
+
+const RING_STYLES = {
+  Assigned: { fill: "#0E7F41", text: "#ffffff", stroke: "#0a5f31" },
+  Reserved: { fill: "#fbbf24", text: "#7c5300", stroke: "#d97706" },
+  Available: { fill: "#eef1f6", text: "#6b7280", stroke: "#d1d5db" },
+};
+
+const BoothMap = ({ booths, onSelect }) => {
+  const [hover, setHover] = useState(null); // { booth, x, y }
+  const wrapRef = useRef(null);
+
+  const outer = booths.filter((b) => b.ring !== "center");
+  const center = booths.filter((b) => b.ring === "center");
+
+  const C = 230, R_OUT = 168, R_IN = 62;
+  const place = (list, radius) => list.map((b, i) => {
+    const angle = (-90 + (i * 360) / list.length) * (Math.PI / 180);
+    return { ...b, x: C + radius * Math.cos(angle), y: C + radius * Math.sin(angle) };
+  });
+  const nodes = [...place(outer, R_OUT), ...place(center, center.length === 1 ? 0 : R_IN)];
+
+  const move = (e, booth) => {
+    const rect = wrapRef.current.getBoundingClientRect();
+    setHover({ booth, x: e.clientX - rect.left, y: e.clientY - rect.top });
+  };
+
+  return (
+    <div ref={wrapRef} className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-2 md:p-4 flex justify-center">
+      <svg viewBox="0 0 460 460" className="w-full max-w-[440px]">
+        {/* hall wall */}
+        <circle cx={C} cy={C} r={208} fill="#fafbfe" stroke="#d8dee9" strokeWidth="2" strokeDasharray="6 5" />
+        {/* center island platform */}
+        <circle cx={C} cy={C} r={96} fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1.5" />
+        <text x={C} y={C + (center.length ? 118 : 4)} textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="600" letterSpacing="1.5">CENTER ISLAND</text>
+        {/* entrance marker */}
+        <rect x={C - 26} y={434} width={52} height={10} rx={4} fill="#0E7F41" opacity="0.85" />
+        <text x={C} y={456} textAnchor="middle" fontSize="10" fill="#0E7F41" fontWeight="700" letterSpacing="2">ENTRANCE</text>
+
+        {nodes.map((b) => {
+          const st = RING_STYLES[b.status] || RING_STYLES.Available;
+          return (
+            <g
+              key={b.id}
+              transform={`translate(${b.x}, ${b.y})`}
+              className="cursor-pointer"
+              onMouseMove={(e) => move(e, b)}
+              onMouseLeave={() => setHover(null)}
+              onClick={() => onSelect?.(b)}
+            >
+              <circle r={25} fill={st.fill} stroke={st.stroke} strokeWidth="1.5" opacity={hover?.booth?.id === b.id ? 0.85 : 1} />
+              <text textAnchor="middle" dy="-1" fontSize="11" fontWeight="700" fill={st.text}>{b.number}</text>
+              <text textAnchor="middle" dy="11" fontSize="7" fill={st.text} opacity="0.85">
+                {b.company ? (b.company.length > 11 ? b.company.slice(0, 10) + "…" : b.company) : "Free"}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {hover && (
+        <div
+          className="absolute z-20 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 p-3 w-56"
+          style={{
+            left: Math.min(hover.x + 14, (wrapRef.current?.offsetWidth || 300) - 235),
+            top: Math.max(hover.y - 10, 4),
+          }}
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="font-bold text-sm text-gray-800">{hover.booth.number} · Zone {hover.booth.zone}</span>
+            <Badge label={hover.booth.status} color={statusColor(hover.booth.status)} />
+          </div>
+          <p className="text-xs text-gray-700 font-semibold">{hover.booth.company || "Not assigned yet"}</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">{hover.booth.type} booth · {hover.booth.ring === "center" ? "Center island" : "Outer ring"}</p>
+          <div className="mt-1.5 pt-1.5 border-t border-gray-100">
+            <LastEdited row={hover.booth} />
+          </div>
+          <p className="text-[10px] text-gray-400 mt-1">Click to manage this booth</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Tab: Venue & Booths ──────────────────────────────────────────────────────
 
 const VenueMapping = () => {
-  const [booths, setBooths] = useState(INIT_BOOTHS);
+  const { data, update, companies } = useEventOps();
+  const toast = useToast();
+  const booths = data.booths;
   const [assigningId, setAssigningId] = useState(null);
   const [formCompany, setFormCompany] = useState("");
   const [formType, setFormType] = useState("Standard");
+  const [mapHidden, setMapHidden] = useState(() => localStorage.getItem("event_ops_map_hidden") === "1");
+  const cardRefs = useRef({});
+
+  const toggleMap = () => {
+    setMapHidden((v) => {
+      localStorage.setItem("event_ops_map_hidden", v ? "0" : "1");
+      return !v;
+    });
+  };
 
   const startAssign = (booth) => { setAssigningId(booth.id); setFormCompany(booth.company || ""); setFormType(booth.type); };
   const cancelAssign = () => { setAssigningId(null); setFormCompany(""); setFormType("Standard"); };
-  const saveAssign = (id) => {
-    setBooths((prev) => prev.map((b) => b.id === id
-      ? { ...b, company: formCompany || null, type: formType, status: formCompany ? "Assigned" : "Available" }
-      : b));
+  const saveAssign = (booth) => {
+    const label = formCompany || null;
+    update("booths", `${label ? `Assigned booth ${booth.number} to ${label}` : `Cleared booth ${booth.number}`}`, (rows, who) =>
+      rows.map((b) => b.id === booth.id
+        ? { ...b, company: label, type: formType, status: label ? "Assigned" : "Available", ...who }
+        : b));
+    toast(label ? `Booth ${booth.number} assigned to ${label}` : `Booth ${booth.number} cleared`, { type: "success" });
     cancelAssign();
+  };
+
+  const selectFromMap = (booth) => {
+    startAssign(booth);
+    cardRefs.current[booth.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   const assigned = booths.filter((b) => b.status === "Assigned").length;
@@ -219,22 +216,35 @@ const VenueMapping = () => {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-3 flex-wrap">
-          {[["Assigned", "green"], ["Reserved", "yellow"], ["Available", "gray"]].map(([l, c]) => (
+          {[["Assigned", "bg-green-500"], ["Reserved", "bg-amber-400"], ["Available", "bg-gray-300"]].map(([l, c]) => (
             <div key={l} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <span className={`w-2 h-2 rounded-full ${c === "green" ? "bg-green-500" : c === "yellow" ? "bg-amber-400" : "bg-gray-300"}`} />
-              {l}
+              <span className={`w-2 h-2 rounded-full ${c}`} />{l}
             </div>
           ))}
         </div>
-        <span className="text-xs font-semibold text-gray-500">{assigned} / {booths.length} assigned</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-gray-500">{assigned} / {booths.length} assigned</span>
+          <button onClick={toggleMap} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+            {mapHidden ? "Show floor map" : "Hide floor map"}
+          </button>
+        </div>
       </div>
+
+      {!mapHidden && (
+        <div className="flex flex-col gap-1.5">
+          <BoothMap booths={booths} onSelect={selectFromMap} />
+          <p className="text-[11px] text-gray-400 text-center">
+            Schematic layout — will be replaced by the real venue map. Hover a booth for details, click to manage it.
+          </p>
+        </div>
+      )}
 
       {["A", "B", "C"].map((zone) => (
         <div key={zone}>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Zone {zone}</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {booths.filter((b) => b.zone === zone).map((booth) => (
-              <div key={booth.id} className={`rounded-xl border p-3 flex flex-col gap-2.5 ${
+              <div key={booth.id} ref={(el) => (cardRefs.current[booth.id] = el)} className={`rounded-xl border p-3 flex flex-col gap-2.5 ${
                 booth.status === "Assigned" ? "border-green-200 bg-green-50"
                 : booth.status === "Reserved" ? "border-amber-200 bg-amber-50"
                 : "border-gray-200 bg-white"}`}>
@@ -243,20 +253,20 @@ const VenueMapping = () => {
                   <Badge label={booth.status} color={statusColor(booth.status)} />
                 </div>
                 <div className="text-xs text-gray-500 flex flex-col gap-0.5">
-                  <span className="text-gray-400">{booth.type}</span>
+                  <span className="text-gray-400">{booth.type} · {booth.ring === "center" ? "Center island" : "Outer ring"}</span>
                   <span className="font-semibold text-gray-700 truncate">{booth.company || "Unassigned"}</span>
                 </div>
                 {assigningId === booth.id ? (
                   <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
-                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={formCompany} onChange={(e) => setFormCompany(e.target.value)}>
+                    <select className={`text-xs ${inputCls}`} value={formCompany} onChange={(e) => setFormCompany(e.target.value)}>
                       <option value="">— Unassigned —</option>
-                      {COMPANIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                      {companies.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
-                    <select className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={formType} onChange={(e) => setFormType(e.target.value)}>
+                    <select className={`text-xs ${inputCls}`} value={formType} onChange={(e) => setFormType(e.target.value)}>
                       {["Standard", "Premium", "Corner"].map((t) => <option key={t}>{t}</option>)}
                     </select>
                     <div className="flex gap-1.5">
-                      <button onClick={() => saveAssign(booth.id)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-white" style={{ background: "#0E7F41" }}>Save</button>
+                      <button onClick={() => saveAssign(booth)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-white" style={{ background: "#0E7F41" }}>Save</button>
                       <button onClick={cancelAssign} className="flex-1 text-xs rounded-lg py-1.5 font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
                     </div>
                   </div>
@@ -265,6 +275,7 @@ const VenueMapping = () => {
                     {booth.company ? "Reassign" : "Assign"}
                   </button>
                 )}
+                <LastEdited row={booth} />
               </div>
             ))}
           </div>
@@ -274,20 +285,35 @@ const VenueMapping = () => {
   );
 };
 
-// ─── Tab 2: Banner & Branding Status ─────────────────────────────────────────
+// ─── Tab: Banners & Branding ──────────────────────────────────────────────────
+
+const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
 
 const BannerBranding = () => {
-  const [banners, setBanners] = useState(INIT_BANNERS);
+  const { data, update } = useEventOps();
+  const toast = useToast();
+  const banners = data.banners;
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState({});
 
   const stepIdx = (status) => BANNER_STEPS.indexOf(status);
 
-  const advance = (id) => {
-    setBanners((prev) => prev.map((b) => {
-      if (b.id !== id) return b;
-      const idx = stepIdx(b.status);
-      return idx < BANNER_STEPS.length - 1 ? { ...b, status: BANNER_STEPS[idx + 1] } : b;
-    }));
+  const advance = (row) => {
+    const next = BANNER_STEPS[stepIdx(row.status) + 1];
+    update("banners", `Moved ${row.company} ${row.material.toLowerCase()} to "${next}"`, (rows, who) =>
+      rows.map((b) => (b.id === row.id ? { ...b, status: next, ...who } : b)));
+    toast(`${row.company} banner marked ${next}`, { type: "success" });
   };
+
+  const startEdit = (row) => { setEditingId(row.id); setForm({ ...row }); };
+  const saveEdit = () => {
+    update("banners", `Updated ${form.company} branding details`, (rows, who) =>
+      rows.map((b) => (b.id === editingId ? { ...b, ...form, quantity: Number(form.quantity) || 1, ...who } : b)));
+    toast("Branding details saved", { type: "success" });
+    setEditingId(null);
+  };
+
+  const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   return (
     <div className="flex flex-col gap-5">
@@ -303,6 +329,7 @@ const BannerBranding = () => {
       <div className="flex flex-col gap-3">
         {banners.map((row) => {
           const si = stepIdx(row.status);
+          const editing = editingId === row.id;
           return (
             <div key={row.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -313,12 +340,52 @@ const BannerBranding = () => {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Badge label={row.status} color={statusColor(row.status)} />
                   {si < BANNER_STEPS.length - 1 && (
-                    <button onClick={() => advance(row.id)} className="text-xs font-medium text-white rounded-lg px-3 py-1 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
-                      Mark {BANNER_STEPS[si + 1]} →
+                    <button onClick={() => advance(row)} className="text-xs font-medium text-white rounded-lg px-3 py-1 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
+                      Mark {BANNER_STEPS[si + 1]}
                     </button>
                   )}
+                  <button onClick={() => (editing ? setEditingId(null) : startEdit(row))} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:bg-gray-50 transition-colors">
+                    {editing ? "Close" : "Edit"}
+                  </button>
                 </div>
               </div>
+
+              {/* Detailed spec grid */}
+              {!editing ? (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-1.5 text-xs bg-gray-50 rounded-lg px-3 py-2">
+                  {[
+                    ["Size", row.size],
+                    ["Quantity", row.quantity],
+                    ["Artwork file", row.artwork || "Not received"],
+                    ["Company contact", row.contact],
+                    ["Print deadline", row.deadline],
+                  ].map(([k, v]) => (
+                    <div key={k} className="min-w-0">
+                      <p className="text-gray-400">{k}</p>
+                      <p className={`font-medium truncate ${v === "Not received" ? "text-red-500" : "text-gray-700"}`}>{v}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-[#F3F6FF] rounded-lg p-3 border border-blue-100">
+                  {[
+                    ["Material", "material"], ["Size", "size"], ["Quantity", "quantity"],
+                    ["Artwork file", "artwork"], ["Company contact", "contact"], ["Print deadline", "deadline"],
+                  ].map(([label, key]) => (
+                    <div key={key} className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500 font-medium">{label}</label>
+                      <input className={`text-xs ${inputCls}`} value={form[key] ?? ""} onChange={F(key)} />
+                    </div>
+                  ))}
+                  <div className="flex flex-col gap-1 col-span-2 md:col-span-3">
+                    <label className="text-xs text-gray-500 font-medium">Notes</label>
+                    <input className={`text-xs ${inputCls}`} value={form.notes ?? ""} onChange={F("notes")} />
+                  </div>
+                  <div className="col-span-2 md:col-span-3 flex justify-end">
+                    <button onClick={saveEdit} className="text-xs font-semibold text-white rounded-lg px-4 py-1.5" style={{ background: "#0E7F41" }}>Save details</button>
+                  </div>
+                </div>
+              )}
 
               {/* Progress stepper */}
               <div className="flex items-center gap-0.5">
@@ -328,7 +395,7 @@ const BannerBranding = () => {
                       idx < si ? "border-green-500 bg-green-500 text-white"
                       : idx === si ? "border-green-500 bg-white text-green-600"
                       : "border-gray-200 bg-white text-gray-300"}`}>
-                      {idx < si ? "✓" : idx + 1}
+                      {idx < si ? <CheckIcon /> : idx + 1}
                     </div>
                     {idx < BANNER_STEPS.length - 1 && (
                       <div className={`flex-1 h-0.5 mx-0.5 transition-all duration-300 ${idx < si ? "bg-green-400" : "bg-gray-200"}`} />
@@ -337,7 +404,10 @@ const BannerBranding = () => {
                 ))}
               </div>
 
-              {row.notes && <p className="text-xs text-gray-400 italic">{row.notes}</p>}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                {row.notes ? <p className="text-xs text-gray-400 italic">{row.notes}</p> : <span />}
+                <LastEdited row={row} />
+              </div>
             </div>
           );
         })}
@@ -346,25 +416,32 @@ const BannerBranding = () => {
   );
 };
 
-// ─── Tab 3: Special & Additional Requirements ──────────────────────────────────
+// ─── Tab: Special Requirements ────────────────────────────────────────────────
 
 const SpecialRequirements = () => {
-  const [rows, setRows] = useState(INIT_REQUIREMENTS);
+  const { data, update, companies } = useEventOps();
+  const toast = useToast();
+  const rows = data.requirements;
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ company: COMPANIES[0], description: "", category: "", priority: "Medium", status: "Open", notes: "" });
+  const [form, setForm] = useState({ company: "", description: "", category: "", priority: "Medium", status: "Open", notes: "" });
 
   const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = () => {
     if (!form.description.trim()) return;
-    setRows((prev) => [...prev, { ...form, id: Date.now() }]);
-    setForm({ company: COMPANIES[0], description: "", category: "", priority: "Medium", status: "Open", notes: "" });
+    const company = form.company || companies[0];
+    update("requirements", `Added requirement for ${company}: ${form.description.slice(0, 40)}`, (prev, who) =>
+      [...prev, { ...form, company, id: Date.now(), ...who }]);
+    toast("Requirement added", { type: "success" });
+    setForm({ company: "", description: "", category: "", priority: "Medium", status: "Open", notes: "" });
     setShowForm(false);
   };
 
-  const cycleStatus = (id) => {
+  const cycleStatus = (row) => {
     const cycle = ["Open", "In Progress", "Fulfilled"];
-    setRows((prev) => prev.map((r) => r.id === id ? { ...r, status: cycle[(cycle.indexOf(r.status) + 1) % cycle.length] } : r));
+    const next = cycle[(cycle.indexOf(row.status) + 1) % cycle.length];
+    update("requirements", `Marked ${row.company} requirement as ${next}`, (prev, who) =>
+      prev.map((r) => (r.id === row.id ? { ...r, status: next, ...who } : r)));
   };
 
   return (
@@ -387,19 +464,19 @@ const SpecialRequirements = () => {
           <p className="text-sm font-semibold text-gray-700">New Requirement</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { label: "Company", el: <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.company} onChange={F("company")}>{COMPANIES.map((c) => <option key={c}>{c}</option>)}</select> },
-              { label: "Category", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="e.g. AV Equipment" value={form.category} onChange={F("category")} /> },
-              { label: "Priority", el: <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.priority} onChange={F("priority")}>{["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}</select> },
+              { label: "Company", el: <select className={inputCls} value={form.company} onChange={F("company")}><option value="">Select…</option>{companies.map((c) => <option key={c}>{c}</option>)}</select> },
+              { label: "Category", el: <input className={inputCls} placeholder="e.g. AV Equipment" value={form.category} onChange={F("category")} /> },
+              { label: "Priority", el: <select className={inputCls} value={form.priority} onChange={F("priority")}>{["Low", "Medium", "High", "Critical"].map((p) => <option key={p}>{p}</option>)}</select> },
             ].map(({ label, el }) => (
               <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
             ))}
             <div className="flex flex-col gap-1 md:col-span-2">
               <label className="text-xs text-gray-500 font-medium">Description</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Describe the requirement..." value={form.description} onChange={F("description")} />
+              <input className={inputCls} placeholder="Describe the requirement..." value={form.description} onChange={F("description")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Notes</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Optional..." value={form.notes} onChange={F("notes")} />
+              <input className={inputCls} placeholder="Optional..." value={form.notes} onChange={F("notes")} />
             </div>
           </div>
           <div className="flex justify-end">
@@ -414,17 +491,18 @@ const SpecialRequirements = () => {
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-gray-800 text-sm">{row.company}</span>
-                <Badge label={row.category} color="blue" />
+                {row.category && <Badge label={row.category} color="blue" />}
                 <Badge label={row.priority} color={statusColor(row.priority)} />
               </div>
               <p className="text-sm text-gray-600">{row.description}</p>
               {row.notes && <p className="text-xs text-gray-400 italic">{row.notes}</p>}
+              <LastEdited row={row} />
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <Badge label={row.status} color={statusColor(row.status)} />
               {row.status !== "Fulfilled" && (
-                <button onClick={() => cycleStatus(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors text-gray-600">
-                  {row.status === "Open" ? "Start →" : "Fulfill ✓"}
+                <button onClick={() => cycleStatus(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors text-gray-600">
+                  {row.status === "Open" ? "Start" : "Fulfill"}
                 </button>
               )}
             </div>
@@ -435,13 +513,19 @@ const SpecialRequirements = () => {
   );
 };
 
-// ─── Tab 4: Equipment & Logistics ─────────────────────────────────────────────
+// ─── Tab: Equipment & Logistics ───────────────────────────────────────────────
 
 const EquipmentLogistics = () => {
-  const [rows, setRows] = useState(INIT_EQUIPMENT);
+  const { data, update } = useEventOps();
+  const toast = useToast();
+  const rows = data.equipment;
 
   const total = (kw) => rows.filter((r) => kw.some((k) => r.item.toLowerCase().includes(k))).reduce((a, r) => a + r.qtyReq, 0);
-  const fulfillItem = (id) => setRows((prev) => prev.map((r) => r.id === id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled" } : r));
+  const fulfillItem = (row) => {
+    update("equipment", `Fulfilled ${row.item} for ${row.entity}`, (prev, who) =>
+      prev.map((r) => (r.id === row.id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled", ...who } : r)));
+    toast(`${row.item} fulfilled`, { type: "success" });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -453,10 +537,10 @@ const EquipmentLogistics = () => {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-100">
-        <table className="w-full text-sm min-w-[560px]">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="bg-gray-50 border-b border-gray-100">
-              {["Company / Booth", "Item", "Requested", "Fulfilled", "Status", ""].map((h, i) => (
+              {["Company / Booth", "Item", "Requested", "Fulfilled", "Status", "Last change", ""].map((h, i) => (
                 <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -469,10 +553,11 @@ const EquipmentLogistics = () => {
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyReq}</td>
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyFul}</td>
                 <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <td className="px-4 py-3"><LastEdited row={row} /></td>
                 <td className="px-4 py-3">
                   {row.status !== "Fulfilled" && (
-                    <button onClick={() => fulfillItem(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                      Fulfill ✓
+                    <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                      Fulfill
                     </button>
                   )}
                 </td>
@@ -485,10 +570,11 @@ const EquipmentLogistics = () => {
   );
 };
 
-// ─── Tab 5: Company Delegate List ─────────────────────────────────────────────
+// ─── Tab: Delegates ───────────────────────────────────────────────────────────
 
 const DelegateList = () => {
-  const [companies, setCompanies] = useState(INIT_DELEGATES);
+  const { data, update } = useEventOps();
+  const companies = data.delegates;
   const [expanded, setExpanded] = useState(new Set([0]));
 
   const totalDelegates = companies.reduce((a, c) => a + c.delegates.length, 0);
@@ -496,10 +582,11 @@ const DelegateList = () => {
 
   const toggle = (idx) => setExpanded((prev) => { const n = new Set(prev); n.has(idx) ? n.delete(idx) : n.add(idx); return n; });
 
-  const printBadge = (cIdx, dIdx) => {
-    setCompanies((prev) => prev.map((c, ci) => ci !== cIdx ? c : {
-      ...c, delegates: c.delegates.map((d, di) => di !== dIdx ? d : { ...d, badge: "Printed" })
-    }));
+  const printBadge = (cIdx, dIdx, d) => {
+    update("delegates", `Printed badge for ${d.name} (${companies[cIdx].company})`, (prev, who) =>
+      prev.map((c, ci) => ci !== cIdx ? c : {
+        ...c, delegates: c.delegates.map((dd, di) => di !== dIdx ? dd : { ...dd, badge: "Printed", ...who })
+      }));
   };
 
   return (
@@ -519,7 +606,7 @@ const DelegateList = () => {
                 <Badge label={`${company.delegates.length} delegates`} color="blue" />
                 <Badge label={`${company.delegates.filter(d => d.badge === "Printed").length} badges printed`} color="green" />
               </div>
-              <span className="text-gray-400 text-xs">{expanded.has(idx) ? "▲ Hide" : "▼ Show"}</span>
+              <span className="text-gray-400"><ChevronIcon open={expanded.has(idx)} /></span>
             </button>
 
             {expanded.has(idx) && (
@@ -542,7 +629,7 @@ const DelegateList = () => {
                         <td className="px-4 py-2.5"><Badge label={d.badge} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
                         <td className="px-4 py-2.5">
                           {d.badge !== "Printed" && (
-                            <button onClick={() => printBadge(idx, di)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                            <button onClick={() => printBadge(idx, di, d)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
                               Print Badge
                             </button>
                           )}
@@ -560,37 +647,49 @@ const DelegateList = () => {
   );
 };
 
-// ─── Tab 6: Attendance & Check-in ─────────────────────────────────────────────
+// ─── Tab: Attendance & Check-in (with per-booth QR codes) ─────────────────────
+
+const boothQrValue = (booth) => `jobfair:attendance:${booth.number}`;
 
 const AttendanceCheckin = () => {
+  const { data, update } = useEventOps();
+  const toast = useToast();
   const [subTab, setSubTab] = useState(0);
-  const [students, setStudents] = useState(INIT_ATTENDANCE_STUDENTS);
-  const [companies, setCompanies] = useState(INIT_ATTENDANCE_COMPANIES);
+  const students = data.attendanceStudents;
+  const companies = data.attendanceCompanies;
+  const booths = data.booths.filter((b) => b.company);
 
   const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
   const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
   const studCheckedIn = students.filter((s) => s.status === "Checked In").length;
-  const studTotal = students.length;
 
-  const checkInStudent = (id) => setStudents((prev) => prev.map((s) => s.id !== id ? s : { ...s, status: "Checked In", time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), method: "Manual" }));
-  const checkInCompany = (booth) => setCompanies((prev) => prev.map((c) => c.booth !== booth ? c : { ...c, checkedIn: c.delegateCount, time: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }), status: "Present" }));
+  const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+  const checkInStudent = (id) => update("attendanceStudents", `Checked in student ${id} (manual)`, (prev) =>
+    prev.map((s) => s.id !== id ? s : { ...s, status: "Checked In", time: now(), method: "Manual" }));
+
+  const checkInCompany = (row, method) => {
+    update("attendanceCompanies", `Checked in ${row.company} at booth ${row.booth} (${method})`, (prev, who) =>
+      prev.map((c) => c.booth !== row.booth ? c : { ...c, checkedIn: c.delegateCount, time: now(), method, status: "Present", ...who }));
+    toast(`${row.company} checked in via ${method}`, { type: "success" });
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Expected" value={subTab === 0 ? compTotal : studTotal} />
-        <StatCard label="Checked In" value={subTab === 0 ? compCheckedIn : studCheckedIn} color="#2959A6" />
-        <StatCard label="Pending" value={subTab === 0 ? compTotal - compCheckedIn : studTotal - studCheckedIn} color="#f59e0b" />
+        <StatCard label="Expected" value={subTab === 1 ? students.length : compTotal} />
+        <StatCard label="Checked In" value={subTab === 1 ? studCheckedIn : compCheckedIn} color="#2959A6" />
+        <StatCard label="Pending" value={subTab === 1 ? students.length - studCheckedIn : compTotal - compCheckedIn} color="#f59e0b" />
       </div>
 
-      <SubTabBar tabs={["Companies", "Students"]} active={subTab} onChange={setSubTab} />
+      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes"]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
         <div className="overflow-x-auto rounded-xl border border-gray-100">
-          <table className="w-full text-sm min-w-[540px]">
+          <table className="w-full text-sm min-w-[620px]">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                {["Booth", "Company", "Delegates", "Checked In", "Time", "Status", ""].map((h, i) => (
+                {["Booth", "Company", "Delegates", "Checked In", "Time", "Method", "Status", ""].map((h, i) => (
                   <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5">{h}</th>
                 ))}
               </tr>
@@ -603,12 +702,18 @@ const AttendanceCheckin = () => {
                   <td className="px-4 py-3 text-center text-gray-600">{row.delegateCount}</td>
                   <td className="px-4 py-3 text-center text-gray-600">{row.checkedIn}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">{row.time}</td>
+                  <td className="px-4 py-3">{row.method && row.method !== "—" ? <Badge label={row.method} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 text-xs">—</span>}</td>
                   <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
                   <td className="px-4 py-3">
                     {row.status !== "Present" && (
-                      <button onClick={() => checkInCompany(row.booth)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                        Check In
-                      </button>
+                      <div className="flex gap-1.5">
+                        <button onClick={() => checkInCompany(row, "QR")} className="text-xs font-medium border border-blue-200 rounded-lg px-2.5 py-1 hover:bg-blue-50 text-blue-600 transition-colors" title="Simulates the booth QR being scanned">
+                          QR Scan
+                        </button>
+                        <button onClick={() => checkInCompany(row, "Manual")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                          Manual
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -649,14 +754,34 @@ const AttendanceCheckin = () => {
           </table>
         </div>
       )}
+
+      {subTab === 2 && (
+        <div className="flex flex-col gap-3">
+          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+            Each assigned booth has a printed QR code on its table. When a company representative scans it on event day,
+            their attendance is confirmed automatically. Companies see the same code in their own settings page.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {booths.map((b) => (
+              <div key={b.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2">
+                <QRCodeSVG value={boothQrValue(b)} size={96} fgColor="#111827" />
+                <p className="font-bold text-sm text-gray-800">{b.number}</p>
+                <p className="text-xs text-gray-500 text-center truncate w-full">{b.company}</p>
+                <span className="text-[10px] font-mono text-gray-400">{boothQrValue(b)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-// ─── Tab 7: Schedule & Time Slots ─────────────────────────────────────────────
+// ─── Tab: Schedule ────────────────────────────────────────────────────────────
 
 const ScheduleSlots = () => {
-  const [slots, setSlots] = useState(INIT_SCHEDULE);
+  const { data, update } = useEventOps();
+  const slots = data.schedule;
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
 
@@ -664,14 +789,17 @@ const ScheduleSlots = () => {
 
   const handleAdd = () => {
     if (!form.title.trim() || !form.start) return;
-    setSlots((prev) => [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: 0 }]);
+    update("schedule", `Added time slot "${form.title}"`, (prev, who) =>
+      [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: 0, ...who }]);
     setForm({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
     setShowForm(false);
   };
 
-  const cycleStatus = (id) => {
+  const cycleStatus = (slot) => {
     const cycle = ["Upcoming", "Live", "Ended"];
-    setSlots((prev) => prev.map((s) => s.id === id ? { ...s, status: cycle[(cycle.indexOf(s.status) + 1) % cycle.length] } : s));
+    const next = cycle[(cycle.indexOf(slot.status) + 1) % cycle.length];
+    update("schedule", `Set "${slot.title}" to ${next}`, (prev, who) =>
+      prev.map((s) => (s.id === slot.id ? { ...s, status: next, ...who } : s)));
   };
 
   const sorted = [...slots].sort((a, b) => a.start.localeCompare(b.start));
@@ -696,24 +824,24 @@ const ScheduleSlots = () => {
           <p className="text-sm font-semibold text-gray-700">New Time Slot</p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: "Start", el: <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.start} onChange={F("start")} /> },
-              { label: "End", el: <input type="time" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.end} onChange={F("end")} /> },
-              { label: "Host", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Host / team" value={form.host} onChange={F("host")} /> },
-              { label: "Location", el: <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="Room / area" value={form.location} onChange={F("location")} /> },
+              { label: "Start", el: <input type="time" className={inputCls} value={form.start} onChange={F("start")} /> },
+              { label: "End", el: <input type="time" className={inputCls} value={form.end} onChange={F("end")} /> },
+              { label: "Host", el: <input className={inputCls} placeholder="Host / team" value={form.host} onChange={F("host")} /> },
+              { label: "Location", el: <input className={inputCls} placeholder="Room / area" value={form.location} onChange={F("location")} /> },
             ].map(({ label, el }) => (
               <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
             ))}
             <div className="flex flex-col gap-1 md:col-span-2">
               <label className="text-xs text-gray-500 font-medium">Session Title</label>
-              <input className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="e.g. Opening Ceremony" value={form.title} onChange={F("title")} />
+              <input className={inputCls} placeholder="e.g. Opening Ceremony" value={form.title} onChange={F("title")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Capacity</label>
-              <input type="number" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="0" value={form.capacity} onChange={F("capacity")} />
+              <input type="number" className={inputCls} placeholder="0" value={form.capacity} onChange={F("capacity")} />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs text-gray-500 font-medium">Status</label>
-              <select className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white" value={form.status} onChange={F("status")}>
+              <select className={inputCls} value={form.status} onChange={F("status")}>
                 {["Upcoming", "Live", "Ended"].map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
@@ -740,8 +868,8 @@ const ScheduleSlots = () => {
                 <span className="font-semibold text-gray-800 text-sm">{slot.title}</span>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <Badge label={slot.status} color={statusColor(slot.status)} />
-                  <button onClick={() => cycleStatus(slot.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
-                    →
+                  <button onClick={() => cycleStatus(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
+                    Next status
                   </button>
                 </div>
               </div>
@@ -749,6 +877,7 @@ const ScheduleSlots = () => {
                 {slot.host && <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>}
                 {slot.location && <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>}
                 {slot.capacity > 0 && <span>Registered: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>}
+                <LastEdited row={slot} />
               </div>
               {slot.capacity > 0 && (
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -766,17 +895,28 @@ const ScheduleSlots = () => {
   );
 };
 
-// ─── Tab 8: Access & Parking Passes ───────────────────────────────────────────
+// ─── Tab: Access Passes ───────────────────────────────────────────────────────
 
 const AccessPasses = () => {
-  const [passes, setPasses] = useState(INIT_PASSES);
+  const { data, update } = useEventOps();
+  const toast = useToast();
+  const passes = data.passes;
   const [filter, setFilter] = useState("All");
+  const [view, setView] = useState(0); // 0 = table, 1 = by company
 
   const types = ["All", "Entry", "Parking", "VIP"];
   const shown = filter === "All" ? passes : passes.filter((p) => p.type === filter);
+  const byCompany = useMemo(() => {
+    const m = new Map();
+    passes.forEach((p) => m.set(p.company, [...(m.get(p.company) || []), p]));
+    return [...m.entries()];
+  }, [passes]);
 
-  const revokePass = (id) => setPasses((prev) => prev.map((p) => p.id === id ? { ...p, status: "Revoked" } : p));
-  const activatePass = (id) => setPasses((prev) => prev.map((p) => p.id === id ? { ...p, status: "Active" } : p));
+  const setStatus = (row, status) => {
+    update("passes", `${status === "Revoked" ? "Revoked" : "Reactivated"} pass ${row.code} (${row.company})`, (prev, who) =>
+      prev.map((p) => (p.id === row.id ? { ...p, status, ...who } : p)));
+    toast(`Pass ${row.code} ${status.toLowerCase()}`, { type: status === "Revoked" ? "warning" : "success" });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -787,52 +927,97 @@ const AccessPasses = () => {
         <StatCard label="VIP Passes" value={passes.filter(p => p.type === "VIP").length} color="#8b5cf6" />
       </div>
 
-      {/* Filter tabs */}
-      <div className="flex gap-2 flex-wrap">
-        {types.map((t) => (
-          <button key={t} onClick={() => setFilter(t)} className={`text-xs font-semibold rounded-full px-3 py-1.5 transition-all duration-150 ${filter === t ? "text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-            style={filter === t ? { background: "#0E7F41" } : {}}>
-            {t} {t !== "All" && `(${passes.filter(p => p.type === t).length})`}
-          </button>
-        ))}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex gap-2 flex-wrap">
+          {types.map((t) => (
+            <button key={t} onClick={() => setFilter(t)} className={`text-xs font-semibold rounded-full px-3 py-1.5 transition-all duration-150 ${filter === t ? "text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
+              style={filter === t ? { background: "#0E7F41" } : {}}>
+              {t} {t !== "All" && `(${passes.filter(p => p.type === t).length})`}
+            </button>
+          ))}
+        </div>
+        <SubTabBar tabs={["Table", "By Company"]} active={view} onChange={setView} />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-gray-100">
-        <table className="w-full text-sm min-w-[600px]">
-          <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              {["Company", "Delegate", "Type", "Code", "Issued", "Status", ""].map((h, i) => (
-                <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {shown.map((row) => (
-              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
-                <td className="px-4 py-3 text-gray-700">{row.delegate}</td>
-                <td className="px-4 py-3"><Badge label={row.type} color={row.type === "VIP" ? "purple" : row.type === "Parking" ? "yellow" : "blue"} /></td>
-                <td className="px-4 py-3 text-gray-500 text-xs font-mono">{row.code}</td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{row.issued}</td>
-                <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
-                <td className="px-4 py-3">
-                  {row.status === "Active" && (
-                    <button onClick={() => revokePass(row.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 text-red-500 transition-colors">Revoke</button>
-                  )}
-                  {row.status === "Revoked" && (
-                    <button onClick={() => activatePass(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 text-gray-500 transition-colors">Reactivate</button>
-                  )}
-                </td>
+      {view === 0 ? (
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full text-sm min-w-[680px]">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                {["Company", "Delegate", "Type", "Code", "Issued", "Status", "Last change", ""].map((h, i) => (
+                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {shown.map((row) => (
+                <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
+                  <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
+                  <td className="px-4 py-3 text-gray-700">{row.delegate}</td>
+                  <td className="px-4 py-3"><Badge label={row.type} color={row.type === "VIP" ? "purple" : row.type === "Parking" ? "yellow" : "blue"} /></td>
+                  <td className="px-4 py-3 text-gray-500 text-xs font-mono">{row.code}</td>
+                  <td className="px-4 py-3 text-gray-500 text-xs">{row.issued}</td>
+                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                  <td className="px-4 py-3"><LastEdited row={row} /></td>
+                  <td className="px-4 py-3">
+                    {row.status === "Active" && (
+                      <button onClick={() => setStatus(row, "Revoked")} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 text-red-500 transition-colors">Revoke</button>
+                    )}
+                    {row.status === "Revoked" && (
+                      <button onClick={() => setStatus(row, "Active")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 text-gray-500 transition-colors">Reactivate</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {byCompany.map(([company, rows]) => (
+            <div key={company} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-gray-800 text-sm">{company}</p>
+                <Badge label={`${rows.length} passes`} color="blue" />
+              </div>
+              <div className="flex flex-col gap-2">
+                {rows.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                    <QRCodeSVG value={`jobfair:pass:${p.code}`} size={44} fgColor="#111827" className="shrink-0 bg-white rounded p-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
+                      <p className="text-[10px] font-mono text-gray-400">{p.code}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge label={p.type} color={p.type === "VIP" ? "purple" : p.type === "Parking" ? "yellow" : "blue"} />
+                      <Badge label={p.status} color={statusColor(p.status)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-gray-400">This exact view is what {company} sees in their settings page.</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
-// ─── Tab 9: Post-Event Reporting & Analytics ──────────────────────────────────
+// ─── Tab: Post-Event Report ───────────────────────────────────────────────────
+
+const ANALYTICS_STATS = {
+  totalCompanies: 24, totalStudents: 1847, checkinRate: 86,
+  applications: 1423, boothsUtilized: 22, avgFeedback: 4.3,
+};
+
+const FEEDBACK_CATEGORIES = [
+  { label: "Venue & Layout", score: 4.5 },
+  { label: "Company Variety", score: 4.2 },
+  { label: "Organization", score: 4.4 },
+  { label: "Staff Helpfulness", score: 4.7 },
+  { label: "Overall Experience", score: 4.3 },
+];
 
 const PostEventReporting = () => (
   <div className="flex flex-col gap-6">
@@ -886,101 +1071,161 @@ const PostEventReporting = () => (
   </div>
 );
 
+// ─── Tab icons (SVG — no emojis) ──────────────────────────────────────────────
+
+const TabIcon = ({ id }) => {
+  const paths = {
+    venue: "M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21",
+    banners: "M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42",
+    requirements: "M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z",
+    equipment: "m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z",
+    delegates: "M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z",
+    attendance: "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+    schedule: "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5",
+    passes: "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z",
+    report: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z",
+  };
+  return (
+    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d={paths[id] || paths.venue} />
+    </svg>
+  );
+};
+
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
 const TABS = [
-  { label: "Venue & Booths",        icon: "🏛️",  component: VenueMapping },
-  { label: "Banners & Branding",    icon: "🎨",  component: BannerBranding },
-  { label: "Special Requirements",  icon: "⭐",  component: SpecialRequirements },
-  { label: "Equipment & Logistics", icon: "📦",  component: EquipmentLogistics },
-  { label: "Delegate List",         icon: "👥",  component: DelegateList },
-  { label: "Attendance",            icon: "✅",  component: AttendanceCheckin },
-  { label: "Schedule",              icon: "🗓️",  component: ScheduleSlots },
-  { label: "Access Passes",         icon: "🎫",  component: AccessPasses },
-  { label: "Post-Event Report",     icon: "📊",  component: PostEventReporting },
+  { id: "venue",        label: "Venue & Booths",        component: VenueMapping },
+  { id: "banners",      label: "Banners & Branding",    component: BannerBranding },
+  { id: "requirements", label: "Special Requirements",  component: SpecialRequirements },
+  { id: "equipment",    label: "Equipment & Logistics", component: EquipmentLogistics },
+  { id: "delegates",    label: "Delegate List",         component: DelegateList },
+  { id: "attendance",   label: "Attendance",            component: AttendanceCheckin },
+  { id: "schedule",     label: "Schedule",              component: ScheduleSlots },
+  { id: "passes",       label: "Access Passes",         component: AccessPasses },
+  { id: "report",       label: "Post-Event Report",     component: PostEventReporting },
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Activity panel (audit trail) ─────────────────────────────────────────────
+
+const ActivityPanel = ({ open, onClose }) => {
+  const { data } = useEventOps();
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/30 z-[300]" onClick={onClose} />
+      <div className="fixed right-0 top-0 bottom-0 w-[320px] max-w-[85vw] bg-white z-[301] shadow-2xl flex flex-col animate-fadeIn">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <p className="text-sm font-bold text-gray-800">Recent Activity</p>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+          {(data.audit || []).length === 0 && <p className="text-xs text-gray-400 text-center py-6">No activity yet</p>}
+          {(data.audit || []).map((a) => (
+            <div key={a.id} className="bg-gray-50 rounded-xl p-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-6 h-6 rounded-full bg-[#0E7F41] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                  {a.by?.[0] || "?"}
+                </span>
+                <span className="text-xs font-semibold text-gray-700">{a.by}</span>
+                <span className="text-[10px] text-gray-400 ml-auto">{formatWhen(a.at)}</span>
+              </div>
+              <p className="text-xs text-gray-600">{a.message}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5">{a.section}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+};
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const EventSettings = () => {
   const { user } = useAuthContext();
-  const [activeTab, setActiveTab] = useState(0);
-  const tabRefs = useRef([]);
-  const pillRef = useRef(null);
+  const { employee, team, setActingAs } = useEventOps();
+  const [activeTab, setActiveTab] = useState(TABS[0].id);
+  const [showActivity, setShowActivity] = useState(false);
 
-  // useLayoutEffect so pill is positioned before first paint
-  useLayoutEffect(() => {
-    const btn = tabRefs.current[activeTab];
-    const pill = pillRef.current;
-    if (!btn || !pill) return;
-    // First render: set without transition so it doesn't fly in from 0
-    if (activeTab === 0) {
-      pill.style.transition = "none";
-      pill.style.left = `${btn.offsetLeft}px`;
-      pill.style.width = `${btn.offsetWidth}px`;
-      requestAnimationFrame(() => {
-        pill.style.transition = "left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1)";
-      });
-    } else {
-      pill.style.left = `${btn.offsetLeft}px`;
-      pill.style.width = `${btn.offsetWidth}px`;
-    }
-  }, [activeTab]);
+  // Each employee sees their own view: their modules come first and are marked
+  const orderedTabs = useMemo(() => {
+    const focus = employee.focus || [];
+    return [...TABS].sort((a, b) => {
+      const ai = focus.indexOf(a.id), bi = focus.indexOf(b.id);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+  }, [employee]);
 
-  const ActiveComponent = TABS[activeTab].component;
+  const ActiveComponent = TABS.find((t) => t.id === activeTab)?.component || VenueMapping;
 
   return (
-    <PageContainer user={user} title="Event Settings">
-      <div className="flex flex-col gap-4">
-        {/* Tab bar — 3-col grid on mobile, scrollable row on md+ */}
-        <div className="relative">
-          {/* md+: horizontal scrollable pill bar */}
-          <div className="hidden md:flex overflow-x-auto pb-1 relative">
-            <div className="relative flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
-              <div
-                ref={pillRef}
-                className="absolute top-1 bottom-1 rounded-lg pointer-events-none z-0"
-                style={{ background: "#0E7F41", left: 0, width: 0 }}
-              />
-              {TABS.map((tab, i) => (
-                <button
-                  key={tab.label}
-                  ref={(el) => (tabRefs.current[i] = el)}
-                  onClick={() => setActiveTab(i)}
-                  className={`relative z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
-                    activeTab === i ? "text-white" : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <span>{tab.icon}</span>
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+    <PageContainer
+      user={user}
+      title="Event Settings"
+      headerRight={
+        <button onClick={() => setShowActivity(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+          Activity Log
+        </button>
+      }
+    >
+      <div className="flex flex-col gap-3 flex-1 min-h-0">
+        {/* Team view switcher — one CASTO account, one view per employee */}
+        <div className="flex items-center gap-2 flex-wrap shrink-0">
+          <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">Viewing as</span>
+          {team.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setActingAs(m.id)}
+              title={m.role}
+              className={`flex items-center gap-1.5 rounded-full pl-1 pr-3 py-1 text-xs font-semibold border transition-all ${
+                employee.id === m.id
+                  ? "bg-[#0E7F41] text-white border-[#0E7F41] shadow-sm"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${employee.id === m.id ? "bg-white/25 text-white" : "bg-gray-100 text-gray-500"}`}>
+                {m.name[0]}
+              </span>
+              {m.name}
+            </button>
+          ))}
+          <span className="text-[11px] text-gray-400 ml-1 hidden lg:inline">{employee.role} — changes are recorded under {employee.name}</span>
+        </div>
 
-          {/* mobile: 3-col grid of pill buttons */}
-          <div className="md:hidden grid grid-cols-3 gap-2">
-            {TABS.map((tab, i) => (
-              <button
-                key={tab.label}
-                onClick={() => setActiveTab(i)}
-                className="flex flex-col items-center gap-1 px-2 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 border"
-                style={activeTab === i
-                  ? { background: "#0E7F41", color: "#fff", borderColor: "#0E7F41" }
-                  : { background: "#fff", color: "#6b7280", borderColor: "#e5e7eb" }}
-              >
-                <span className="text-base leading-none">{tab.icon}</span>
-                <span className="text-center leading-tight">{tab.label}</span>
-              </button>
-            ))}
+        {/* Tab bar — employee's modules first, marked with a dot */}
+        <div className="shrink-0 overflow-x-auto pb-1">
+          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
+            {orderedTabs.map((tab) => {
+              const mine = employee.focus?.includes(tab.id);
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
+                    active ? "text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                  style={active ? { background: "#0E7F41" } : {}}
+                >
+                  <TabIcon id={tab.id} />
+                  <span>{tab.label}</span>
+                  {mine && <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white" : "bg-[#0E7F41]"}`} title={`Assigned to ${employee.name}`} />}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Content — plain flow, PageContainer handles the scroll */}
-        <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
-          <ActiveComponent />
+        {/* Content — its own scroll area so every tab is fully reachable */}
+        <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
+          <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
+            <ActiveComponent />
+          </div>
         </div>
       </div>
+
+      <ActivityPanel open={showActivity} onClose={() => setShowActivity(false)} />
     </PageContainer>
   );
 };

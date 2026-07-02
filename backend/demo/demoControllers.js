@@ -371,6 +371,16 @@ const updateSettings = (req, res) => {
     res.status(200).json({ message: "Setting updated successfully", setting: { key, value } });
 };
 
+// Event operations state — in-memory in demo mode
+let EVENT_OPS = null;
+const getEventOps = (req, res) => {
+    res.status(200).json(EVENT_OPS);
+};
+const updateEventOps = (req, res) => {
+    EVENT_OPS = req.body;
+    res.status(200).json(EVENT_OPS);
+};
+
 // CV download — no real files in demo
 const downloadCV = (req, res) => {
     res.status(200).json({ message: "CV download not available in demo mode." });
@@ -536,7 +546,7 @@ module.exports = {
     getCompanies, getCompany, submitSurvey, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     // settings
-    getSettings, updateSettings,
+    getSettings, updateSettings, getEventOps, updateEventOps,
     // user auth
     loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany,
     // middleware

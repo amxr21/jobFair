@@ -868,6 +868,25 @@ const updateSettings = async (req, res) => {
     }
 };
 
+// Event operations state (booths, banners, logistics, passes...) — one Mixed document
+const getEventOps = async (req, res) => {
+    try {
+        const value = await SettingsModel.getSetting('eventOps', null);
+        res.status(200).json(value);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const updateEventOps = async (req, res) => {
+    try {
+        const saved = await SettingsModel.setSetting('eventOps', req.body, req.user?.email || null);
+        res.status(200).json(saved.value);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const unshortlistApplicant = async (req, res) => {
     try {
         const { id } = req.params;
@@ -913,4 +932,4 @@ const unflagApplicant = async (req, res) => {
     }
 };
 
-module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings}
+module.exports = {getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic, emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag, shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant, submitSurvey, deleteApplicant, sendCompanyReminders, confirmCompanyAttendance, updateCompanyStatus, deleteCompany, getSettings, updateSettings, getEventOps, updateEventOps}
