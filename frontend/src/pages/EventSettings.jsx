@@ -7,6 +7,7 @@ import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsConte
 import { useToast } from "../components/Toast";
 import CompactSelect from "../components/CompactSelect";
 import Modal from "../components/Modal";
+import CompanyStatus from "./CompanyStatus";
 import { API_URL } from "../config/api";
 
 // ─── Small building blocks ─────────────────────────────────────────────────────
@@ -536,6 +537,13 @@ const EquipmentLogistics = () => {
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled", ...who } : r)));
     toast(`${row.item} fulfilled`, { type: "success" });
   };
+  // Reverses a fulfillment — resets to Pending since the exact prior partial
+  // amount (if any) wasn't tracked separately from qtyFul
+  const unfulfillItem = (row) => {
+    update("equipment", `Marked ${row.item} for ${row.entity} as unfulfilled`, (prev, who) =>
+      prev.map((r) => (r.id === row.id ? { ...r, qtyFul: 0, status: "Pending", ...who } : r)));
+    toast(`${row.item} marked unfulfilled`, { type: "warning" });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -565,7 +573,11 @@ const EquipmentLogistics = () => {
                 <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
                 <td className="px-4 py-3"><LastEdited row={row} /></td>
                 <td className="px-4 py-3">
-                  {row.status !== "Fulfilled" && (
+                  {row.status === "Fulfilled" ? (
+                    <button onClick={() => unfulfillItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 hover:text-red-600 transition-colors text-gray-500">
+                      Unfulfill
+                    </button>
+                  ) : (
                     <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
                       Fulfill
                     </button>
@@ -1390,17 +1402,17 @@ const ActivityPanel = ({ open, onClose }) => {
 // just opens in a new tab.
 
 const ViewAsPanel = ({ open, onClose }) => {
-  const { companyView, companies, data } = useEventOps();
+  const { companies, companyIds, data } = useEventOps();
   const [mode, setMode] = useState("manager");
   const [selectedCompany, setSelectedCompany] = useState(companies[0] || "");
   const [selectedStaff, setSelectedStaff] = useState(data.attendanceStaff?.[0]?.id ?? null);
 
-  const view = selectedCompany ? companyView(selectedCompany) : null;
   const staffer = (data.attendanceStaff || []).find((s) => s.id === selectedStaff);
   const stafferLog = staffer ? (data.checkinLog || []).filter((c) => c.byId === staffer.id) : [];
+  const selectedCompanyId = companyIds[selectedCompany];
 
   return (
-    <Modal visible={open} onClose={onClose} maxWidth="max-w-2xl" contentClassName="max-h-[85vh]">
+    <Modal visible={open} onClose={onClose} maxWidth={mode === "manager" ? "max-w-4xl" : "max-w-2xl"} contentClassName="max-h-[85vh]">
       <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-lg font-bold">View As</h2>
@@ -1420,23 +1432,15 @@ const ViewAsPanel = ({ open, onClose }) => {
         {mode === "manager" && (
           <div className="flex flex-col gap-3">
             <CompactSelect value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)} options={companies} placeholder="Choose a company…" />
-            {!view ? (
-              <p className="text-xs text-gray-400 text-center py-8">Select a company to preview their Event Day view.</p>
+            {!selectedCompany ? (
+              <p className="text-xs text-gray-400 text-center py-8">Select a company to preview their full status page.</p>
+            ) : !selectedCompanyId ? (
+              <p className="text-xs text-gray-400 text-center py-8">
+                {selectedCompany} hasn't registered a real account yet — only seed/demo companies without a backend record can't be previewed this way.
+              </p>
             ) : (
-              <div className="border border-gray-100 rounded-xl p-4 flex flex-col gap-3 bg-[#F3F6FF]">
-                <p className="text-xs font-semibold text-gray-500">This is what {selectedCompany} sees on their "My Status" page:</p>
-                {view.booth ? (
-                  <div className="bg-white rounded-lg p-3">
-                    <p className="text-sm font-bold text-gray-800">Booth {view.booth.number} · Zone {view.booth.zone}</p>
-                    <p className="text-xs text-gray-500">{view.booth.type} · {view.booth.status}</p>
-                  </div>
-                ) : <p className="text-xs text-gray-400">No booth assigned yet.</p>}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Banners</p><p className="font-semibold text-gray-700">{view.banners.length}</p></div>
-                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Passes</p><p className="font-semibold text-gray-700">{view.passes.length}</p></div>
-                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Requirements</p><p className="font-semibold text-gray-700">{view.requirements.length}</p></div>
-                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Equipment items</p><p className="font-semibold text-gray-700">{view.equipment.length}</p></div>
-                </div>
+              <div className="border border-gray-100 rounded-xl overflow-hidden bg-[#F3F6FF] flex flex-col" style={{ height: "55vh" }}>
+                <CompanyStatus viewCompanyId={selectedCompanyId} readOnly />
               </div>
             )}
           </div>
@@ -1740,11 +1744,9 @@ const EventSettings = ({ link }) => {
       title="Event Settings"
       headerRight={
         <div className="flex items-center gap-2">
-          {employee.id === "rana" && (
-            <button onClick={() => setShowViewAs(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-              View As
-            </button>
-          )}
+          <button onClick={() => setShowViewAs(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+            View As
+          </button>
           <button onClick={() => setShowTeamPanel(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
             Team & Roles
           </button>
