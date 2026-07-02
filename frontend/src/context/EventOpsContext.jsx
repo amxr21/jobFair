@@ -181,6 +181,11 @@ export const EventOpsProvider = ({ children }) => {
     const [realCompanies, setRealCompanies] = useState([]);
     const [companyIds, setCompanyIds] = useState({}); // companyName -> _id, for View As previews
     const saveTimer = useRef(null);
+    // True once this tab has confirmed what the server actually has. Any
+    // array-shaped section (attendanceStaff, booths, passes, ...) is only
+    // safe to read-modify-write locally after this — see the comment on
+    // `update` for the bug this was closing.
+    const hydratedRef = useRef(false);
 
     const authHeaders = () => {
         const u = JSON.parse(localStorage.getItem("user") || "null");
@@ -193,7 +198,9 @@ export const EventOpsProvider = ({ children }) => {
             try {
                 const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
                 if (res?.data?.booths) setData((prev) => ({ ...prev, ...res.data }));
-            } catch { /* backend unavailable — localStorage/seed keeps working */ }
+            } catch { /* backend unavailable — localStorage/seed keeps working */ } finally {
+                hydratedRef.current = true;
+            }
             try {
                 const res = await axios.get(`${API_URL}/companies`);
                 if (Array.isArray(res?.data)) {
@@ -206,11 +213,19 @@ export const EventOpsProvider = ({ children }) => {
         })();
     }, []);
 
-    const persist = useCallback((next) => {
+    // `next` is cached locally in full (so this tab's own UI stays consistent),
+    // but only `patch` — the section(s) that actually changed — goes to the
+    // server. Sending the whole document here was the root cause of a real
+    // bug: a tab that opens fresh and fires an update before its own GET
+    // /event-ops hydration lands would PUT its stale/empty local state,
+    // silently wiping out sections (e.g. attendance-staff codes) that a
+    // different tab had just written. The backend also merges rather than
+    // replaces, so this is defense in depth, not the only fix.
+    const persist = useCallback((next, patch) => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
         clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
-            axios.put(`${API_URL}/event-ops`, next, { headers: authHeaders() }).catch(() => {});
+            axios.put(`${API_URL}/event-ops`, patch, { headers: authHeaders() }).catch(() => {});
         }, 800);
     }, []);
 
@@ -226,19 +241,37 @@ export const EventOpsProvider = ({ children }) => {
         });
     }, []);
 
-    // Central mutation: applies the change, stamps who/when, records an audit entry
-    const update = useCallback((section, message, updater) => {
+    // Central mutation: applies the change, stamps who/when, records an audit entry.
+    //
+    // If this tab hasn't confirmed the server's current state yet, re-fetch it
+    // and run `updater` against the *server's* copy of the section instead of
+    // this tab's local (possibly stale-empty) one, before ever writing back.
+    // Without this, a freshly-opened tab creating e.g. a staff account would
+    // read-modify-write from its own empty `attendanceStaff: []`, silently
+    // dropping every staffer another tab had already created.
+    const update = useCallback(async (section, message, updater) => {
+        let baseline = data[section];
+        if (!hydratedRef.current) {
+            try {
+                const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
+                if (res?.data && Object.prototype.hasOwnProperty.call(res.data, section)) {
+                    baseline = res.data[section];
+                }
+            } catch { /* server unreachable — fall back to local state, same as before */ }
+            hydratedRef.current = true;
+        }
+
         setData((prev) => {
             const now = new Date().toISOString();
-            const next = {
-                ...prev,
-                [section]: updater(prev[section], { updatedBy: employee.name, updatedAt: now }),
-                audit: [
-                    { id: Date.now(), at: now, by: employee.name, section, message },
-                    ...(prev.audit || []),
-                ].slice(0, 120),
-            };
-            persist(next);
+            const updatedSection = updater(baseline, { updatedBy: employee.name, updatedAt: now });
+            const updatedAudit = [
+                { id: Date.now(), at: now, by: employee.name, section, message },
+                ...(prev.audit || []),
+            ].slice(0, 120);
+            const next = { ...prev, [section]: updatedSection, audit: updatedAudit };
+            // Only the touched section + audit go to the server — never the
+            // rest of this tab's possibly-stale local copy
+            persist(next, { [section]: updatedSection, audit: updatedAudit });
             return next;
         });
     }, [employee.name, persist]);

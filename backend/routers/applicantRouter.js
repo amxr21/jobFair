@@ -17,13 +17,6 @@ if (isDemo) {
     requireAuth = require("../middlewares/requireAuth");
     ({ upload } = require("../config/cloudinary"));
     controllers = require("../controllers/applicantsControllers");
-
-    const uri = process.env.URI;
-    mongoose.connect(uri);
-    const connection = mongoose.connection;
-    connection.once("open", () => {
-        console.log("DB connected successfully");
-    });
 }
 
 const {
