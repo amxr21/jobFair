@@ -1,6 +1,5 @@
 import axios from "axios"
 import React, { useRef, useState, useEffect } from "react";
-import { createPortal } from "react-dom"
 import BriefInfo from "./BriefInfo";
 import Brief from "./Brief";
 import CardInfo from "./CardInfo";
@@ -10,6 +9,7 @@ import StatusBadge from "./StatusBadge";
 
 import { DeveloperBadge } from './index'
 import { API_URL as rowApiLink } from "../config/api";
+import Modal from "./Modal";
 
 import { ExpandIcon } from "./Icons";
 
@@ -335,92 +335,42 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
 
     
 const ApplicantModal = ({visible, onClose, children}) => {
-    const [shouldRender, setShouldRender] = useState(false);
-    const [isClosing, setIsClosing] = useState(false);
-    const closingTimerRef = useRef(null);
     const modalContentRef = useRef(null);
     const scrollPositionRef = useRef(0);
 
+    // Preserve scroll position across re-renders while the modal is open
+    // (e.g. when the underlying applicant data refetches mid-view)
     useEffect(() => {
-        if (visible) {
-            // Clear any pending close timer
-            if (closingTimerRef.current) {
-                clearTimeout(closingTimerRef.current);
-                closingTimerRef.current = null;
-            }
-            setShouldRender(true);
-            setIsClosing(false);
-        } else if (shouldRender && !isClosing) {
-            // Start closing animation
-            setIsClosing(true);
-            // Wait for animation to complete before unmounting
-            closingTimerRef.current = setTimeout(() => {
-                setShouldRender(false);
-                setIsClosing(false);
-                closingTimerRef.current = null;
-            }, 220);
-        }
+        const el = modalContentRef.current;
+        if (!el) return;
+        const saveScroll = () => { scrollPositionRef.current = el.scrollTop || 0; };
+        el.addEventListener('scroll', saveScroll);
+        return () => el.removeEventListener('scroll', saveScroll);
+    }, [visible]);
 
-        return () => {
-            if (closingTimerRef.current) {
-                clearTimeout(closingTimerRef.current);
-            }
-        };
-    }, [visible, shouldRender, isClosing]);
-
-    // Save scroll position before any update
-    useEffect(() => {
-        if (modalContentRef.current) {
-            const saveScroll = () => {
-                scrollPositionRef.current = modalContentRef.current?.scrollTop || 0;
-            };
-            modalContentRef.current.addEventListener('scroll', saveScroll);
-            return () => {
-                modalContentRef.current?.removeEventListener('scroll', saveScroll);
-            };
-        }
-    }, [shouldRender]);
-
-    // Restore scroll position after render
     useEffect(() => {
         if (modalContentRef.current && scrollPositionRef.current > 0) {
             modalContentRef.current.scrollTop = scrollPositionRef.current;
         }
     });
 
-    if (!shouldRender) return null;
-
-    const animationClass = isClosing ? 'modal-close' : 'modal-open';
-    const backdropClass = isClosing ? 'backdrop-close' : 'backdrop-open';
-
-    const handleBackdropClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onClose();
-    };
-
-    return createPortal(
-        <div className="fixed inset-0 z-[99999]" onMouseDown={(e) => e.stopPropagation()}>
-            {/* Backdrop */}
-            <div
-                className={`expandDetails-backdrop absolute inset-0 bg-black/30 ${backdropClass}`}
-                onClick={handleBackdropClick}
-            />
-            {/* Modal */}
-            <div
-                ref={(el) => { expandApplicantDiv.current = el; modalContentRef.current = el; }}
-                style={{ borderRadius: 16, border: '0.5px solid #E2E8F0', maxWidth: 860, width: '95vw', maxHeight: '90vh' }}
-                className={`expandDetails ${animationClass} parent bg-white shadow-2xl absolute top-1/2 left-1/2 overflow-hidden flex flex-col`}
-                onMouseDown={(e) => e.stopPropagation()}
-            >
-                {React.Children.map(children, child =>
-                    React.isValidElement(child)
-                        ? React.cloneElement(child, { onCloseModal: onClose })
-                        : child
-                )}
-            </div>
-        </div>,
-        document.body
+    return (
+        <Modal
+            visible={visible}
+            onClose={onClose}
+            zIndex={99999}
+            backdropClassName="bg-black/30"
+            maxWidth=""
+            contentStyle={{ border: '0.5px solid #E2E8F0', maxWidth: 860, width: '95vw', maxHeight: '90vh' }}
+            contentClassName="parent"
+            contentRef={(el) => { expandApplicantDiv.current = el; modalContentRef.current = el; }}
+        >
+            {React.Children.map(children, child =>
+                React.isValidElement(child)
+                    ? React.cloneElement(child, { onCloseModal: onClose })
+                    : child
+            )}
+        </Modal>
     );
 }
 

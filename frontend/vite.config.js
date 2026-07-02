@@ -11,5 +11,10 @@ export default defineConfig({
   server: {
     host: true,  // Allows network access to the development server
     port: 3000,  // Optional: specify a port; otherwise, Vite will pick one
-  }
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/tests/setup.js',
+  },
 })

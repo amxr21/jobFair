@@ -1,7 +1,7 @@
 import { SubmittingCover, SuccessCover } from "../components/index";
 import SurveyHeader from "../components/SurveyHeader";
 import SurveySection from "../components/SurveySection";
-import { SurveyContextProvider } from "../Context/SurveyContext";
+import { SurveyContextProvider } from "../context/SurveyContext";
 
 
 const surveyData = [

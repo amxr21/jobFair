@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { StatsticTypeContext } from "../Context/StatsticTypeContext"
+import { StatsticTypeContext } from "../context/StatsticTypeContext"
 
 const useStatsticsFilter =  () => {
     const statsticTypeContext = useContext(StatsticTypeContext);

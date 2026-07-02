@@ -371,6 +371,53 @@ const updateSettings = (req, res) => {
     res.status(200).json({ message: "Setting updated successfully", setting: { key, value } });
 };
 
+// Event operations state — in-memory in demo mode
+let EVENT_OPS = null;
+const getEventOps = (req, res) => {
+    res.status(200).json(EVENT_OPS);
+};
+const updateEventOps = (req, res) => {
+    EVENT_OPS = req.body;
+    res.status(200).json(EVENT_OPS);
+};
+
+// Attendance staff check-in — mirrors the real-mode controllers, reading/
+// writing the same in-memory EVENT_OPS document
+const findStaffer = (code) =>
+    (EVENT_OPS?.attendanceStaff || []).find((s) => s.code === String(code || '').trim().toUpperCase());
+
+const verifyAttendanceStaff = (req, res) => {
+    const staffer = findStaffer(req.body.code);
+    if (!staffer) return res.status(401).json({ error: "Invalid access code" });
+    res.status(200).json({ id: staffer.id, name: staffer.name });
+};
+
+const checkinByStaff = (req, res) => {
+    const { code, uniId } = req.body;
+    const staffer = findStaffer(code);
+    if (!staffer) return res.status(401).json({ error: "Invalid access code" });
+    if (!uniId?.trim()) return res.status(400).json({ error: "University ID is required" });
+
+    const applicant = APPLICANTS.find((a) => a.applicantDetails?.uniId === uniId.trim());
+    if (!applicant) return res.status(404).json({ error: "No applicant found with that University ID" });
+    if (applicant.attended) return res.status(409).json({ error: "Already checked in", applicant });
+
+    applicant.attended = true;
+
+    const log = EVENT_OPS.checkinLog || [];
+    log.unshift({
+        id: Date.now(),
+        uniId: applicant.applicantDetails?.uniId,
+        name: applicant.applicantDetails?.fullName,
+        by: staffer.name,
+        byId: staffer.id,
+        at: new Date().toISOString(),
+    });
+    EVENT_OPS = { ...EVENT_OPS, checkinLog: log.slice(0, 500) };
+
+    res.status(200).json({ applicant, checkedInBy: staffer.name });
+};
+
 // CV download — no real files in demo
 const downloadCV = (req, res) => {
     res.status(200).json({ message: "CV download not available in demo mode." });
@@ -536,7 +583,8 @@ module.exports = {
     getCompanies, getCompany, submitSurvey, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     // settings
-    getSettings, updateSettings,
+    getSettings, updateSettings, getEventOps, updateEventOps,
+    verifyAttendanceStaff, checkinByStaff,
     // user auth
     loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany,
     // middleware

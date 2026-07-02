@@ -1,7 +1,7 @@
 import { SubmitSurveyIcon } from "./Icons"
 
 import { useRef, useContext } from "react"
-import { SurveyContext } from "../Context/SurveyContext"
+import { SurveyContext } from "../context/SurveyContext"
 import axios from "axios"
 import { API_URL as link } from "../config/api";
 

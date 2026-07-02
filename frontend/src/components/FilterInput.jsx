@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useFiltersContext } from "../Context/FiltersContext"
+import { useFiltersContext } from "../context/FiltersContext"
 
 const FilterInput = ({label}) => {
     const { updateFilter } = useFiltersContext();

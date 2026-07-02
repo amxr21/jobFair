@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react"
-import { SurveyContext } from "../Context/SurveyContext"
+import { SurveyContext } from "../context/SurveyContext"
 
 const SurveyHeader = () => {
 

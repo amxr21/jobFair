@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API_URL as link } from "../config/api";

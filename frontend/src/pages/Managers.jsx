@@ -1,14 +1,13 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import axios from "axios";
-import { createPortal } from "react-dom";
 
 import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
-import { useAuthContext } from "../Hooks/useAuthContext";
-import TourGuide from "../components/TourGuide";
+import { useAuthContext } from "../hooks/useAuthContext";
+import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
+import { useToast } from "../components/Toast";
+import Modal from "../components/Modal";
 
 import { CircularProgress } from "@mui/material";
-
-const MANAGERS_TOUR_KEY = 'managers_tour_v1';
 
 
 // Company Filter Dropdown Component
@@ -118,24 +117,24 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`border rounded-xl w-10 h-10 flex items-center justify-center transition-all duration-200 ${
+                className={`relative border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
                 }`}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="size-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="w-3 h-3 md:w-3.5 md:h-3.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
                 </svg>
                 {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                         {activeFilterCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute top-12 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
+                <div className="absolute top-9 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
                     <div className="p-3 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
                         <h3 className="font-semibold text-sm">Filter Companies</h3>
                         {activeFilterCount > 0 && (
@@ -221,46 +220,54 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
     const [selectedCompanies, setSelectedCompanies] = useState([]);
     const [isSending, setIsSending] = useState(false);
     const [result, setResult] = useState(null);
-    const [selectAll, setSelectAll] = useState(false);
+    const [search, setSearch] = useState("");
 
     // Filter to only show pending companies (not Confirmed or Canceled)
-    const pendingCompanies = companies.filter(c => !c.status || c.status === 'Pending');
+    const pendingCompanies = useMemo(() => companies.filter(c => !c.status || c.status === 'Pending'), [companies]);
+    const neverContacted = useMemo(() => pendingCompanies.filter(c => !c.reminderSentAt), [pendingCompanies]);
+    const alreadyReminded = useMemo(() => pendingCompanies.filter(c => c.reminderSentAt), [pendingCompanies]);
 
-    const handleSelectAll = () => {
-        if (selectAll) {
-            setSelectedCompanies([]);
+    const visibleCompanies = useMemo(() => {
+        if (!search.trim()) return pendingCompanies;
+        const q = search.trim().toLowerCase();
+        return pendingCompanies.filter(c => c.companyName?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q));
+    }, [pendingCompanies, search]);
+
+    // Reset transient state each time the modal is opened fresh
+    useEffect(() => {
+        if (visible) { setSelectedCompanies([]); setResult(null); setSearch(""); }
+    }, [visible]);
+
+    const allVisibleSelected = visibleCompanies.length > 0 && visibleCompanies.every(c => selectedCompanies.includes(c._id));
+
+    const toggleSelectAllVisible = () => {
+        if (allVisibleSelected) {
+            setSelectedCompanies(prev => prev.filter(id => !visibleCompanies.some(c => c._id === id)));
         } else {
-            setSelectedCompanies(pendingCompanies.map(c => c._id));
+            setSelectedCompanies(prev => [...new Set([...prev, ...visibleCompanies.map(c => c._id)])]);
         }
-        setSelectAll(!selectAll);
     };
+
+    const selectGroup = (group) => setSelectedCompanies(prev => [...new Set([...prev, ...group.map(c => c._id)])]);
 
     const handleToggleCompany = (companyId) => {
         setSelectedCompanies(prev =>
-            prev.includes(companyId)
-                ? prev.filter(id => id !== companyId)
-                : [...prev, companyId]
+            prev.includes(companyId) ? prev.filter(id => id !== companyId) : [...prev, companyId]
         );
     };
 
     const handleSendReminders = async () => {
         if (selectedCompanies.length === 0) return;
-
         setIsSending(true);
         setResult(null);
-
         try {
             const response = await axios.post(
                 `${link}/companies/send-reminders`,
-                {
-                    companyIds: selectedCompanies,
-                    frontendUrl: window.location.origin
-                },
+                { companyIds: selectedCompanies, frontendUrl: window.location.origin },
                 { headers: { Authorization: `Bearer ${user.token}` } }
             );
             setResult({ type: 'success', data: response.data });
             setSelectedCompanies([]);
-            setSelectAll(false);
         } catch (error) {
             setResult({ type: 'error', message: error.response?.data?.error || error.message });
         } finally {
@@ -268,153 +275,146 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
         }
     };
 
-    if (!visible) return null;
-
-    return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-
-            {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[80vh] max-h-[90vh] overflow-hidden mx-4">
-                {/* Header */}
-                <div className="bg-[#0E7F41] text-white px-6 py-4 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-xl font-bold">Send Confirmation Reminders</h2>
-                        <p className="text-sm text-white/80">Select companies to send attendance confirmation emails</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+    return (
+        <Modal visible={visible} onClose={onClose} maxWidth="max-w-2xl">
+            {/* Header */}
+            <div className="bg-[#0E7F41] text-white px-6 py-4 flex items-center justify-between shrink-0">
+                <div>
+                    <h2 className="text-lg font-bold">Send Confirmation Reminders</h2>
+                    <p className="text-xs text-white/80 mt-0.5">{pendingCompanies.length} companies haven't confirmed attendance yet</p>
                 </div>
+                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
 
-                {/* Content */}
-                <div className="p-6 overflow-y-auto max-h-[50vh]">
-                    {/* Select All */}
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b">
-                        <label className="flex items-center gap-3 cursor-pointer">
+            {pendingCompanies.length === 0 ? (
+                <div className="p-10 text-center">
+                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">All companies have confirmed</p>
+                    <p className="text-xs text-gray-400 mt-1">There's no one left to remind right now.</p>
+                </div>
+            ) : (
+                <>
+                    {/* Toolbar: search + quick-select */}
+                    <div className="px-6 pt-4 pb-3 border-b border-gray-100 flex flex-col gap-2.5 shrink-0">
+                        <div className="relative">
+                            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
                             <input
-                                type="checkbox"
-                                checked={selectAll}
-                                onChange={handleSelectAll}
-                                className="w-5 h-5 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41]"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search by company name or email…"
+                                className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
                             />
-                            <span className="font-semibold text-gray-700">
-                                Select All Pending ({pendingCompanies.length})
-                            </span>
-                        </label>
-                        <span className="text-sm text-gray-500">
-                            {selectedCompanies.length} selected
-                        </span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer">
+                                <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible}
+                                    className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41]" />
+                                Select all {search ? "shown" : "pending"} ({visibleCompanies.length})
+                            </label>
+                            {neverContacted.length > 0 && (
+                                <button onClick={() => selectGroup(neverContacted)} className="text-xs font-medium border border-gray-200 rounded-full px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors">
+                                    + Never contacted ({neverContacted.length})
+                                </button>
+                            )}
+                            <span className="ml-auto text-xs font-semibold text-gray-500">{selectedCompanies.length} selected</span>
+                        </div>
                     </div>
 
-                    {/* Company List */}
-                    <div className="space-y-2">
-                        {pendingCompanies.length === 0 ? (
-                            <p className="text-center text-gray-500 py-8">All companies have confirmed their attendance.</p>
-                        ) : (
-                            pendingCompanies.map(company => (
-                                <label
-                                    key={company._id}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                                        selectedCompanies.includes(company._id)
-                                            ? 'border-[#0E7F41] bg-[#0E7F41]/5'
-                                            : 'border-gray-200 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedCompanies.includes(company._id)}
-                                        onChange={() => handleToggleCompany(company._id)}
-                                        className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41]"
-                                    />
-                                    <div className="flex-1">
-                                        <p className="font-medium text-gray-800">{company.companyName}</p>
-                                        <p className="text-xs text-gray-500">{company.email}</p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`px-2 py-1 text-xs rounded-full ${
-                                            company.status === 'Confirmed'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-yellow-100 text-yellow-700'
-                                        }`}>
-                                            {company.status || 'Pending'}
-                                        </span>
-                                        {company.reminderSentAt && (
-                                            <span className="text-xs text-gray-400" title={`Last sent: ${new Date(company.reminderSentAt).toLocaleString()}`}>
-                                                Sent
+                    {/* Company list */}
+                    <div className="px-6 py-3 overflow-y-auto flex-1 min-h-0 max-h-[42vh]">
+                        <div className="flex flex-col gap-1.5">
+                            {visibleCompanies.length === 0 && (
+                                <p className="text-center text-sm text-gray-400 py-8">No companies match "{search}"</p>
+                            )}
+                            {visibleCompanies.map(company => {
+                                const checked = selectedCompanies.includes(company._id);
+                                return (
+                                    <label
+                                        key={company._id}
+                                        className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                                            checked ? 'border-[#0E7F41] bg-[#0E7F41]/5' : 'border-gray-100 hover:border-gray-200'
+                                        }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => handleToggleCompany(company._id)}
+                                            className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41] shrink-0"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-800 truncate">{company.companyName}</p>
+                                            <p className="text-xs text-gray-400 truncate">{company.email}</p>
+                                        </div>
+                                        {company.reminderSentAt ? (
+                                            <span className="text-[10px] bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 shrink-0" title={`Last sent: ${new Date(company.reminderSentAt).toLocaleString()}`}>
+                                                Reminded {new Date(company.reminderSentAt).toLocaleDateString()}
                                             </span>
+                                        ) : (
+                                            <span className="text-[10px] bg-amber-50 text-amber-600 rounded-full px-2 py-0.5 shrink-0">Never contacted</span>
+                                        )}
+                                    </label>
+                                );
+                            })}
+                        </div>
+
+                        {result && (
+                            <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                                {result.type === 'success' ? (
+                                    <div>
+                                        <p className="font-semibold">{result.data.message}</p>
+                                        {result.data.results?.length > 0 && (
+                                            <ul className="mt-1.5 text-xs space-y-0.5">
+                                                {result.data.results.map((r, i) => <li key={i}>{r.companyName}: {r.status}</li>)}
+                                            </ul>
                                         )}
                                     </div>
-                                </label>
-                            ))
+                                ) : <p>{result.message}</p>}
+                            </div>
                         )}
                     </div>
 
-                    {/* Result Message */}
-                    {result && (
-                        <div className={`mt-4 p-4 rounded-lg ${
-                            result.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
-                        }`}>
-                            {result.type === 'success' ? (
-                                <div>
-                                    <p className="font-semibold">{result.data.message}</p>
-                                    {result.data.results?.length > 0 && (
-                                        <ul className="mt-2 text-sm">
-                                            {result.data.results.map((r, i) => (
-                                                <li key={i}>{r.companyName}: {r.status}</li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
+                    {/* Footer */}
+                    <div className="px-6 py-3.5 border-t bg-gray-50 flex items-center justify-end gap-3 shrink-0">
+                        <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
+                            {result ? "Done" : "Cancel"}
+                        </button>
+                        <button
+                            onClick={handleSendReminders}
+                            disabled={selectedCompanies.length === 0 || isSending}
+                            className="px-5 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {isSending ? (
+                                <><CircularProgress size={14} sx={{ color: 'white' }} />Sending…</>
                             ) : (
-                                <p>{result.message}</p>
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    Send Reminders ({selectedCompanies.length})
+                                </>
                             )}
-                        </div>
-                    )}
-                </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-end gap-3">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSendReminders}
-                        disabled={selectedCompanies.length === 0 || isSending}
-                        className="px-6 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                        {isSending ? (
-                            <>
-                                <CircularProgress size={16} sx={{ color: 'white' }} />
-                                Sending...
-                            </>
-                        ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
-                                Send Reminders ({selectedCompanies.length})
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-        </div>,
-        document.body
+                        </button>
+                    </div>
+                </>
+            )}
+        </Modal>
     );
 };
 
 
 const Managers = ({link}) => {
 
-    const [companies, setCompanies ] = useState([]); // State to store the list of companies
-    const { user } = useAuthContext(); // Access the authenticated user context
+    const [companies, setCompanies ] = useState([]);
+    const { user } = useAuthContext();
+    const toast = useToast();
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
     const [isLoading, setIsLoading] = useState(false)
@@ -516,6 +516,12 @@ const Managers = ({link}) => {
 
     const handleFilterChange = (filters) => {
         setActiveFilters(filters);
+        const count = Object.keys(filters).length;
+        if (count > 0) {
+            toast(`${count} filter${count > 1 ? 's' : ''} applied`, { type: 'success', duration: 2000 });
+        } else {
+            toast('Filters cleared', { type: 'info', duration: 1800 });
+        }
     };
 
     useEffect(() => {
@@ -814,6 +820,7 @@ const Managers = ({link}) => {
 
         <TourGuide
             show={showTour}
+            variant="managers"
             onDone={() => {
                 setShowTour(false);
                 localStorage.setItem(MANAGERS_TOUR_KEY, '1');

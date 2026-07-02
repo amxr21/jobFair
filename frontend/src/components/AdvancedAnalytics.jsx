@@ -24,6 +24,13 @@ const useContainerWidth = (ref) => {
     return width;
 };
 
+// Counts are integers — never show fractional ticks like 2.5
+const integerAxis = {
+    tickMinStep: 1,
+    valueFormatter: (v) => (Number.isInteger(v) ? String(v) : ''),
+    tickLabelStyle: { fontSize: 11 },
+};
+
 // Responsive Bar Chart wrapper
 const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', height = 200 }) => {
     const containerRef = useRef(null);
@@ -40,7 +47,7 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
                             data: data.map(d => d[0]),
                             tickLabelStyle: { fontSize: 11 }
                         }]}
-                        xAxis={[{ tickLabelStyle: { fontSize: 11 } }]}
+                        xAxis={[integerAxis]}
                         series={[{
                             data: data.map(d => d[1]),
                             color: color,
@@ -65,6 +72,7 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
                         data: data.map(d => d[0]),
                         tickLabelStyle: { fontSize: 11 }
                     }]}
+                    yAxis={[integerAxis]}
                     series={[{
                         data: data.map(d => d[1]),
                         color: color,
@@ -82,6 +90,21 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
 
 const AdvancedAnalytics = ({ applicants, companies }) => {
     const [activeTab, setActiveTab] = useState('demographics');
+    const tabRefs = useRef({});
+    const [pillStyle, setPillStyle] = useState({ width: 0, left: 0, opacity: 0 });
+
+    useEffect(() => {
+        const el = tabRefs.current[activeTab];
+        if (!el) return;
+        const parent = el.parentElement;
+        const parentRect = parent.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        setPillStyle({
+            width: elRect.width,
+            left: elRect.left - parentRect.left + parent.scrollLeft,
+            opacity: 1,
+        });
+    }, [activeTab]);
 
     // Get unique applicants by uniId
     const uniqueApplicants = useMemo(() => {
@@ -500,16 +523,25 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
 
     return (
         <div className="bg-[#F3F6FF] rounded-xl p-4 h-full overflow-hidden flex flex-col">
-            {/* Tab Navigation - No icons */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+            {/* Tab Navigation — sliding pill */}
+            <div className="relative flex gap-1 mb-4 overflow-x-auto pb-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+                {/* Sliding pill */}
+                <div
+                    className="absolute top-1 bottom-1 rounded-lg bg-[#0E7F41] shadow-md pointer-events-none"
+                    style={{
+                        width: pillStyle.width,
+                        left: pillStyle.left + 4,
+                        opacity: pillStyle.opacity,
+                        transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.15s ease',
+                    }}
+                />
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
+                        ref={el => tabRefs.current[tab.id] = el}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
-                            activeTab === tab.id
-                                ? 'bg-[#0E7F41] text-white shadow-md'
-                                : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
+                        className={`relative z-10 px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
+                            activeTab === tab.id ? 'text-white' : 'text-gray-600 hover:text-gray-900'
                         }`}
                     >
                         {tab.label}
@@ -518,12 +550,12 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 pb-1">
                 {/* Demographics Tab */}
                 {activeTab === 'demographics' && (
                     <div className="grid grid-cols-12 gap-4">
                         {/* Gender Distribution - Pie with side legend */}
-                        <ChartContainer title="Gender Distribution" className="col-span-4 h-[180px]">
+                        <ChartContainer title="Gender Distribution" className="col-span-4">
                             <PieWithLegend data={genderData} />
                         </ChartContainer>
 
@@ -533,7 +565,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Attendance Status - Below Gender */}
-                        <ChartContainer title="Attendance Status" className="col-span-4 h-[180px]">
+                        <ChartContainer title="Attendance Status" className="col-span-4">
                             <PieWithLegend data={[
                                 { id: 0, value: uniqueApplicants.filter(a => a.attended).length, label: 'Attended', color: '#0E7F41' },
                                 { id: 1, value: uniqueApplicants.filter(a => !a.attended).length, label: 'Registered', color: '#E5E7EB' }
@@ -551,12 +583,12 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                 {activeTab === 'education' && (
                     <div className="grid grid-cols-12 gap-4">
                         {/* Study Level Distribution - Pie with side legend */}
-                        <ChartContainer title="Study Level Distribution" className="col-span-4 h-[220px]">
+                        <ChartContainer title="Study Level Distribution" className="col-span-4">
                             <PieWithLegend data={studyLevelData} />
                         </ChartContainer>
 
                         {/* GPA Distribution - Bar chart */}
-                        <ChartContainer title="GPA Distribution" className="col-span-8 h-[220px]">
+                        <ChartContainer title="GPA Distribution" className="col-span-8">
                             <ResponsiveBarChart data={gpaDistribution} layout="vertical" color="#0E7F41" height={180} />
                         </ChartContainer>
 
@@ -604,12 +636,12 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </div>
 
                         {/* Sector Distribution - Pie */}
-                        <ChartContainer title="Companies by Sector" className="col-span-4 h-[220px]">
+                        <ChartContainer title="Companies by Sector" className="col-span-4">
                             <PieWithLegend data={companySectorData} />
                         </ChartContainer>
 
                         {/* Opportunity Types - Pie */}
-                        <ChartContainer title="Opportunity Types Offered" className="col-span-4 h-[220px]">
+                        <ChartContainer title="Opportunity Types Offered" className="col-span-4">
                             {opportunityTypesData.length > 0 ? (
                                 <PieWithLegend data={opportunityTypesData} />
                             ) : (
@@ -618,7 +650,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Companies by City */}
-                        <ChartContainer title="Companies by City" className="col-span-4 h-[220px]">
+                        <ChartContainer title="Companies by City" className="col-span-4">
                             {companyCityData.length > 0 ? (
                                 <ResponsiveBarChart data={companyCityData} layout="vertical" color="#0066CC" height={180} />
                             ) : (
@@ -677,7 +709,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Experience Rate Card */}
-                        <ChartContainer title="Work Experience Status" className="col-span-6 h-[280px]">
+                        <ChartContainer title="Work Experience Status" className="col-span-6">
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                     <span className="text-sm text-gray-700">With Experience</span>
@@ -767,7 +799,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Sector Demand */}
-                        <ChartContainer title="Applications by Sector" className="col-span-6 h-[280px]">
+                        <ChartContainer title="Applications by Sector" className="col-span-6">
                             {sectorDemand.length > 0 ? (
                                 <ResponsiveBarChart data={sectorDemand} layout="vertical" color="#0066CC" height={220} />
                             ) : (
@@ -809,7 +841,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </div>
 
                         {/* CV Stats Pie with side legend */}
-                        <ChartContainer title="CV Upload Status" className="col-span-4 h-[200px]">
+                        <ChartContainer title="CV Upload Status" className="col-span-4">
                             <PieWithLegend data={[
                                 { id: 0, value: cvRate.withCV, label: 'Has CV', color: '#0E7F41' },
                                 { id: 1, value: cvRate.withoutCV, label: 'No CV', color: '#E5E7EB' }
@@ -817,7 +849,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* LinkedIn Stats Pie with side legend */}
-                        <ChartContainer title="LinkedIn Profile Status" className="col-span-4 h-[200px]">
+                        <ChartContainer title="LinkedIn Profile Status" className="col-span-4">
                             <PieWithLegend data={[
                                 { id: 0, value: linkedInRate.withProfile, label: 'Has LinkedIn', color: '#0066CC' },
                                 { id: 1, value: linkedInRate.withoutProfile, label: 'No LinkedIn', color: '#E5E7EB' }
@@ -825,7 +857,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Experience Stats Pie with side legend */}
-                        <ChartContainer title="Work Experience Status" className="col-span-4 h-[200px]">
+                        <ChartContainer title="Work Experience Status" className="col-span-4">
                             <PieWithLegend data={[
                                 { id: 0, value: experienceRate.withExp, label: 'Has Experience', color: '#9333EA' },
                                 { id: 1, value: experienceRate.withoutExp, label: 'No Experience', color: '#E5E7EB' }
@@ -833,7 +865,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Expected Graduation Timeline */}
-                        <ChartContainer title="Expected Graduation Timeline" className="col-span-6 h-[260px]">
+                        <ChartContainer title="Expected Graduation Timeline" className="col-span-6">
                             {graduationData.length > 0 ? (
                                 <ResponsiveBarChart data={graduationData} layout="vertical" color="#9333EA" height={200} />
                             ) : (
@@ -842,7 +874,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         </ChartContainer>
 
                         {/* Languages Distribution */}
-                        <ChartContainer title="Languages Spoken" className="col-span-6 h-[260px]">
+                        <ChartContainer title="Languages Spoken" className="col-span-6">
                             {languagesData.length > 0 ? (
                                 <ResponsiveBarChart data={languagesData} layout="vertical" color="#14B8A6" height={200} />
                             ) : (

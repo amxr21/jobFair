@@ -4,33 +4,49 @@ import { useEffect, useRef } from "react"
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound } from "./pages/index";
+import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound, EventSettings, StudentCheckin } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
-import { useAuthContext } from "./Hooks/useAuthContext";
+import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
+import { ToastProvider } from "./components/Toast";
+import { EventOpsProvider } from "./context/EventOpsContext";
 
+// Crossfade + gentle rise on every route change. The outgoing view fades out
+// first; only once it's gone does the new view fade in — avoids the
+// double-image flash of animating opacity on both renders of the same node.
 const AnimatedRoutes = ({ children }) => {
     const location = useLocation();
     const containerRef = useRef(null);
     const prevPathRef = useRef(location.pathname);
+    const timersRef = useRef([]);
 
     useEffect(() => {
-        if (prevPathRef.current !== location.pathname && containerRef.current) {
-            containerRef.current.style.opacity = '0';
-            containerRef.current.style.transform = 'translateY(6px)';
-            const raf = requestAnimationFrame(() => {
+        if (prevPathRef.current === location.pathname || !containerRef.current) return;
+        prevPathRef.current = location.pathname;
+
+        timersRef.current.forEach(clearTimeout);
+        timersRef.current = [];
+
+        const el = containerRef.current;
+        el.style.transition = 'opacity 0.16s cubic-bezier(0.4,0,1,1), transform 0.16s cubic-bezier(0.4,0,1,1)';
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-4px)';
+
+        timersRef.current.push(setTimeout(() => {
+            if (!containerRef.current) return;
+            containerRef.current.style.transform = 'translateY(8px)';
+            requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    if (containerRef.current) {
-                        containerRef.current.style.transition = 'opacity 0.22s ease-out, transform 0.22s ease-out';
-                        containerRef.current.style.opacity = '1';
-                        containerRef.current.style.transform = 'translateY(0)';
-                    }
+                    if (!containerRef.current) return;
+                    containerRef.current.style.transition = 'opacity 0.32s cubic-bezier(0.16,1,0.3,1), transform 0.32s cubic-bezier(0.16,1,0.3,1)';
+                    containerRef.current.style.opacity = '1';
+                    containerRef.current.style.transform = 'translateY(0)';
                 });
             });
-            prevPathRef.current = location.pathname;
-            return () => cancelAnimationFrame(raf);
-        }
+        }, 160));
+
+        return () => timersRef.current.forEach(clearTimeout);
     }, [location.pathname]);
 
     return (
@@ -40,7 +56,7 @@ const AnimatedRoutes = ({ children }) => {
     );
 };
 
-const noPaddingRoutes = ['/login', '/signup', '/confirm-attendance'];
+const noPaddingRoutes = ['/login', '/signup', '/confirm-attendance', '/student-checkin'];
 
 const ConditionalNavBar = ({ link }) => {
     const location = useLocation();
@@ -70,10 +86,12 @@ const AppLayout = ({ user, isCASTO }) => {
                         <Route path="/survey" element={<Survey />} />
                         <Route path="/surveyResults" element={isCASTO ? <SurveyResults /> : <Navigate to="/" replace />} />
                         <Route path="/statistics" element={isCASTO ? <Statistics link={link} /> : <Navigate to="/" replace />} />
+                        <Route path="/event-settings" element={isCASTO ? <EventSettings link={link} /> : <Navigate to="/" replace />} />
                         <Route path="/company-status" element={user && !isCASTO ? <CompanyStatus /> : <Navigate to="/" replace />} />
                         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
                         <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" replace />} />
                         <Route path="/confirm-attendance/:token" element={<ConfirmAttendance />} />
+                        <Route path="/student-checkin" element={<StudentCheckin />} />
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </ErrorBoundary>
@@ -90,9 +108,13 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <BrowserRouter>
-                <AppLayout user={user} isCASTO={isCASTO} />
-            </BrowserRouter>
+            <ToastProvider>
+                <EventOpsProvider>
+                    <BrowserRouter>
+                        <AppLayout user={user} isCASTO={isCASTO} />
+                    </BrowserRouter>
+                </EventOpsProvider>
+            </ToastProvider>
         </PrimeReactProvider>
     )
 }

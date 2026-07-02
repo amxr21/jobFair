@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const ALL_ROUTES = [
     { path: '/',                label: 'Applicants',        icon: 'applicants' },

@@ -1,18 +1,17 @@
 import axios from "axios";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { Row, TableHeader, BarButtons, FlagButton, NoApplicants, LoadingApplicants, ScrollToTopButton, PageContainer, FilterDropdown } from "./index";
-import TourGuide from "./TourGuide";
-
-const TOUR_KEY = 'applicants_tour_v1';
+import TourGuide, { APPLICANTS_TOUR_KEY } from "./TourGuide";
+import { useToast } from "./Toast";
 
 
 
 const MainBanner = ({link}) => {
 
-    const { user } = useAuthContext(); // Access the authenticated user context
-
+    const { user } = useAuthContext();
+    const toast = useToast();
 
     const flagIcon = useRef()
     const scrollableRef = useRef(null);
@@ -152,13 +151,14 @@ const MainBanner = ({link}) => {
     const handleFilterChange = (filters) => {
         setActiveFilters(filters);
 
-        // When filters are applied, fetch all applicants to filter the complete dataset
         const hasActiveFilters = Object.keys(filters).length > 0;
-        if (hasActiveFilters && !showAll) {
-            // Fetch all applicants when filters are active
-            fetchApplicants(1, searchQuery, true);
+        if (hasActiveFilters) {
+            const count = Object.keys(filters).length;
+            toast(`${count} filter${count > 1 ? 's' : ''} applied`, { type: 'success', duration: 2000 });
+            if (!showAll) fetchApplicants(1, searchQuery, true);
+        } else {
+            toast('Filters cleared', { type: 'info', duration: 1800 });
         }
-        // Don't auto-reset to paginated when filters are cleared - let user control via Show All button
     };
 
     // Get unique applicants by uniId, keeping only the latest submission
@@ -300,7 +300,7 @@ const MainBanner = ({link}) => {
     useEffect(() => {
         if (user) {
             fetchApplicants(1, searchQuery);
-            if (!localStorage.getItem(TOUR_KEY)) {
+            if (!localStorage.getItem(APPLICANTS_TOUR_KEY)) {
                 setTimeout(() => setShowTour(true), 800);
             }
         }
@@ -362,9 +362,11 @@ const MainBanner = ({link}) => {
                 const a = finalList.filter(applicant => applicant.flags?.includes(user?.companyName));
                 flagIcon?.current.classList.replace("opacity-50", "opacity-100");
                 setFinalList(a);
+                toast('Showing flagged applicants only', { type: 'info' });
             } else {
                 flagIcon?.current.classList.replace("opacity-100", "opacity-50");
                 setFinalList(sortAndFilterList(applicants));
+                toast('Showing all applicants', { type: 'info' });
             }
 
             return newValue;
@@ -437,7 +439,7 @@ const MainBanner = ({link}) => {
             headerRight={user && (
                 <div className="flex items-center gap-x-2">
                     <button
-                        onClick={() => { localStorage.removeItem(TOUR_KEY); setShowTour(true); }}
+                        onClick={() => { localStorage.removeItem(APPLICANTS_TOUR_KEY); setShowTour(true); }}
                         className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-gray-300 bg-white text-gray-400 hover:text-[#0E7F41] hover:border-[#0E7F41] flex items-center justify-center transition-all duration-200 text-xs font-bold"
                         title="Start feature tour"
                     >?</button>
@@ -446,36 +448,41 @@ const MainBanner = ({link}) => {
             )}
             showAccessButtons={true}
         >
-            {/* Tabs for non-CASTO users */}
+            {/* Tabs for non-CASTO users — sliding pill */}
             {user?.email !== 'casto@sharjah.ac.ae' && (
-                <div className="flex gap-1 mb-3 md:mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+                <div className="relative flex mb-3 md:mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+                    {/* Sliding pill */}
+                    <div
+                        className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm"
+                        style={{
+                            width: 'calc(50% - 4px)',
+                            left: activeTab === 'my' ? '4px' : 'calc(50%)',
+                            transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+                        }}
+                    />
                     <button
-                        onClick={() => setActiveTab('my')}
-                        className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'my'
-                                ? 'bg-white text-[#0E7F41] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                        onClick={() => { setActiveTab('my'); toast('Viewing your applicants', { type: 'info', duration: 1800 }); }}
+                        className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
+                            activeTab === 'my' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
                         <span className="hidden md:inline">My Applicants</span>
                         <span className="md:hidden">Mine</span>
-                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs ${
+                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
                             activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
                         }`}>
                             {finalList.length}
                         </span>
                     </button>
                     <button
-                        onClick={() => setActiveTab('other')}
-                        className={`px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'other'
-                                ? 'bg-white text-[#0E7F41] shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
+                        onClick={() => { setActiveTab('other'); toast('Viewing other applicants', { type: 'info', duration: 1800 }); }}
+                        className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
+                            activeTab === 'other' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
                         }`}
                     >
                         <span className="hidden md:inline">Other Applicants</span>
                         <span className="md:hidden">Others</span>
-                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs ${
+                        <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
                             activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
                         }`}>
                             {finalOtherList.length}
@@ -640,7 +647,7 @@ const MainBanner = ({link}) => {
             show={showTour}
             onDone={() => {
                 setShowTour(false);
-                localStorage.setItem(TOUR_KEY, '1');
+                localStorage.setItem(APPLICANTS_TOUR_KEY, '1');
             }}
         />
         </>
