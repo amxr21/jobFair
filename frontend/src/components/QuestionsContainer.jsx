@@ -4,6 +4,7 @@ import axios from "axios";
 import { SurveyContext } from "../context/SurveyContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL as link } from "../config/api";
+import CompactSelect from "./CompactSelect";
 
 // ─── Survey definition (must match the live survey exactly) ────────────────────
 
@@ -248,6 +249,27 @@ const QuestionsContainer = () => {
   const totalHired = aggregates[ALL_QUESTIONS.find((q) => q.id === "q20").text]?.numeric.reduce((a, n) => a + n.value, 0) || 0;
   const totalShortlisted = aggregates[ALL_QUESTIONS.find((q) => q.id === "q21").text]?.numeric.reduce((a, n) => a + n.value, 0) || 0;
 
+  // Sentiment-at-a-glance per section — options are always ordered
+  // positive -> negative, so "first option chosen" is a fast health proxy.
+  // Lets an admin spot a struggling section before reading every card.
+  const sectionSentiment = useMemo(() => {
+    const out = {};
+    SURVEY_PARTS.forEach((part) => {
+      part.sections.forEach((section) => {
+        const mcQuestions = section.questions.filter((q) => q.type === "multiple_choice");
+        let positive = 0, total = 0;
+        mcQuestions.forEach((q) => {
+          const agg = aggregates[q.text];
+          if (!agg) return;
+          positive += agg.counts[q.options[0]] || 0;
+          total += agg.answered;
+        });
+        out[section.title] = total > 0 ? Math.round((positive / total) * 100) : null;
+      });
+    });
+    return out;
+  }, [aggregates]);
+
   // Details mode: the selected company's flat answers
   const detailCompany = responders[detailIdx] || null;
   const detailAnswers = useMemo(() => {
@@ -329,16 +351,33 @@ const QuestionsContainer = () => {
 
               <PartTabs />
 
-              {SURVEY_PARTS[part].sections.map((section) => (
+              {SURVEY_PARTS[part].sections.map((section) => {
+                const sentiment = sectionSentiment[section.title];
+                return (
                 <div key={section.title} className="flex flex-col gap-3">
-                  {section.title && <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{section.title}</p>}
+                  {section.title && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{section.title}</p>
+                      {sentiment != null && (
+                        <span
+                          className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+                            sentiment >= 70 ? "bg-green-100 text-green-700" : sentiment >= 40 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600"
+                          }`}
+                          title="Share of top-option (most positive) answers across this section's multiple-choice questions"
+                        >
+                          {sentiment}% positive
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {section.questions.map((q) => (
                       <QuestionCard key={q.id} index={numberFor[q.id]} question={q} agg={aggregates[q.text]} respondedCount={responders.length} />
                     ))}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </>
           )}
 
@@ -350,10 +389,13 @@ const QuestionsContainer = () => {
                   className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
                 </button>
-                <select value={detailIdx} onChange={(e) => setDetailIdx(Number(e.target.value))}
-                  className="flex-1 min-w-[160px] max-w-xs border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-500 bg-white">
-                  {responders.map((c, i) => <option key={c.companyName} value={i}>{c.companyName}</option>)}
-                </select>
+                <div className="flex-1 min-w-[160px] max-w-xs">
+                  <CompactSelect
+                    value={detailIdx}
+                    onChange={(e) => setDetailIdx(Number(e.target.value))}
+                    options={responders.map((c, i) => ({ value: i, label: c.companyName }))}
+                  />
+                </div>
                 <button onClick={() => setDetailIdx((i) => Math.min(responders.length - 1, i + 1))} disabled={detailIdx >= responders.length - 1}
                   className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors flex items-center justify-center">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
