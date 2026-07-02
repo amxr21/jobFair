@@ -8,9 +8,11 @@ import CastoLogoWhite from "../assets/images/castoLogo-white.svg";
 const STORAGE_KEY = "checkin_staff_session";
 
 // Public, code-gated attendance check-in — for volunteers/helpers who don't
-// have a CASTO or company account. A short code (issued from Event Settings >
-// Attendance > Staff Codes) identifies them; every check-in they do is logged
-// under their name so they can see their own list here.
+// have a CASTO or company account. A short code (created by CASTO in Event
+// Settings > Manage Staff, along with just a name + email) identifies them;
+// the first time they log in they fill in their own remaining details
+// (phone), then every check-in they do is logged under their name so they
+// can see their own list here.
 const StudentCheckin = () => {
     const [session, setSession] = useState(() => {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; }
@@ -19,11 +21,16 @@ const StudentCheckin = () => {
     const [loginError, setLoginError] = useState("");
     const [loggingIn, setLoggingIn] = useState(false);
 
+    const [phone, setPhone] = useState("");
+    const [savingProfile, setSavingProfile] = useState(false);
+
     const [uniId, setUniId] = useState("");
     const [checking, setChecking] = useState(false);
     const [result, setResult] = useState(null); // { type: 'success'|'error', message, name }
     const [myLog, setMyLog] = useState([]);
     const inputRef = useRef(null);
+
+    const needsProfile = session && session.status === "invited";
 
     useEffect(() => {
         if (session) inputRef.current?.focus();
@@ -52,6 +59,22 @@ const StudentCheckin = () => {
         setSession(null);
         localStorage.removeItem(STORAGE_KEY);
         setMyLog([]);
+    };
+
+    const saveProfile = async () => {
+        setSavingProfile(true);
+        try {
+            const res = await axios.patch(`${API_URL}/attendance-staff/profile`, {
+                code: session.code, phone: phone.trim(),
+            });
+            const s = { ...res.data, code: session.code };
+            setSession(s);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+        } catch {
+            // If this fails, needsProfile just stays true and they can retry
+        } finally {
+            setSavingProfile(false);
+        }
     };
 
     const checkIn = async () => {
@@ -108,6 +131,37 @@ const StudentCheckin = () => {
                             <button onClick={login} disabled={loggingIn || !code.trim()} className="w-full py-3 bg-[#0E7F41] hover:bg-[#0a5f31] text-white font-semibold rounded-lg transition-colors disabled:opacity-50">
                                 {loggingIn ? "Checking…" : "Continue"}
                             </button>
+                        </div>
+                    </div>
+                ) : needsProfile ? (
+                    <div className="max-w-sm w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div className="bg-[#0E7F41] p-6 text-center">
+                            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
+                                <svg className="w-7 h-7 text-[#0E7F41]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                            </div>
+                            <h1 className="text-white text-lg font-bold">Welcome, {session.name}</h1>
+                            <p className="text-white/80 text-xs mt-1">Just one more step to finish setting up your account</p>
+                        </div>
+                        <div className="p-6 flex flex-col gap-3">
+                            <div>
+                                <label className="text-xs font-medium text-gray-500">Email</label>
+                                <p className="text-sm text-gray-700 mt-0.5">{session.email}</p>
+                            </div>
+                            <div>
+                                <label className="text-xs font-medium text-gray-500">Phone number</label>
+                                <input
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    onKeyDown={(e) => e.key === "Enter" && saveProfile()}
+                                    placeholder="+971 5xx xxx xxx"
+                                    autoFocus
+                                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                />
+                            </div>
+                            <button onClick={saveProfile} disabled={savingProfile} className="w-full py-3 bg-[#0E7F41] hover:bg-[#0a5f31] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 mt-1">
+                                {savingProfile ? "Saving…" : "Finish setup"}
+                            </button>
+                            <button onClick={() => saveProfile()} className="text-xs text-gray-400 hover:text-gray-600 text-center">Skip for now</button>
                         </div>
                     </div>
                 ) : (

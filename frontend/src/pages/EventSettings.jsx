@@ -662,24 +662,12 @@ const DelegateList = () => {
 const boothQrValue = (booth) => `jobfair:attendance:${booth.number}`;
 
 const AttendanceCheckin = () => {
-  const { data, update, addStaffer, removeStaffer } = useEventOps();
+  const { data, update } = useEventOps();
   const toast = useToast();
   const [subTab, setSubTab] = useState(0);
   const students = data.attendanceStudents;
   const companies = data.attendanceCompanies;
   const booths = data.booths.filter((b) => b.company);
-  const staff = data.attendanceStaff || [];
-  const checkinLog = data.checkinLog || [];
-  const [newStafferName, setNewStafferName] = useState("");
-  const [revealedCode, setRevealedCode] = useState(null); // { name, code } — shown once after creation
-
-  const handleAddStaffer = () => {
-    if (!newStafferName.trim()) return;
-    const code = addStaffer(newStafferName.trim());
-    setRevealedCode({ name: newStafferName.trim(), code });
-    setNewStafferName("");
-    toast(`Code generated for ${newStafferName.trim()}`, { type: "success" });
-  };
 
   const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
   const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
@@ -704,7 +692,7 @@ const AttendanceCheckin = () => {
         <StatCard label="Pending" value={subTab === 1 ? students.length - studCheckedIn : compTotal - compCheckedIn} color="#f59e0b" />
       </div>
 
-      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes", "Staff Codes"]} active={subTab} onChange={setSubTab} />
+      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes"]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
         <div className="overflow-x-auto rounded-xl border border-gray-100">
@@ -796,72 +784,121 @@ const AttendanceCheckin = () => {
         </div>
       )}
 
-      {subTab === 3 && (
-        <div className="flex flex-col gap-4">
-          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-            Issue a short access code to a volunteer or helper so they can check students in at
-            <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/student-checkin</a>
-            without needing a CASTO or company account. Each code's check-ins are logged separately below.
-          </p>
+    </div>
+  );
+};
 
-          <div className="flex gap-2 items-start flex-wrap">
-            <input
-              value={newStafferName}
-              onChange={(e) => setNewStafferName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAddStaffer()}
-              placeholder="Staffer or desk name (e.g. Volunteer Desk 3)"
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[220px] focus:outline-none focus:ring-1 focus:ring-green-500"
-            />
-            <button onClick={handleAddStaffer} disabled={!newStafferName.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-              Generate Code
-            </button>
+// ─── Tab: Manage Staff ─────────────────────────────────────────────────────────
+// Rana (or whoever owns it) creates an attendance-staff account with just a
+// name + email — the staffer fills in the rest (phone, notes) themselves the
+// first time they log in with their code at /student-checkin.
+
+const ManageStaff = () => {
+  const { data, addStaffer, removeStaffer } = useEventOps();
+  const toast = useToast();
+  const staff = data.attendanceStaff || [];
+  const checkinLog = data.checkinLog || [];
+  const [form, setForm] = useState({ name: "", email: "" });
+  const [revealedCode, setRevealedCode] = useState(null); // { name, code } — shown once after creation
+
+  const handleAdd = () => {
+    if (!form.name.trim() || !form.email.trim()) return;
+    const code = addStaffer(form.name.trim(), form.email.trim());
+    setRevealedCode({ name: form.name.trim(), code });
+    setForm({ name: "", email: "" });
+    toast(`Account created for ${form.name.trim()}`, { type: "success" });
+  };
+
+  const totalCheckins = checkinLog.length;
+  const activeCount = staff.filter((s) => s.status === "active").length;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <StatCard label="Staff Accounts" value={staff.length} sub={`${activeCount} active`} />
+        <StatCard label="Students Checked In" value={totalCheckins} color="#2959A6" />
+        <StatCard label="Awaiting First Login" value={staff.filter((s) => s.status === "invited").length} color="#f59e0b" />
+      </div>
+
+      <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+        Create an account with a name and email — you'll get a short access code to share with them.
+        They log in at
+        <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/student-checkin</a>
+        with that code, fill in their own remaining details, and can then check students in without a CASTO or company account.
+        Each account's check-ins are logged separately below — no one sees anyone else's activity.
+      </p>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-gray-700">New Staff Account</p>
+        <div className="flex gap-2 items-start flex-wrap">
+          <input
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Full name"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[180px] focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+          <input
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            type="email"
+            placeholder="Email address"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+          <button onClick={handleAdd} disabled={!form.name.trim() || !form.email.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
+            Create Account
+          </button>
+        </div>
+      </div>
+
+      {revealedCode && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold text-green-800">Access code for {revealedCode.name}</p>
+            <p className="text-2xl font-mono font-bold text-green-700 tracking-widest">{revealedCode.code}</p>
+            <p className="text-[11px] text-green-600 mt-1">Share this with them now — it won't be shown again here.</p>
           </div>
-
-          {revealedCode && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold text-green-800">Code for {revealedCode.name}</p>
-                <p className="text-2xl font-mono font-bold text-green-700 tracking-widest">{revealedCode.code}</p>
-                <p className="text-[11px] text-green-600 mt-1">Share this with them now — it won't be shown again here.</p>
-              </div>
-              <button onClick={() => setRevealedCode(null)} className="text-xs font-medium text-green-700 hover:text-green-900">Dismiss</button>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {staff.map((s) => {
-              const theirCheckins = checkinLog.filter((c) => c.byId === s.id);
-              return (
-                <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2.5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">{s.name}</p>
-                      <p className="text-xs font-mono text-gray-400">Code: {s.code}</p>
-                    </div>
-                    <button onClick={() => removeStaffer(s.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors">
-                      Revoke
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-gray-400">Checked in {theirCheckins.length} student{theirCheckins.length === 1 ? "" : "s"}</span>
-                  </div>
-                  {theirCheckins.length > 0 && (
-                    <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pr-1">
-                      {theirCheckins.slice(0, 8).map((c) => (
-                        <div key={c.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
-                          <span className="text-gray-700 truncate">{c.name || c.uniId}</span>
-                          <span className="text-gray-400 text-[10px] shrink-0">{formatWhen(c.at)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-            {staff.length === 0 && <p className="text-xs text-gray-400 col-span-2 text-center py-6">No staff codes issued yet.</p>}
-          </div>
+          <button onClick={() => setRevealedCode(null)} className="text-xs font-medium text-green-700 hover:text-green-900">Dismiss</button>
         </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {staff.map((s) => {
+          const theirCheckins = checkinLog.filter((c) => c.byId === s.id);
+          return (
+            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-800 truncate">{s.name}</p>
+                    <Badge label={s.status === "active" ? "Active" : "Invited"} color={s.status === "active" ? "green" : "yellow"} />
+                  </div>
+                  <p className="text-xs text-gray-500 truncate">{s.email}</p>
+                  {s.phone && <p className="text-[11px] text-gray-400">{s.phone}</p>}
+                  <p className="text-xs font-mono text-gray-400 mt-0.5">Code: {s.code}</p>
+                </div>
+                <button onClick={() => removeStaffer(s.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors shrink-0">
+                  Revoke
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-gray-400">Checked in {theirCheckins.length} student{theirCheckins.length === 1 ? "" : "s"}</span>
+              </div>
+              {theirCheckins.length > 0 && (
+                <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pr-1">
+                  {theirCheckins.slice(0, 8).map((c) => (
+                    <div key={c.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
+                      <span className="text-gray-700 truncate">{c.name || c.uniId}</span>
+                      <span className="text-gray-400 text-[10px] shrink-0">{formatWhen(c.at)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {staff.length === 0 && <p className="text-xs text-gray-400 col-span-2 text-center py-6">No staff accounts created yet.</p>}
+      </div>
     </div>
   );
 };
@@ -1261,6 +1298,7 @@ const TabIcon = ({ id }) => {
     equipment: "m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z",
     delegates: "M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z",
     attendance: "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+    manageStaff: "M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z",
     schedule: "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5",
     passes: "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z",
     report: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z",
@@ -1281,6 +1319,7 @@ const TABS = [
   { id: "equipment",    label: "Equipment & Logistics", component: EquipmentLogistics },
   { id: "delegates",    label: "Delegate List",         component: DelegateList },
   { id: "attendance",   label: "Attendance",            component: AttendanceCheckin },
+  { id: "manageStaff",  label: "Manage Staff",          component: ManageStaff },
   { id: "schedule",     label: "Schedule",              component: ScheduleSlots },
   { id: "passes",       label: "Access Passes",         component: AccessPasses },
   { id: "report",       label: "Post-Event Report",     component: PostEventReporting },
@@ -1340,6 +1379,113 @@ const ActivityPanel = ({ open, onClose }) => {
         </div>
       </div>
     </>
+  );
+};
+
+// ─── View As panel ─────────────────────────────────────────────────────────────
+// Lets Rana preview what each role's world looks like — without swapping her
+// real CASTO session (which could break her own login if anything went
+// wrong). Company/staff previews are read-only panels built from data
+// already loaded here; the student check-in view is genuinely public, so it
+// just opens in a new tab.
+
+const ViewAsPanel = ({ open, onClose }) => {
+  const { companyView, companies, data } = useEventOps();
+  const [mode, setMode] = useState("manager");
+  const [selectedCompany, setSelectedCompany] = useState(companies[0] || "");
+  const [selectedStaff, setSelectedStaff] = useState(data.attendanceStaff?.[0]?.id ?? null);
+
+  const view = selectedCompany ? companyView(selectedCompany) : null;
+  const staffer = (data.attendanceStaff || []).find((s) => s.id === selectedStaff);
+  const stafferLog = staffer ? (data.checkinLog || []).filter((c) => c.byId === staffer.id) : [];
+
+  return (
+    <Modal visible={open} onClose={onClose} maxWidth="max-w-2xl" contentClassName="max-h-[85vh]">
+      <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
+        <div>
+          <h2 className="text-lg font-bold">View As</h2>
+          <p className="text-xs text-white/80 mt-0.5">Preview what other roles see — read-only, doesn't touch your session</p>
+        </div>
+        <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="p-5 flex flex-col gap-4 overflow-y-auto">
+        <SubTabBar tabs={["Manager (Company)", "Attendance Staff", "Student Check-in"]} active={mode === "manager" ? 0 : mode === "staff" ? 1 : 2}
+          onChange={(i) => setMode(i === 0 ? "manager" : i === 1 ? "staff" : "student")} />
+
+        {mode === "manager" && (
+          <div className="flex flex-col gap-3">
+            <CompactSelect value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)} options={companies} placeholder="Choose a company…" />
+            {!view ? (
+              <p className="text-xs text-gray-400 text-center py-8">Select a company to preview their Event Day view.</p>
+            ) : (
+              <div className="border border-gray-100 rounded-xl p-4 flex flex-col gap-3 bg-[#F3F6FF]">
+                <p className="text-xs font-semibold text-gray-500">This is what {selectedCompany} sees on their "My Status" page:</p>
+                {view.booth ? (
+                  <div className="bg-white rounded-lg p-3">
+                    <p className="text-sm font-bold text-gray-800">Booth {view.booth.number} · Zone {view.booth.zone}</p>
+                    <p className="text-xs text-gray-500">{view.booth.type} · {view.booth.status}</p>
+                  </div>
+                ) : <p className="text-xs text-gray-400">No booth assigned yet.</p>}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Banners</p><p className="font-semibold text-gray-700">{view.banners.length}</p></div>
+                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Passes</p><p className="font-semibold text-gray-700">{view.passes.length}</p></div>
+                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Requirements</p><p className="font-semibold text-gray-700">{view.requirements.length}</p></div>
+                  <div className="bg-white rounded-lg p-2.5"><p className="text-gray-400">Equipment items</p><p className="font-semibold text-gray-700">{view.equipment.length}</p></div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode === "staff" && (
+          <div className="flex flex-col gap-3">
+            <CompactSelect
+              value={selectedStaff}
+              onChange={(e) => setSelectedStaff(Number(e.target.value))}
+              options={(data.attendanceStaff || []).map((s) => ({ value: s.id, label: s.name }))}
+              placeholder="Choose a staff account…"
+            />
+            {!staffer ? (
+              <p className="text-xs text-gray-400 text-center py-8">No staff accounts yet — create one in the Manage Staff tab.</p>
+            ) : (
+              <div className="border border-gray-100 rounded-xl p-4 flex flex-col gap-3 bg-[#F3F6FF]">
+                <p className="text-xs font-semibold text-gray-500">This is what {staffer.name} sees at /student-checkin:</p>
+                <div className="bg-white rounded-lg p-3 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-gray-800">{staffer.name}</p>
+                    <p className="text-xs text-gray-500">{staffer.email}</p>
+                  </div>
+                  <Badge label={staffer.status === "active" ? "Active" : "Invited"} color={staffer.status === "active" ? "green" : "yellow"} />
+                </div>
+                <p className="text-xs text-gray-500">Checked in {stafferLog.length} student{stafferLog.length === 1 ? "" : "s"} today</p>
+                {stafferLog.slice(0, 5).map((c) => (
+                  <div key={c.id} className="bg-white rounded-lg px-3 py-2 flex items-center justify-between text-xs">
+                    <span className="text-gray-700">{c.name || c.uniId}</span>
+                    <span className="text-gray-400">{formatWhen(c.at)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {mode === "student" && (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <p className="text-sm text-gray-600 max-w-sm">
+              The student check-in page is fully public — it needs a real access code to log in, so the truest preview is opening it directly.
+            </p>
+            <a href="/student-checkin" target="_blank" rel="noreferrer" className="text-sm font-semibold text-white rounded-lg px-5 py-2.5" style={{ background: "#0E7F41" }}>
+              Open /student-checkin in a new tab
+            </a>
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 };
 
@@ -1556,6 +1702,7 @@ const EventSettings = ({ link }) => {
   const [activeTab, setActiveTab] = useState(TABS[0].id);
   const [showActivity, setShowActivity] = useState(false);
   const [showTeamPanel, setShowTeamPanel] = useState(false);
+  const [showViewAs, setShowViewAs] = useState(false);
   const [reportData, setReportData] = useState({ applicants: [], companies: [] });
 
   // Fetch real applicants/companies once, on demand — only the Post-Event
@@ -1593,6 +1740,11 @@ const EventSettings = ({ link }) => {
       title="Event Settings"
       headerRight={
         <div className="flex items-center gap-2">
+          {employee.id === "rana" && (
+            <button onClick={() => setShowViewAs(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+              View As
+            </button>
+          )}
           <button onClick={() => setShowTeamPanel(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
             Team & Roles
           </button>
@@ -1660,6 +1812,7 @@ const EventSettings = ({ link }) => {
 
       <ActivityPanel open={showActivity} onClose={() => setShowActivity(false)} />
       <TeamPanel open={showTeamPanel} onClose={() => setShowTeamPanel(false)} />
+      <ViewAsPanel open={showViewAs} onClose={() => setShowViewAs(false)} />
     </PageContainer>
   );
 };

@@ -34,7 +34,7 @@ const {
     submitSurvey, deleteApplicant, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     getSettings, updateSettings, getEventOps, updateEventOps,
-    verifyAttendanceStaff, checkinByStaff,
+    verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile,
 } = controllers;
 
 const router = express.Router();
@@ -65,6 +65,7 @@ router.get("/settings", getSettings);
 // staffer can check students in without a CASTO/company account
 router.post("/attendance-staff/verify", verifyAttendanceStaff);
 router.patch("/attendance-staff/checkin", checkinByStaff);
+router.patch("/attendance-staff/profile", updateAttendanceStaffProfile);
 
 // Protected routes
 router.use(requireAuth);
