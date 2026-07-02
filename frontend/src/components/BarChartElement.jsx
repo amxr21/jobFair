@@ -1,10 +1,12 @@
-import * as React from 'react';
 import { useRef, useState, useEffect } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
-import { ChartTitle } from './index';
 
+// This category is an artifact of the registration form, not a real industry field
+const EXCLUDED_FIELD = 'office and students fairs';
 
-const BarChartElement = ({dataset}) => {
+const titleCase = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+const BarChartElement = ({ dataset }) => {
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 550, height: 300 });
 
@@ -14,7 +16,7 @@ const BarChartElement = ({dataset}) => {
                 const { width, height } = containerRef.current.getBoundingClientRect();
                 setDimensions({
                     width: Math.max(width - 24, 100),
-                    height: Math.max(height - 80, 150) // Leave room for title
+                    height: Math.max(height - 48, 150), // leave room for the header
                 });
             }
         };
@@ -22,7 +24,6 @@ const BarChartElement = ({dataset}) => {
         updateDimensions();
         window.addEventListener('resize', updateDimensions);
 
-        // Use ResizeObserver for more accurate container tracking
         const resizeObserver = new ResizeObserver(updateDimensions);
         if (containerRef.current) {
             resizeObserver.observe(containerRef.current);
@@ -34,34 +35,50 @@ const BarChartElement = ({dataset}) => {
         };
     }, []);
 
-    const colorsCodes = [
-        '#0066CC', '#0E7F41', '#CC0000', '#EBC600',
-        '#00B4D8', '#2ebf52', '#30be50', '#32bd4e',
-        '#34bc4c', '#36bb4a'
-      ]
+    const entries = Object.entries(dataset || {})
+        .filter(([label]) => label.toLowerCase() !== EXCLUDED_FIELD)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 8);
 
-    return(
-        <div ref={containerRef} className="col-span-1 lg:col-span-6 bg-white rounded-lg p-2 md:p-3 flex flex-col gap-x-0 w-full h-full overflow-hidden min-h-[280px]">
-            <BarChart
-                width={dimensions.width}
-                xAxis={[{
-                    scaleType: 'band', data: Object.keys(dataset).slice(1), padding: 0.1,
-                    colorMap: { type: 'ordinal', colors: colorsCodes }
-                }]}
-                yAxis={[{
-                    tickMinStep: 1,
-                    valueFormatter: (v) => Number.isInteger(v) ? String(v) : '',
-                }]}
-                series={[{ data: Object.values(dataset).slice(1), barSize: 20 }]}
-                colors={colorsCodes}
-                height={dimensions.height}
-                borderRadius={5}
-                barLabel="value"
-            />
-            <ChartTitle title={'Companies By Sector'} padding={''} />
+    const labels = entries.map(([label]) => {
+        const clean = titleCase(label);
+        return clean.length > 24 ? clean.slice(0, 22) + '…' : clean;
+    });
+    const values = entries.map(([, value]) => value);
+
+    return (
+        <div ref={containerRef} className="col-span-1 lg:col-span-6 bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[280px]">
+            <div className="flex items-center justify-between mb-1">
+                <h2 className="text-xs font-medium text-gray-700">Companies by Industry Field</h2>
+                <span className="text-[10px] text-gray-400">Top {entries.length}</span>
+            </div>
+            <div className="flex-1 min-h-0">
+                <BarChart
+                    layout="horizontal"
+                    width={dimensions.width}
+                    height={dimensions.height}
+                    yAxis={[{
+                        scaleType: 'band',
+                        data: labels,
+                        tickLabelStyle: { fontSize: 11 },
+                    }]}
+                    xAxis={[{
+                        tickMinStep: 1,
+                        valueFormatter: (v) => (Number.isInteger(v) ? String(v) : ''),
+                        tickLabelStyle: { fontSize: 11 },
+                    }]}
+                    series={[{
+                        data: values,
+                        color: '#0E7F41',
+                        valueFormatter: (v) => `${v} ${v === 1 ? 'company' : 'companies'}`,
+                    }]}
+                    margin={{ left: 150, right: 24, top: 8, bottom: 24 }}
+                    borderRadius={4}
+                    slotProps={{ legend: { hidden: true } }}
+                />
+            </div>
         </div>
-    )
-}
+    );
+};
 
-
-export default BarChartElement
+export default BarChartElement;

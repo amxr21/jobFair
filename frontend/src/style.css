@@ -289,18 +289,20 @@
     overflow-y: auto; /* Show scrollbar only when necessary */
 }
 
-/* Hide scrollbar when not needed */
+/* List scrollbar — same padded style as the global one */
 .list::-webkit-scrollbar {
-    width: 8px; /* Unified scrollbar width */
+    width: 12px;
 }
 
 .list::-webkit-scrollbar-thumb {
-    background-color: #d4d8e6; /* Change scrollbar thumb color */
-    border-radius: 4px;
+    background-color: #d4d8e6;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    background-clip: padding-box;
 }
 
 .list::-webkit-scrollbar-track {
-    background: rgb(236, 236, 236); /* Hide track */
+    background: transparent;
 }
  
 
@@ -427,25 +429,36 @@ button, a, .clickable {
   animation: fadeIn 0.2s ease-out forwards;
 }
 
-/* Smooth scrollbar appearance */
+/* Smooth scrollbar appearance — transparent border + background-clip gives the
+   thumb inner padding so it floats instead of hugging the container edge */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  background-color: #c5cad3;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background-color: #9aa1ad;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c5cad3 transparent;
 }
 
 /* ========== MOBILE NAVIGATION STYLES ========== */
