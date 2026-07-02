@@ -20,9 +20,9 @@ const PageLink = ({ title, icon, link }) => {
 
     return (
         <Link to={link}>
-            <div className="page-link cursor-pointer flex gap-x-3 items-center">
+            <div className="page-link group cursor-pointer flex gap-x-3 items-center">
                 <div
-                    className="flex items-center justify-center w-8 h-8 p-1.5 rounded-xl shrink-0"
+                    className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 [&>svg]:w-4 [&>svg]:h-4"
                     style={{
                         backgroundColor: isActive ? '#0E7F41' : 'transparent',
                         color: isActive ? '#ffffff' : '#9ca3af',
@@ -35,7 +35,7 @@ const PageLink = ({ title, icon, link }) => {
                 <h2
                     className="title text-sm leading-none"
                     style={{
-                        color: isActive ? '#f9fafb' : '#9ca3af',
+                        color: isActive ? '#0E7F41' : '#6b7280',
                         fontWeight: isActive ? 600 : 400,
                         transition: 'color 0.25s ease, font-weight 0.15s ease',
                     }}
