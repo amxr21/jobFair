@@ -10,6 +10,7 @@ import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
 import { ToastProvider } from "./components/Toast";
+import { EventOpsProvider } from "./context/EventOpsContext";
 
 const AnimatedRoutes = ({ children }) => {
     const location = useLocation();
@@ -93,9 +94,11 @@ function App() {
     return (
         <PrimeReactProvider>
             <ToastProvider>
-                <BrowserRouter>
-                    <AppLayout user={user} isCASTO={isCASTO} />
-                </BrowserRouter>
+                <EventOpsProvider>
+                    <BrowserRouter>
+                        <AppLayout user={user} isCASTO={isCASTO} />
+                    </BrowserRouter>
+                </EventOpsProvider>
             </ToastProvider>
         </PrimeReactProvider>
     )
