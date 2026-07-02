@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useLayoutEffect, useCallback } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 
 export const APPLICANTS_TOUR_KEY = 'applicants_tour_v3';
 export const MANAGERS_TOUR_KEY = 'managers_tour_v3';
@@ -97,22 +97,27 @@ const SCREEN_PAD = 16;
 function computePosition(targetEl, boxEl) {
     if (!targetEl || !boxEl) return null;
     const tr = targetEl.getBoundingClientRect();
+    // Measure the real rendered box — never assume the hard-coded width fits the viewport
+    const boxW = boxEl.offsetWidth || BOX_W;
     const boxH = boxEl.offsetHeight || 200;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const clampX = (x) => Math.max(SCREEN_PAD, Math.min(x, vw - BOX_W - SCREEN_PAD));
+    const clampX = (x) => Math.max(SCREEN_PAD, Math.min(x, vw - boxW - SCREEN_PAD));
     const clampY = (y) => Math.max(SCREEN_PAD, Math.min(y, vh - boxH - SCREEN_PAD));
-    const cx = tr.left + tr.width / 2 - BOX_W / 2;
+    const cx = tr.left + tr.width / 2 - boxW / 2;
 
     const tries = {
         bottom: () => { const top = tr.bottom + GAP; if (top + boxH <= vh - SCREEN_PAD) { const left = clampX(cx); return { top, left, placement: 'bottom', arrowX: tr.left + tr.width / 2 - left }; } },
         top:    () => { const top = tr.top - boxH - GAP; if (top >= SCREEN_PAD) { const left = clampX(cx); return { top, left, placement: 'top', arrowX: tr.left + tr.width / 2 - left }; } },
-        right:  () => { const left = tr.right + GAP; if (left + BOX_W <= vw - SCREEN_PAD) return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'right', arrowX: null }; },
-        left:   () => { const left = tr.left - BOX_W - GAP; if (left >= SCREEN_PAD) return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'left', arrowX: null }; },
+        right:  () => { const left = tr.right + GAP; if (left + boxW <= vw - SCREEN_PAD) return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'right', arrowX: null }; },
+        left:   () => { const left = tr.left - boxW - GAP; if (left >= SCREEN_PAD) return { top: clampY(tr.top + tr.height / 2 - boxH / 2), left, placement: 'left', arrowX: null }; },
     };
     for (const p of ['bottom', 'top', 'right', 'left']) { const r = tries[p](); if (r) return r; }
-    return { top: clampY(vh / 2 - boxH / 2), left: clampX(vw / 2 - BOX_W / 2), placement: 'bottom', arrowX: BOX_W / 2 };
+    return { top: clampY(vh / 2 - boxH / 2), left: clampX(vw / 2 - boxW / 2), placement: 'bottom', arrowX: boxW / 2 };
 }
+
+const samePos = (a, b) => a && b && Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && a.placement === b.placement && a.arrowX === b.arrowX;
+const sameRect = (a, b) => a && b && Math.abs(a.top - b.top) < 0.5 && Math.abs(a.left - b.left) < 0.5 && Math.abs(a.width - b.width) < 0.5 && Math.abs(a.height - b.height) < 0.5;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -124,18 +129,39 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
     const boxRef = useRef(null);
     const current = STEPS[step];
 
-    const reposition = useCallback(() => {
-        const el = document.querySelector(`[data-tour="${current.target}"]`);
-        if (!el) return;
-        const r = computePosition(el, boxRef.current);
-        if (r) setPos(r);
-        const br = el.getBoundingClientRect();
-        setSpotRect({ top: br.top, left: br.left, width: br.width, height: br.height });
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-    }, [current?.target]);
-
-    useLayoutEffect(() => { if (!show) return; const id = requestAnimationFrame(() => reposition()); return () => cancelAnimationFrame(id); }, [show, step, reposition]);
-    useEffect(() => { if (!show) return; window.addEventListener('resize', reposition); return () => window.removeEventListener('resize', reposition); }, [show, reposition]);
+    // Continuous tracking loop: re-measures the target every animation frame while the
+    // tour is open. This survives scrolling (any container), smooth-scroll animations,
+    // layout shifts, late-rendering targets, sidebar transitions, and window resizes —
+    // no event wiring can miss a movement because nothing is event-driven.
+    useLayoutEffect(() => {
+        if (!show) return;
+        let raf;
+        let scrolled = false;
+        const tick = () => {
+            const el = document.querySelector(`[data-tour="${current?.target}"]`);
+            if (el) {
+                // Bring the target into view once per step, instantly — a smooth scroll
+                // would keep moving the target after we measured it
+                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; }
+                const r = computePosition(el, boxRef.current);
+                if (r) setPos(prev => (samePos(prev, r) ? prev : r));
+                const br = el.getBoundingClientRect();
+                const next = { top: br.top, left: br.left, width: br.width, height: br.height };
+                setSpotRect(prev => (sameRect(prev, next) ? prev : next));
+            } else {
+                // Target not in the DOM (data still loading / element hidden): center the
+                // box and drop the spotlight; keep polling — it snaps on as soon as it mounts
+                setSpotRect(prev => (prev === null ? prev : null));
+                const boxW = boxRef.current?.offsetWidth || BOX_W;
+                const boxH = boxRef.current?.offsetHeight || 200;
+                const r = { top: Math.max(SCREEN_PAD, window.innerHeight / 2 - boxH / 2), left: Math.max(SCREEN_PAD, window.innerWidth / 2 - boxW / 2), placement: 'bottom', arrowX: null };
+                setPos(prev => (samePos(prev, r) ? prev : r));
+            }
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [show, step, current?.target]);
     useEffect(() => {
         if (!show) return;
         const onKey = (e) => { if (e.key === 'Escape') onDone(); if (e.key === 'ArrowRight') advance(); if (e.key === 'ArrowLeft' && step > 0) setStep(s => s - 1); };
