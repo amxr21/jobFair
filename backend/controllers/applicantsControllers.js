@@ -164,9 +164,8 @@ const getApplicant = async (req, res) => {
         return res.status(404).json({error: "No such id for an applicant"})
     }
 
-    const applicant = await ApplicantModel.findById(id);
-
     try{
+        const applicant = await ApplicantModel.findById(id);
         res.status(200).json(applicant);
     } catch(error){
         console.log(error);
@@ -355,11 +354,8 @@ const getApplicantFlag = async (req, res) => {
     
     
     
-    const applicant = await ApplicantModel.findById(id);
     try {
-        // console.log(id);
-        // console.log(applicant);
-
+        const applicant = await ApplicantModel.findById(id);
         res.status(200).json(applicant)
 
     } catch(error){
@@ -530,9 +526,12 @@ const apply = async (req, res) => {
 
 
 const getCompanies = async (req, res) => {
-    const companies = await UserModel.find({});
-
-    res.json(companies)
+    try {
+        const companies = await UserModel.find({});
+        res.json(companies)
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 }
 
 
@@ -543,9 +542,8 @@ const getCompany = async (req, res) => {
     }
 
 
-    const company = await UserModel.findById(id)
-
     try{
+        const company = await UserModel.findById(id)
         res.json(company)
     } catch(error){
         return res.json({error: error});

@@ -15,7 +15,9 @@ if (isDemo) {
     const mongoose = require("mongoose");
     const uri = process.env.URI;
 
-    mongoose.connect(uri)
+    mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 10000,
+    })
         .then(() => {
             console.log("DB Connected successfully");
         })
