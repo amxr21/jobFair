@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLogin } from "../Hooks/useLogin";
+import { useLogin } from "../hooks/useLogin";
 import { AuthFormOverlay, Input } from "../components";
 
 const LoginFunc = () => {

@@ -2,7 +2,7 @@ import { PieChart } from '@mui/x-charts/PieChart';
 import { ChartTitle } from './index';
 
 import { FieldFilter } from "./index"
-import useStatsticsFilter from '../Hooks/useStatsticsFilter';
+import useStatsticsFilter from '../hooks/useStatsticsFilter';
 
 const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
 

@@ -3,7 +3,7 @@ import { OfficeLogo, PageLink, UniLogo, AccessButtons } from "./index";
 
 import { useEffect, useState } from "react";
 
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import axios from "axios";
 
 const NavBar = ({link}) => {

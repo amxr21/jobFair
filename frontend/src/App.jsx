@@ -6,7 +6,7 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, NotFound, EventSettings } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
-import { useAuthContext } from "./Hooks/useAuthContext";
+import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
 import { ToastProvider } from "./components/Toast";

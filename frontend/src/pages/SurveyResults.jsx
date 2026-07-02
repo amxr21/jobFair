@@ -1,7 +1,7 @@
 import { QuestionsContainer, TopBar } from "../components"
-import { SurveyContextProvider } from "../Context/SurveyContext"
-import { useAuthContext } from "../Hooks/useAuthContext"
-import { AnswersContextProvider, AnswersContext } from "../Context/AnswersContext"
+import { SurveyContextProvider } from "../context/SurveyContext"
+import { useAuthContext } from "../hooks/useAuthContext"
+import { AnswersContextProvider, AnswersContext } from "../context/AnswersContext"
 import { useContext } from "react"
 
 

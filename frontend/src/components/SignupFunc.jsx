@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSignUp } from "../Hooks/useSignUp";
+import { useSignUp } from "../hooks/useSignUp";
 import { Input, SelectInput, MultiSelectInput, StepTimeline, AuthFormOverlay } from "../components";
 import { INDUSTRY_FIELDS } from "./MultiSelectInput";
 import axios from "axios";

@@ -3,8 +3,8 @@ import QRCode from "qrcode.react";
 import { Link } from "react-router-dom"
 import "../style.css"
 
-import { useLogout } from "../Hooks/useLogout"
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useLogout } from "../hooks/useLogout"
+import { useAuthContext } from "../hooks/useAuthContext";
 
 const AccessButtons = ({otherClasses}) => {
     const [ visible, setVisible ] = useState(false);

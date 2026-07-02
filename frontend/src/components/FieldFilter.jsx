@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-import useStatsticsFilter from "../Hooks/useStatsticsFilter"
+import useStatsticsFilter from "../hooks/useStatsticsFilter"
 
 const FieldFilter = ({dataCategory}) => {
   

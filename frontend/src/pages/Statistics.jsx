@@ -3,9 +3,9 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 
 import { BarChartElement, StatisticsElement, TopBar, PieChartElement, TopStatistic, AdvancedAnalytics } from "../components/index";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
-import { StatsticTypeProvider } from "../Context/StatsticTypeContext"
+import { StatsticTypeProvider } from "../context/StatsticTypeContext"
 
 import { StarIcon, LightningIcon, TrendIcon, GraduationIcon, ChartIcon } from "../components/Icons";
 import { useToast } from "../components/Toast";

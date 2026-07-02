@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { PageContainer } from "../components/index";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 

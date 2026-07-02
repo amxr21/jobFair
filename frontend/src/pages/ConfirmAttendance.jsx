@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { API_URL } from "../config/api";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import CareerFairBg from "../assets/images/career-fair-bg.jpg";
 import UniLogoWhite from "../assets/images/uniLogo-white.svg";
 import CastoLogoWhite from "../assets/images/castoLogo-white.svg";

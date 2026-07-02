@@ -1,10 +1,10 @@
 import SurveySection from "../components/SurveySection";
 
 import { useContext, useEffect, useState } from "react";
-import { SurveyContext, SurveyContextProvider } from "../Context/SurveyContext";
-import { AnswersContext } from "../Context/AnswersContext";
+import { SurveyContext, SurveyContextProvider } from "../context/SurveyContext";
+import { AnswersContext } from "../context/AnswersContext";
 
-import { useAuthContext } from "../Hooks/useAuthContext"
+import { useAuthContext } from "../hooks/useAuthContext"
 
 
 import axios from "axios";

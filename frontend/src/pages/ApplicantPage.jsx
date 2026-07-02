@@ -1,7 +1,7 @@
 import Header from "../components/ApplicantPage/Header";
 import QuickApplyForm from "../components/ApplicantPage/QuickApplyForm";
 
-import { IdProvider } from "../Context/IdContext";
+import { IdProvider } from "../context/IdContext";
 
 
 const ApplicantPage = () => {

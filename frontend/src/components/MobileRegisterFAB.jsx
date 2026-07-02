@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import axios from "axios";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { useLocation } from "react-router-dom";
 import Success from "./Success";
 import { API_URL as link } from "../config/api";

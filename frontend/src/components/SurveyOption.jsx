@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react"
 import OptionResponses from "./OptionResponses"
-import { SurveyContext } from "../Context/SurveyContext"
-import { AnswersContext } from "../Context/AnswersContext"
+import { SurveyContext } from "../context/SurveyContext"
+import { AnswersContext } from "../context/AnswersContext"
 
 const SurveyOption = ({ label, selected, handleClick, handleChange, type, page, index, questionText, optionIndex }) => {
     const { allResponses } = useContext(SurveyContext)

@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 
-import { useAuthContext } from "../Hooks/useAuthContext"
+import { useAuthContext } from "../hooks/useAuthContext"
 import Success from "./Success";
 
 

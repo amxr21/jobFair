@@ -6,7 +6,7 @@ import axios, { all } from "axios"
 import SubmitSurveyButton from "./SubmitSurveyButton"
 import SubmittingCover from "./SubmittingCover"
 import { BarChart } from '@mui/x-charts/BarChart';
-import { SurveyContext } from "../Context/SurveyContext"
+import { SurveyContext } from "../context/SurveyContext"
 import { NoAnswer, OpenEndedResponse } from "./index"
 
 

@@ -3,7 +3,7 @@ import axios from "axios";
 import { createPortal } from "react-dom";
 
 import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
 import { useToast } from "../components/Toast";
 

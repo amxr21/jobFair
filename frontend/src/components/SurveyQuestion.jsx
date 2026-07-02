@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import SurveyOption from "./SurveyOption"
 
-import { SurveyContext } from '../Context/SurveyContext'
+import { SurveyContext } from '../context/SurveyContext'
 
 
 import axios from "axios"

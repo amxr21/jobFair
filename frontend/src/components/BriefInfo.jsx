@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState, useContext } from 'react';
 import axios from 'axios';
 import QRCode from 'qrcode.react';
 import { API_URL as link } from "../config/api";
-import { useAuthContext } from "../Hooks/useAuthContext";
-import { ApplicantsContext } from '../Context/ApplicantsContext';
+import { useAuthContext } from "../hooks/useAuthContext";
+import { ApplicantsContext } from '../context/ApplicantsContext';
 
 const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status, graduationYear, flag, shortlistedByStatus, rejectedByStatus, sidebarMode = false, isOtherTab = false, onTake }) => {
     const { user } = useAuthContext();

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL } from "../config/api";
 import SectionCard from "../components/SectionCard";
 import TagPill from "../components/TagPill";

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useRef, useState, useCallback } from "react";
 
-import { useAuthContext } from "../Hooks/useAuthContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 import { Row, TableHeader, BarButtons, FlagButton, NoApplicants, LoadingApplicants, ScrollToTopButton, PageContainer, FilterDropdown } from "./index";
 import TourGuide, { APPLICANTS_TOUR_KEY } from "./TourGuide";
 import { useToast } from "./Toast";
