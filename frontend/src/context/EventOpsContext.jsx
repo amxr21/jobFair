@@ -179,6 +179,7 @@ export const EventOpsProvider = ({ children }) => {
     });
     const [actingAs, setActingAsState] = useState(() => localStorage.getItem(ACTING_KEY) || DEFAULT_TEAM[0].id);
     const [realCompanies, setRealCompanies] = useState([]);
+    const [companyIds, setCompanyIds] = useState({}); // companyName -> _id, for View As previews
     const saveTimer = useRef(null);
 
     const authHeaders = () => {
@@ -197,6 +198,9 @@ export const EventOpsProvider = ({ children }) => {
                 const res = await axios.get(`${API_URL}/companies`);
                 if (Array.isArray(res?.data)) {
                     setRealCompanies(res.data.map((c) => c.companyName).filter(Boolean));
+                    const idMap = {};
+                    res.data.forEach((c) => { if (c.companyName && c._id) idMap[c.companyName] = c._id; });
+                    setCompanyIds(idMap);
                 }
             } catch { /* ignore */ }
         })();
@@ -295,7 +299,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyView, addStaffer, removeStaffer, updateStafferProfile }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile }}>
             {children}
         </EventOpsContext.Provider>
     );

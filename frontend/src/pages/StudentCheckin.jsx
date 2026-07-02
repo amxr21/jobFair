@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { API_URL } from "../config/api";
 import CareerFairBg from "../assets/images/career-fair-bg.jpg";
 import UniLogoWhite from "../assets/images/uniLogo-white.svg";
@@ -25,16 +26,44 @@ const StudentCheckin = () => {
     const [savingProfile, setSavingProfile] = useState(false);
 
     const [uniId, setUniId] = useState("");
+    const [manualMode, setManualMode] = useState(false);
     const [checking, setChecking] = useState(false);
     const [result, setResult] = useState(null); // { type: 'success'|'error', message, name }
     const [myLog, setMyLog] = useState([]);
     const inputRef = useRef(null);
+    const scannerRef = useRef(null);
 
     const needsProfile = session && session.status === "invited";
+    const readyToScan = session && !needsProfile;
 
     useEffect(() => {
-        if (session) inputRef.current?.focus();
-    }, [session]);
+        if (session && manualMode) inputRef.current?.focus();
+    }, [session, manualMode]);
+
+    // QR camera is the primary check-in method — same pattern used elsewhere
+    // in the app (BarButtons/MobileRegisterFAB): the printed QR encodes the
+    // applicant's Mongo _id, sanitized before use.
+    useEffect(() => {
+        if (!readyToScan || manualMode) return;
+        let scanner;
+        let scanLocked = false; // guards against re-firing on the same still-visible QR
+        const timeout = setTimeout(() => {
+            scanner = new Html5QrcodeScanner("staff-reader", { qrbox: { width: 220, height: 220 }, fps: 10 });
+            scannerRef.current = scanner;
+            const onSuccess = async (decodedText) => {
+                if (scanLocked) return;
+                scanLocked = true;
+                await checkInByQr(decodedText.replace(/[^a-zA-Z0-9]/g, ""));
+                setTimeout(() => { scanLocked = false; }, 2000);
+            };
+            scanner.render(onSuccess, () => {});
+        }, 100);
+        return () => {
+            clearTimeout(timeout);
+            scannerRef.current?.clear().catch(() => {});
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [readyToScan, manualMode]);
 
     const login = async () => {
         if (!code.trim()) return;
@@ -77,24 +106,30 @@ const StudentCheckin = () => {
         }
     };
 
-    const checkIn = async () => {
-        if (!uniId.trim() || !session) return;
+    const submitCheckin = async (body, resetField) => {
+        if (!session || checking) return;
         setChecking(true);
         setResult(null);
         try {
-            const res = await axios.patch(`${API_URL}/attendance-staff/checkin`, {
-                code: session.code, uniId: uniId.trim(),
-            });
-            const name = res.data.applicant?.applicantDetails?.fullName || uniId.trim();
+            const res = await axios.patch(`${API_URL}/attendance-staff/checkin`, { code: session.code, ...body });
+            const name = res.data.applicant?.applicantDetails?.fullName || res.data.applicant?.applicantDetails?.uniId || "Student";
+            const scannedUniId = res.data.applicant?.applicantDetails?.uniId || body.uniId || "";
             setResult({ type: "success", message: `${name} checked in`, name });
-            setMyLog((prev) => [{ id: Date.now(), uniId: uniId.trim(), name, at: new Date().toISOString() }, ...prev]);
-            setUniId("");
+            setMyLog((prev) => [{ id: Date.now(), uniId: scannedUniId, name, at: new Date().toISOString() }, ...prev]);
+            resetField?.();
         } catch (err) {
             setResult({ type: "error", message: err.response?.data?.error || "Check-in failed" });
         } finally {
             setChecking(false);
-            inputRef.current?.focus();
+            if (manualMode) inputRef.current?.focus();
         }
+    };
+
+    const checkInByQr = (applicantId) => submitCheckin({ applicantId });
+
+    const checkIn = () => {
+        if (!uniId.trim()) return;
+        submitCheckin({ uniId: uniId.trim() }, () => setUniId(""));
     };
 
     return (
@@ -175,20 +210,36 @@ const StudentCheckin = () => {
                         </div>
 
                         <div className="p-5 flex flex-col gap-3 shrink-0 border-b border-gray-100">
-                            <label className="text-xs font-medium text-gray-500">University ID</label>
-                            <div className="flex gap-2">
-                                <input
-                                    ref={inputRef}
-                                    value={uniId}
-                                    onChange={(e) => setUniId(e.target.value)}
-                                    onKeyDown={(e) => e.key === "Enter" && checkIn()}
-                                    placeholder="e.g. 202110001"
-                                    className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
-                                />
-                                <button onClick={checkIn} disabled={checking || !uniId.trim()} className="px-4 py-2.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
-                                    {checking ? "…" : "Check In"}
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-medium text-gray-500">
+                                    {manualMode ? "University ID" : "Scan the student's QR code"}
+                                </label>
+                                <button
+                                    onClick={() => { setManualMode((v) => !v); setResult(null); }}
+                                    className="text-[11px] font-medium text-blue-600 hover:underline"
+                                >
+                                    {manualMode ? "Use camera instead" : "Enter ID manually"}
                                 </button>
                             </div>
+
+                            {manualMode ? (
+                                <div className="flex gap-2">
+                                    <input
+                                        ref={inputRef}
+                                        value={uniId}
+                                        onChange={(e) => setUniId(e.target.value)}
+                                        onKeyDown={(e) => e.key === "Enter" && checkIn()}
+                                        placeholder="e.g. 202110001"
+                                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    />
+                                    <button onClick={checkIn} disabled={checking || !uniId.trim()} className="px-4 py-2.5 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50">
+                                        {checking ? "…" : "Check In"}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div id="staff-reader" className="rounded-lg overflow-hidden [&_video]:rounded-lg" />
+                            )}
+
                             {result && (
                                 <div className={`text-xs rounded-lg px-3 py-2 ${result.type === "success" ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}>
                                     {result.message}
@@ -199,7 +250,7 @@ const StudentCheckin = () => {
                         <div className="p-5 flex-1 overflow-y-auto min-h-0">
                             <p className="text-xs font-semibold text-gray-500 mb-2">Checked in by you today ({myLog.length})</p>
                             {myLog.length === 0 ? (
-                                <p className="text-xs text-gray-400 text-center py-6">No check-ins yet — enter a University ID above.</p>
+                                <p className="text-xs text-gray-400 text-center py-6">No check-ins yet — scan a student's QR code above.</p>
                             ) : (
                                 <div className="flex flex-col gap-1.5">
                                     {myLog.map((c) => (

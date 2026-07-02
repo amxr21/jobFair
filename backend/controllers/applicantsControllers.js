@@ -878,9 +878,18 @@ const getEventOps = async (req, res) => {
     }
 };
 
+// Merges rather than replaces: two independent CASTO sessions (or the public
+// attendance-staff endpoints, which read-modify-write this same document)
+// each hold their own slightly-stale copy of the full eventOps object. A
+// wholesale overwrite from whichever one saves last would silently wipe out
+// sections the other session never touched — e.g. a staffer's access code
+// added moments earlier by a different tab. Shallow-merging top-level keys
+// means "this save only intended to change X" doesn't clobber Y.
 const updateEventOps = async (req, res) => {
     try {
-        const saved = await SettingsModel.setSetting('eventOps', req.body, req.user?.email || null);
+        const current = await SettingsModel.getSetting('eventOps', {});
+        const merged = { ...(current || {}), ...req.body };
+        const saved = await SettingsModel.setSetting('eventOps', merged, req.user?.email || null);
         res.status(200).json(saved.value);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -926,18 +935,23 @@ const updateAttendanceStaffProfile = async (req, res) => {
     }
 };
 
-// Public: checks a student in by university ID, gated by the staffer's code.
+// Public: checks a student in, gated by the staffer's code. Primary path is
+// scanning the applicant's printed QR code (which encodes their Mongo _id —
+// same value the CASTO-side scanners already use); manual University ID
+// entry is the fallback when the camera isn't usable.
 // Logs the check-in under that staffer's name so they can see their own list.
 const checkinByStaff = async (req, res) => {
     try {
-        const { code, uniId } = req.body;
+        const { code, applicantId, uniId } = req.body;
         const eventOps = await SettingsModel.getSetting('eventOps', null);
         const staffer = findStaffer(eventOps, code);
         if (!staffer) return res.status(401).json({ error: "Invalid access code" });
-        if (!uniId?.trim()) return res.status(400).json({ error: "University ID is required" });
+        if (!applicantId?.trim() && !uniId?.trim()) return res.status(400).json({ error: "Scan a QR code or enter a University ID" });
 
-        const applicant = await ApplicantModel.findOne({ "applicantDetails.uniId": uniId.trim() });
-        if (!applicant) return res.status(404).json({ error: "No applicant found with that University ID" });
+        const applicant = applicantId?.trim() && mongoose.Types.ObjectId.isValid(applicantId.trim())
+            ? await ApplicantModel.findById(applicantId.trim())
+            : await ApplicantModel.findOne({ "applicantDetails.uniId": uniId?.trim() });
+        if (!applicant) return res.status(404).json({ error: "No matching applicant found" });
         if (applicant.attended) return res.status(409).json({ error: "Already checked in", applicant });
 
         applicant.attended = true;

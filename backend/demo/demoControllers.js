@@ -376,8 +376,9 @@ let EVENT_OPS = null;
 const getEventOps = (req, res) => {
     res.status(200).json(EVENT_OPS);
 };
+// Merges rather than replaces — see the real-mode controller for why
 const updateEventOps = (req, res) => {
-    EVENT_OPS = req.body;
+    EVENT_OPS = { ...(EVENT_OPS || {}), ...req.body };
     res.status(200).json(EVENT_OPS);
 };
 
@@ -406,14 +407,18 @@ const updateAttendanceStaffProfile = (req, res) => {
     res.status(200).json({ id: updated.id, name: updated.name, email: updated.email, phone: updated.phone, status: updated.status });
 };
 
+// Primary path is scanning the applicant's QR code (encodes their _id, same
+// as the CASTO-side scanners); manual University ID entry is the fallback.
 const checkinByStaff = (req, res) => {
-    const { code, uniId } = req.body;
+    const { code, applicantId, uniId } = req.body;
     const staffer = findStaffer(code);
     if (!staffer) return res.status(401).json({ error: "Invalid access code" });
-    if (!uniId?.trim()) return res.status(400).json({ error: "University ID is required" });
+    if (!applicantId?.trim() && !uniId?.trim()) return res.status(400).json({ error: "Scan a QR code or enter a University ID" });
 
-    const applicant = APPLICANTS.find((a) => a.applicantDetails?.uniId === uniId.trim());
-    if (!applicant) return res.status(404).json({ error: "No applicant found with that University ID" });
+    const applicant = applicantId?.trim()
+        ? APPLICANTS.find((a) => a._id === applicantId.trim())
+        : APPLICANTS.find((a) => a.applicantDetails?.uniId === uniId.trim());
+    if (!applicant) return res.status(404).json({ error: "No matching applicant found" });
     if (applicant.attended) return res.status(409).json({ error: "Already checked in", applicant });
 
     applicant.attended = true;

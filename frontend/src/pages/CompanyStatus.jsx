@@ -175,7 +175,11 @@ const STATUS_CONFIG = {
     },
 };
 
-const CompanyStatus = () => {
+// viewCompanyId + readOnly let this page render another company's status
+// read-only (used by Event Settings > View As) without touching the real
+// logged-in session — defaults to the current user's own company/status
+// page when omitted, which is the normal, unchanged behavior.
+const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
     const { user } = useAuthContext();
     const [companyData, setCompanyData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -185,7 +189,7 @@ const CompanyStatus = () => {
     const [applicantsCount, setApplicantsCount] = useState(0);
 
     const storedUser = JSON.parse(localStorage.getItem('user'));
-    const userId = storedUser?.user_id;
+    const userId = viewCompanyId || storedUser?.user_id;
 
     useEffect(() => {
         const fetchCompanyData = async () => {
@@ -193,6 +197,7 @@ const CompanyStatus = () => {
                 setLoading(true);
                 const res = await axios.get(`${API_URL}/companies/${userId}`);
                 if (res?.data) setCompanyData(res.data);
+                return res?.data;
             } catch (err) {
                 setError("Failed to load company information");
             } finally {
@@ -200,9 +205,11 @@ const CompanyStatus = () => {
             }
         };
 
-        const fetchApplicantsCount = async () => {
+        // In view-as mode this must resolve to the previewed company's own
+        // name, not the CASTO admin's — companyData isn't set yet when this
+        // effect starts, so fetch it fresh instead of trusting storedUser
+        const fetchApplicantsCount = async (companyName) => {
             try {
-                const companyName = storedUser?.companyName;
                 if (!companyName) return;
                 const res = await axios.get(
                     `${API_URL}/applicants?company=${encodeURIComponent(companyName)}&limit=1`,
@@ -212,7 +219,10 @@ const CompanyStatus = () => {
             } catch { /* silently ignore */ }
         };
 
-        if (userId) { fetchCompanyData(); fetchApplicantsCount(); }
+        if (userId) {
+            fetchCompanyData().then((data) => fetchApplicantsCount(readOnly ? data?.companyName : storedUser?.companyName));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 
     const handleConfirmAttendance = async () => {
@@ -254,6 +264,12 @@ const CompanyStatus = () => {
 
     return (
         <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-auto p-3 md:p-4 animate-fadeIn">
+            {readOnly && (
+                <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 text-xs text-blue-700 font-medium">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                    Preview mode — this is exactly what {companyData?.companyName || "this company"} sees. Nothing here can be changed.
+                </div>
+            )}
             <div className="bg-white rounded-lg p-3 md:p-4 border border-gray-100 shadow-sm">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -281,7 +297,7 @@ const CompanyStatus = () => {
                             {status === 'Canceled' && 'Participation canceled'}
                         </p>
                         <p className={`text-xs ${cfg.sub}`}>{cfg.msg}</p>
-                        {status === 'Pending' && (
+                        {status === 'Pending' && !readOnly && (
                             <div className="mt-2.5">
                                 <button onClick={handleConfirmAttendance} disabled={isConfirming}
                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0E7F41] text-white rounded-lg text-xs font-medium hover:bg-[#0a5f31] transition-colors disabled:opacity-50">
