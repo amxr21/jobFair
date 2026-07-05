@@ -8,7 +8,7 @@ import { useToast } from "../components/Toast";
 import CompactSelect from "../components/CompactSelect";
 import Modal from "../components/Modal";
 import { API_URL } from "../config/api";
-import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, TabIcon } from "../components/EventSettingsShared";
+import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, TabIcon, Highlight } from "../components/EventSettingsShared";
 
 // ─── Booth floor map (circular hall, center island, hover info, hide toggle) ──
 
@@ -555,6 +555,8 @@ const EquipmentLogistics = () => {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ company: "", booth: "", item: "", qtyReq: "1" });
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   const total = (kw) => allRows.filter((r) => kw.some((k) => r.item.toLowerCase().includes(k))).reduce((a, r) => a + r.qtyReq, 0);
 
@@ -588,6 +590,31 @@ const EquipmentLogistics = () => {
     update("equipment", `Marked ${row.item} for ${row.entity} as unfulfilled`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: 0, status: "Pending", ...who } : r)));
     toast(`${row.item} marked unfulfilled`, { type: "warning" });
+  };
+
+  // Split "Company / Booth" back into parts for editing, then recompose on save
+  // so the stored `entity` string shape is preserved.
+  const startEdit = (row) => {
+    const [company, booth] = String(row.entity || "").split("/").map((s) => s.trim());
+    setEditingId(row.id);
+    setEditForm({ company: company || "", booth: booth || "", item: row.item, qtyReq: row.qtyReq, qtyFul: row.qtyFul });
+  };
+  const cancelEdit = () => { setEditingId(null); setEditForm({}); };
+  const saveEdit = (row) => {
+    if (!editForm.item?.trim()) { toast("Item is required", { type: "error" }); return; }
+    const entity = editForm.booth?.trim() ? `${editForm.company} / ${editForm.booth.trim()}` : editForm.company;
+    const qtyReq = Number(editForm.qtyReq) || 1;
+    const qtyFul = Math.min(Number(editForm.qtyFul) || 0, qtyReq);
+    const status = qtyFul === 0 ? "Pending" : qtyFul >= qtyReq ? "Fulfilled" : "Partial";
+    update("equipment", `Edited ${editForm.item} for ${entity}`, (prev, who) =>
+      prev.map((r) => (r.id === row.id ? { ...r, entity, item: editForm.item.trim(), qtyReq, qtyFul, status, ...who } : r)));
+    toast("Equipment updated", { type: "success" });
+    cancelEdit();
+  };
+  const removeItem = (row) => {
+    update("equipment", `Removed ${row.item} for ${row.entity}`, (prev) => prev.filter((r) => r.id !== row.id));
+    toast(`Removed ${row.item}`, { type: "info" });
+    if (editingId === row.id) cancelEdit();
   };
 
   return (
@@ -648,24 +675,47 @@ const EquipmentLogistics = () => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {rows.map((row) => editingId === row.id ? (
+              <tr key={row.id} className="border-b border-blue-100 bg-blue-50/40">
+                <td className="px-4 py-2">
+                  <div className="flex gap-1.5">
+                    <CompactSelect className="text-xs min-w-[130px]" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} options={allCompanyNames} placeholder="Company" />
+                    <input className={`text-xs w-20 ${inputCls}`} placeholder="Booth" value={editForm.booth} onChange={(e) => setEditForm((f) => ({ ...f, booth: e.target.value }))} />
+                  </div>
+                </td>
+                <td className="px-4 py-2"><input className={`text-xs ${inputCls}`} value={editForm.item} onChange={(e) => setEditForm((f) => ({ ...f, item: e.target.value }))} /></td>
+                <td className="px-4 py-2"><input type="number" min="1" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyReq} onChange={(e) => setEditForm((f) => ({ ...f, qtyReq: e.target.value }))} /></td>
+                <td className="px-4 py-2"><input type="number" min="0" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyFul} onChange={(e) => setEditForm((f) => ({ ...f, qtyFul: e.target.value }))} /></td>
+                <td className="px-4 py-2 text-[10px] text-gray-400" colSpan={2}>Status is set from fulfilled vs requested</td>
+                <td className="px-4 py-2">
+                  <div className="flex gap-1.5">
+                    <button onClick={() => saveEdit(row)} className="text-xs font-semibold text-white rounded-lg px-2.5 py-1" style={{ background: "#0E7F41" }}>Save</button>
+                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-2 py-1">Cancel</button>
+                  </div>
+                </td>
+              </tr>
+            ) : (
               <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                <td className="px-4 py-3 text-xs font-medium text-gray-600">{row.entity}</td>
-                <td className="px-4 py-3 text-gray-800">{row.item}</td>
+                <td className="px-4 py-3 text-xs font-medium text-gray-600"><Highlight text={row.entity} query={search} /></td>
+                <td className="px-4 py-3 text-gray-800"><Highlight text={row.item} query={search} /></td>
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyReq}</td>
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyFul}</td>
                 <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
                 <td className="px-4 py-3"><LastEdited row={row} /></td>
                 <td className="px-4 py-3">
-                  {row.status === "Fulfilled" ? (
-                    <button onClick={() => unfulfillItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 hover:text-red-600 transition-colors text-gray-500">
-                      Unfulfill
-                    </button>
-                  ) : (
-                    <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                      Fulfill
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {row.status === "Fulfilled" ? (
+                      <button onClick={() => unfulfillItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 hover:text-red-600 transition-colors text-gray-500">
+                        Unfulfill
+                      </button>
+                    ) : (
+                      <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                        Fulfill
+                      </button>
+                    )}
+                    <button onClick={() => startEdit(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-100 transition-colors text-gray-500">Edit</button>
+                    <button onClick={() => removeItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2 py-1 text-red-500 hover:bg-red-50 transition-colors">✕</button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -771,7 +821,7 @@ const DelegateList = () => {
             <div key={company.company} className="rounded-xl border border-gray-200 overflow-hidden">
               <button onClick={() => toggle(company.company)} className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="font-semibold text-gray-800 text-sm truncate">{company.company}</span>
+                  <span className="font-semibold text-gray-800 text-sm truncate"><Highlight text={company.company} query={search} /></span>
                   {empty ? (
                     <Badge label="No delegates yet" color="gray" />
                   ) : (
@@ -1445,7 +1495,7 @@ const AccessPasses = () => {
           {byCompany.map(([company, rows]) => (
             <div key={company} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-gray-800 text-sm truncate">{company}</p>
+                <p className="font-semibold text-gray-800 text-sm truncate"><Highlight text={company} query={companySearch} /></p>
                 {rows.length > 0
                   ? <Badge label={`${rows.length} passes`} color="blue" />
                   : <Badge label="No passes yet" color="gray" />}
