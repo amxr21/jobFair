@@ -9,3 +9,7 @@ node_modules/
 
 # generated migration seed data contains real applicant/company PII
 migrations/seed.sql
+
+# TLS CA certs (e.g. Aiven ca.pem)
+certs/
+*.pem
