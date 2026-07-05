@@ -33,6 +33,10 @@ if (wantsSsl) {
     password: decodeURIComponent(parsed.password),
     database: parsed.pathname.slice(1),
     ssl,
+    // Cross-region latency (e.g. Render US/EU ↔ Aiven Bangalore) pushes the
+    // TLS + auth handshake past the driver's 1s default connectTimeout, so
+    // the pool never gets a single connection and times out generically.
+    connectTimeout: 15000,
   };
 }
 
