@@ -32,7 +32,7 @@ const {
     bulkImportCompanies, lookupApplicantByUniId, getMyCheckins,
     getCompanyLoginEmails, addCompanyLoginEmail, removeCompanyLoginEmail, updateCompanyProfile,
     getCastoTeam, inviteCastoTeamMember, updateCastoTeamMember, removeCastoTeamMember,
-    uploadBannerArtwork,
+    uploadBannerArtwork, getEmailActivity,
 } = controllers;
 
 const router = express.Router();
@@ -100,6 +100,10 @@ if (getCastoTeam) {
 }
 if (uploadBannerArtwork) {
     router.post("/banners/:id/artwork", uploadArtwork.single("artwork"), uploadBannerArtwork);
+}
+// Developer-only email activity (real mode only — demo has no email path)
+if (getEmailActivity) {
+    router.get("/dev/email-activity", getEmailActivity);
 }
 
 router.get("/", testFunc);
