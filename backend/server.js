@@ -18,8 +18,19 @@ if (isDemo) {
         .then(() => {
             console.log("DB Connected successfully");
         })
-        .catch((err) => {
+        .catch(async (err) => {
             console.error("DB connection error:", err.message);
+            // Prisma's pool wrapper swallows the real driver/TLS error behind a
+            // generic pool-timeout message. Retry with the raw mariadb driver
+            // (no pool) to surface what's actually failing underneath.
+            try {
+                const mariadb = require("mariadb");
+                const conn = await mariadb.createConnection({ ...prisma.poolConfig, connectTimeout: 10000 });
+                await conn.end();
+                console.error("Diagnostic: raw mariadb connection succeeded (Prisma pool config may differ).");
+            } catch (rawErr) {
+                console.error("Diagnostic: raw mariadb connection failed:", rawErr.code, "-", rawErr.message);
+            }
         });
 
     app.listen(process.env.PORT || 2000, () => {

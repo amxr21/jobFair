@@ -41,3 +41,4 @@ const adapter = new PrismaMariaDb(poolConfig);
 const prisma = new PrismaClient({ adapter });
 
 module.exports = prisma;
+module.exports.poolConfig = poolConfig;
