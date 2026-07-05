@@ -47,4 +47,41 @@ const upload = multer({
     }
 });
 
-module.exports = { cloudinary, upload };
+// Separate uploader for banner/branding artwork (Event Settings > Banners &
+// Branding) — images/PDFs, its own folder, distinct from the CV uploader
+// above (different allowed formats, no uniId in the filename since artwork
+// belongs to a booth/company, not an applicant).
+const artworkStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'jobfair-banner-artwork',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'pdf', 'ai', 'eps'],
+        resource_type: 'auto',
+        public_id: (req, file) => {
+            const label = (req.body.bannerId || 'banner').toString().trim().replace(/\s+/g, '_');
+            const timestamp = Date.now();
+            const originalName = file.originalname.replace(/\.[^/.]+$/, '').trim().replace(/\s+/g, '_');
+            return `${label}_${timestamp}_${originalName}`;
+        }
+    }
+});
+
+const uploadArtwork = multer({
+    storage: artworkStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB — print artwork files run larger than a CV
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedMimes = [
+            'image/jpeg', 'image/png', 'application/pdf',
+            'application/postscript', // .ai/.eps
+        ];
+        if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JPG, PNG, PDF, AI, or EPS files are allowed'), false);
+        }
+    }
+});
+
+module.exports = { cloudinary, upload, uploadArtwork };

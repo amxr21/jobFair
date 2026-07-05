@@ -6,3 +6,6 @@ node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# generated migration seed data contains real applicant/company PII
+migrations/seed.sql

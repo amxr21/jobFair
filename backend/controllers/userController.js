@@ -1,56 +1,120 @@
-const User = require("../models/userModel");
-const jwt = require("jsonwebtoken")
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const validator = require("validator");
 const dotenv = require("dotenv");
 dotenv.config();
 
+const prisma = require("../config/prisma");
 
-//this token is the key to sned and retrieve the adata safely between backend and front end 
-//review that vid again
 const createToken = (_id) => {
-    return jwt.sign({_id}, process.env.TOKEN_SIGN , {expiresIn: "3d"})
+    return jwt.sign({ _id }, process.env.TOKEN_SIGN, { expiresIn: "3d" });
+};
 
+// sector is now a MySQL ENUM (see schema.prisma). The signup form's
+// dropdown is already constrained to these 4 values, but the API
+// shouldn't trust that alone — an invalid/blank value would otherwise
+// throw a raw Prisma error and 500 the whole signup instead of a clean
+// validation message.
+const VALID_SECTORS = ["Private", "Semi", "Local", "Federal"];
+function toSectorOrNull(value) {
+    return VALID_SECTORS.includes(value) ? value : null;
 }
-
-
 
 const loginUser = async (req, res) => {
-    const { email, password, fields, representitives, companyName } = req.body;
-    try{
-        //modify the path later
-        const user = await User.login(email, password);
-        const user_id = user._id;
-        const token = createToken(user._id);
-        
-        
-        res.status(200).json({user_id, email, token, fields, representitives, companyName})
-
-    } catch(error){
-        if(req.password){
-            console.log("Incorrect password");
-            res.json({error: "Incorrect password"})
+    const { email, password } = req.body;
+    try {
+        if (!email || !password) {
+            throw Error("All fields must be filled");
         }
-        res.status(400).json({error: error.message})
-}
-}
 
+        // Primary email first; if not found, check whether this email was
+        // approved as an additional login for some company (shared
+        // password, mirrors how the CASTO office runs one login across
+        // several staff members — see CompanyLoginEmail).
+        let user = await prisma.company.findUnique({ where: { email } });
+        if (!user) {
+            const altEmail = await prisma.companyLoginEmail.findUnique({ where: { email }, include: { company: true } });
+            user = altEmail?.company ?? null;
+        }
+        if (!user) {
+            throw Error("Incorrect email");
+        }
 
+        const match = await bcrypt.compare(password, user.password);
+        if (!match) {
+            throw Error("Incorrect password");
+        }
+
+        const user_id = user.id;
+        const token = createToken(user.id);
+
+        // Echo the authoritative DB row's own values, not whatever the
+        // client happened to send in the request body.
+        res.status(200).json({
+            user_id, email, token,
+            fields: user.fields, representitives: user.representatives, companyName: user.companyName,
+            sector: user.sector, city: user.city, noOfPositions: user.noOfPositions,
+            preferredMajors: user.preferredMajors, opportunityTypes: user.opportunityTypes,
+            preferredQualities: user.preferredQualities,
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
 
 const signupUser = async (req, res) => {
     const { email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities } = req.body;
-    try{
-        //modify the path later
-        const user = await User.signup(email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities);
-        const user_id = user._id;
-        const token = createToken(user._id);
+    try {
+        if (!email || !password || !representitives || !fields || !companyName) {
+            throw Error("All fields must be filled");
+        }
+        if (!validator.isEmail(email)) {
+            throw Error("Email is not valid");
+        }
+        if (!validator.isStrongPassword(password)) {
+            throw Error("Password is not strong enough");
+        }
 
+        const exists = await prisma.company.findUnique({ where: { email } });
+        if (exists) {
+            throw Error("Email already in use");
+        }
 
-        res.status(200).json({user_id, email, token, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities})
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(password, salt);
 
-    } catch(error){
+        // Mongo ObjectIds were used as this table's primary key throughout
+        // the migration; new rows created via the app need an equivalent
+        // 24-char hex id since no AUTO_INCREMENT exists on this column.
+        const { ObjectId } = require("bson");
+        const id = new ObjectId().toHexString();
+
+        const user = await prisma.company.create({
+            data: {
+                id,
+                email,
+                password: hash,
+                fields,
+                representatives: representitives,
+                companyName,
+                sector: toSectorOrNull(sector),
+                city,
+                noOfPositions,
+                preferredMajors: preferredMajors ?? [],
+                opportunityTypes: opportunityTypes ?? [],
+                preferredQualities: preferredQualities ?? "",
+            },
+        });
+
+        const user_id = user.id;
+        const token = createToken(user.id);
+
+        res.status(200).json({ user_id, email, token, fields, representitives, companyName, sector: user.sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities });
+    } catch (error) {
         console.log("ERROR....");
-        res.status(400).json({error: error.message})
-}
-}
+        res.status(400).json({ error: error.message });
+    }
+};
 
 // Check for similar company names
 const checkSimilarCompanyName = async (req, res) => {
@@ -63,26 +127,23 @@ const checkSimilarCompanyName = async (req, res) => {
     try {
         const normalizedInput = companyName.toLowerCase().trim();
 
-        // Find all companies
-        const allCompanies = await User.find({}, 'companyName email');
+        const allCompanies = await prisma.company.findMany({
+            select: { id: true, companyName: true, email: true },
+        });
 
-        // Filter for similar names using Levenshtein distance-like approach
         const similarCompanies = allCompanies.filter(company => {
             if (!company.companyName) return false;
 
             const normalizedCompany = company.companyName.toLowerCase().trim();
 
-            // Check for exact match (case-insensitive)
             if (normalizedCompany === normalizedInput) {
                 return true;
             }
 
-            // Check if one contains the other
             if (normalizedCompany.includes(normalizedInput) || normalizedInput.includes(normalizedCompany)) {
                 return true;
             }
 
-            // Check for similar words (at least 70% of words match)
             const inputWords = normalizedInput.split(/\s+/).filter(w => w.length > 2);
             const companyWords = normalizedCompany.split(/\s+/).filter(w => w.length > 2);
 
@@ -100,7 +161,6 @@ const checkSimilarCompanyName = async (req, res) => {
                 }
             }
 
-            // Check for overall string similarity (typos, minor differences)
             if (normalizedInput.length > 5 && normalizedCompany.length > 5) {
                 const distance = levenshteinDistance(normalizedInput, normalizedCompany);
                 const maxLen = Math.max(normalizedInput.length, normalizedCompany.length);
@@ -113,7 +173,7 @@ const checkSimilarCompanyName = async (req, res) => {
 
             return false;
         }).map(company => ({
-            id: company._id,
+            id: company.id,
             companyName: company.companyName,
             email: company.email
         }));
@@ -152,10 +212,6 @@ const reinitializeCompany = async (req, res) => {
     const { existingCompanyId, email, password, fields, representitives, companyName, sector, city, noOfPositions, preferredMajors, opportunityTypes, preferredQualities } = req.body;
 
     try {
-        const bcrypt = require("bcrypt");
-        const validator = require("validator");
-
-        // Validate inputs
         if (!email || !password || !representitives || !fields || !companyName) {
             throw Error("All fields must be filled");
         }
@@ -166,42 +222,44 @@ const reinitializeCompany = async (req, res) => {
             throw Error("Password is not strong enough");
         }
 
-        // Check if the new email is already in use by another company
-        const emailExists = await User.findOne({ email, _id: { $ne: existingCompanyId } });
+        const emailExists = await prisma.company.findFirst({
+            where: { email, id: { not: existingCompanyId } },
+        });
         if (emailExists) {
             throw Error("Email already in use by another company");
         }
 
-        // Hash the new password
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(password, salt);
 
-        // Update the existing company
-        const updatedUser = await User.findByIdAndUpdate(
-            existingCompanyId,
-            {
-                email,
-                password: hash,
-                fields,
-                representitives,
-                companyName,
-                sector,
-                city,
-                noOfPositions,
-                preferredMajors,
-                opportunityTypes,
-                preferredQualities,
-                status: 'Pending', // Reset status on reinitialization
-                surveyResult: [] // Clear previous survey results
-            },
-            { new: true }
-        );
-
-        if (!updatedUser) {
+        let updatedUser;
+        try {
+            updatedUser = await prisma.company.update({
+                where: { id: existingCompanyId },
+                data: {
+                    email,
+                    password: hash,
+                    fields,
+                    representatives: representitives,
+                    companyName,
+                    sector: toSectorOrNull(sector),
+                    city,
+                    noOfPositions,
+                    preferredMajors: preferredMajors ?? [],
+                    opportunityTypes: opportunityTypes ?? [],
+                    preferredQualities: preferredQualities ?? "",
+                    status: "Pending",
+                },
+            });
+        } catch (updateError) {
             throw Error("Company not found");
         }
 
-        const user_id = updatedUser._id;
+        // Clear previous survey results for this company (was surveyResult: []
+        // on the Mongo document; now a set of rows in a separate table).
+        await prisma.companySurveyResponse.deleteMany({ where: { companyId: existingCompanyId } });
+
+        const user_id = updatedUser.id;
         const token = createToken(user_id);
 
         res.status(200).json({
@@ -209,7 +267,7 @@ const reinitializeCompany = async (req, res) => {
             email: updatedUser.email,
             token,
             fields: updatedUser.fields,
-            representitives: updatedUser.representitives,
+            representitives: updatedUser.representatives,
             companyName: updatedUser.companyName,
             sector: updatedUser.sector,
             city: updatedUser.city,
@@ -224,4 +282,4 @@ const reinitializeCompany = async (req, res) => {
     }
 };
 
-module.exports = { loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany }
+module.exports = { loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany, toSectorOrNull, levenshteinDistance };

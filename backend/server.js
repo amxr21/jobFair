@@ -12,10 +12,9 @@ if (isDemo) {
         console.log("[DEMO MODE] Demo login: use any credentials from the seed data");
     });
 } else {
-    const mongoose = require("mongoose");
-    const uri = process.env.URI;
+    const prisma = require("./config/prisma");
 
-    mongoose.connect(uri)
+    prisma.$queryRaw`SELECT 1`
         .then(() => {
             console.log("DB Connected successfully");
         })
