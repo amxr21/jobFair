@@ -126,7 +126,7 @@ const NavBar = ({ link }) => {
                     {isCASTOAdmin && (
                         <div ref={settingsGroupRef} className="relative flex flex-col gap-y-3 pt-3 border-t border-gray-100">
                             <SlidingPill containerRef={settingsGroupRef} />
-                            <PageLink link='event-settings' title={'Event Settings'} icon={'settings'} />
+                            <PageLink link='event-settings' title={'Event Settings'} icon={'settings'} matchPaths={['event-admin', 'view-as', 'dev']} />
                         </div>
                     )}
                     <AccessButtons />
