@@ -48,4 +48,21 @@ const userRoutes = require("./routers/userRoutes");
 app.use("/", routers);
 app.use("/user", userRoutes);
 
+// Anything not matched by the routers above (typo'd path, wrong method, etc.)
+// — without this Express 5 falls through to its default HTML 404 page.
+app.use((req, res) => {
+    res.status(404).json({ error: "Not found" });
+});
+
+// Last-resort safety net: any error a route handler forgot to catch (or a
+// middleware error, e.g. the CORS origin check throwing) lands here instead
+// of Express's default HTML error page / stack trace leak.
+app.use((err, req, res, next) => {
+    if (err.message?.startsWith("CORS:")) {
+        return res.status(403).json({ error: "Origin not allowed" });
+    }
+    console.error("Unhandled error:", err);
+    res.status(500).json({ error: "Internal server error" });
+});
+
 module.exports = app;

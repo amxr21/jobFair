@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-const User = require("../models/userModel")
+const prisma = require("../config/prisma")
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -13,7 +13,8 @@ const requireAuth = async (req, res, next) => {
     const token = authorization.split(" ")[1];
     try {
         const { _id } = jwt.verify(token, process.env.TOKEN_SIGN);
-        req.user = await User.findOne({ _id }).select("_id");
+        const company = await prisma.company.findUnique({ where: { id: _id }, select: { id: true, email: true } });
+        req.user = company ? { _id: company.id, email: company.email } : null;
         next();
     } catch (error) {
         res.status(401).json({ error: "Authorization token is invalid or missing" })
