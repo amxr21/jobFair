@@ -74,13 +74,20 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
     const parkingPasses = passes.filter((p) => p.type === "Parking");
     const entryPasses = passes.filter((p) => p.type !== "Parking");
 
-    const submitRequirement = () => {
-        if (!reqDesc.trim() || readOnly) return;
+    const submitRequirement = async () => {
+        if (!reqDesc.trim() || readOnly || reqSubmitting) return;
         setReqSubmitting(true);
-        update("requirements", `${companyName} requested: ${reqDesc.slice(0, 40)}`, (prev, who) =>
-            [...prev, { id: Date.now(), company: companyName, description: reqDesc.trim(), category: reqCategory.trim() || "General", priority: "Medium", status: "Open", notes: "Submitted by company", ...who }]);
-        setReqDesc(""); setReqCategory(""); setReqSubmitting(false); setReqDone(true);
-        setTimeout(() => setReqDone(false), 4000);
+        try {
+            await update("requirements", `${companyName} requested: ${reqDesc.slice(0, 40)}`, (prev, who) =>
+                [...(prev || []), { id: Date.now(), company: companyName, description: reqDesc.trim(), category: reqCategory.trim() || "General", priority: "Medium", status: "Open", notes: "Submitted by company", ...who }]);
+            setReqDesc(""); setReqCategory(""); setReqDone(true);
+            toast("Request submitted — CASTO will follow up", { type: "success" });
+            setTimeout(() => setReqDone(false), 4000);
+        } catch (err) {
+            toast("Couldn't submit your request. Please try again.", { type: "error" });
+        } finally {
+            setReqSubmitting(false);
+        }
     };
 
     return (
@@ -531,7 +538,16 @@ const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
                             </div>
                         </SectionCard>
                         <SectionCard title="Representatives">
-                            <div className="flex flex-wrap gap-1.5">{reps.map((rep, i) => <TagPill key={i} label={rep.trim()} variant="blue" />)}</div>
+                            {reps.length > 0 ? (
+                                <div className="flex flex-col gap-1.5">
+                                    {reps.map((rep, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                                            <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold flex items-center justify-center shrink-0">{rep.trim().charAt(0).toUpperCase()}</span>
+                                            <span className="truncate">{rep.trim()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : <p className="text-xs text-gray-400">None listed</p>}
                         </SectionCard>
                         <SectionCard title="Industry Fields">
                             <div className="flex flex-wrap gap-1.5">{fields.map((f, i) => <TagPill key={i} label={f} variant="cyan" />)}</div>

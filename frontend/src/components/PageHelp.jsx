@@ -12,6 +12,8 @@ import Modal from "./Modal";
 const HELP = {
     "/": {
         title: "Applicants",
+        icon: "👥",
+        tagline: "Browse, search, and action everyone who registered.",
         body: [
             "This is the live list of everyone who registered for the Job Fair. Search by name (matches are highlighted), filter, and open any applicant to see their full profile, CV, and QR ticket.",
             "As a company you can shortlist, flag, or reject applicants — each action is confirmed in your notification bell. CASTO sees every applicant across all companies.",
@@ -24,6 +26,8 @@ const HELP = {
     },
     "/managers": {
         title: "Companies & Cooperations",
+        icon: "🏢",
+        tagline: "Every registered company, searchable and expandable.",
         body: [
             "Every registered company in one place. Search by name (matches highlight as you type), filter by sector or field, and expand a company to see its profile, representatives, applicants, and admin actions.",
             "Use Send Reminders to nudge companies, and open a company card for full details or to cancel/delete a record.",
@@ -36,6 +40,8 @@ const HELP = {
     },
     "/statistics": {
         title: "Statistics",
+        icon: "📊",
+        tagline: "Aggregate insight across applicants and companies.",
         body: [
             "Aggregate insight across all applicants and companies — demographics, majors, GPA spread, attendance, and more. Use the filters to slice the data.",
         ],
@@ -46,6 +52,8 @@ const HELP = {
     },
     "/company-status": {
         title: "My Status",
+        icon: "✅",
+        tagline: "Your booth, passes, schedule, and check-in.",
         body: [
             "Your company's home for the event. The Overview tab shows your profile and applicant count; the Event Day tab shows your booth QR, banners, parking slot, entry passes, the event schedule, and lets you raise special requirements.",
             "When you arrive, check in by scanning your booth QR or tapping “I've arrived” on the Event Day tab.",
@@ -57,6 +65,8 @@ const HELP = {
     },
     "/company-settings": {
         title: "Company Settings",
+        icon: "⚙️",
+        tagline: "Profile, login access, and display preferences.",
         body: [
             "Edit your company profile, manage login access, confirm your attendance status, and adjust display preferences (font and size).",
         ],
@@ -66,6 +76,8 @@ const HELP = {
     },
     "/event-settings": {
         title: "Event Settings (Operations)",
+        icon: "🗂️",
+        tagline: "The operational hub for event day.",
         body: [
             "The operational hub for event day: booth assignments and floor map, banners, special requirements, equipment & logistics, delegate lists, attendance & check-in, the schedule, and access passes.",
             "Every change is stamped with who made it and shows up in the Activity Log. Companies see the relevant pieces live on their own Status page.",
@@ -77,6 +89,8 @@ const HELP = {
     },
     "/event-admin": {
         title: "Event Admin",
+        icon: "🛠️",
+        tagline: "Report, team & roles, imports, and previews.",
         body: [
             "Higher-level event administration: the post-event report, team & roles (who owns which module), importing companies, the activity log, and the View As preview tool.",
             "Reassigning a module owner is gated behind a two-step verification and notifies the team of exactly what changed.",
@@ -88,6 +102,8 @@ const HELP = {
     },
     "/view-as": {
         title: "View As (Preview)",
+        icon: "👁️",
+        tagline: "See what companies, staff, and students see.",
         body: [
             "Preview exactly what a company, an attendance staffer, or the public student check-in sees — read-only, without touching your real session or any data.",
         ],
@@ -97,11 +113,25 @@ const HELP = {
     },
     "/surveyResults": {
         title: "Survey Results",
+        icon: "📝",
+        tagline: "Post-event company survey responses.",
         body: [
             "Responses to the post-event company survey, aggregated for review.",
         ],
         related: [
             { to: "/statistics", label: "Statistics" },
+        ],
+    },
+    "/dev": {
+        title: "Developer — Email Activity",
+        icon: "🔧",
+        tagline: "Confirm nothing is emailing real people.",
+        body: [
+            "Shows whether outbound email is on or off (controlled by EMAIL_ENABLED in the backend), the From address, and a log of recent send attempts — sent vs skipped.",
+            "Use this to verify that testing (registering students, sending reminders) isn't emailing anyone while email is off.",
+        ],
+        related: [
+            { to: "/event-admin", label: "Event Admin" },
         ],
     },
 };
@@ -151,17 +181,26 @@ const PageHelp = ({ user }) => {
 
             <Modal visible={open} onClose={() => setOpen(false)} maxWidth="max-w-md">
                 <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
-                    <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">About this page</p>
-                        <h2 className="text-lg font-bold">{entry.title}</h2>
+                    <div className="flex items-center gap-3 min-w-0">
+                        <span className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center text-xl shrink-0" aria-hidden>{entry.icon || "ℹ️"}</span>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">About this page</p>
+                            <h2 className="text-lg font-bold truncate">{entry.title}</h2>
+                        </div>
                     </div>
-                    <button onClick={() => setOpen(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+                    <button onClick={() => setOpen(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors shrink-0" aria-label="Close">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
                 <div className="p-5 flex flex-col gap-3">
+                    {entry.tagline && (
+                        <p className="text-sm font-semibold text-gray-800">{entry.tagline}</p>
+                    )}
                     {entry.body.map((p, i) => (
-                        <p key={i} className="text-sm text-gray-600 leading-relaxed">{p}</p>
+                        <div key={i} className="flex items-start gap-2">
+                            <svg className="w-4 h-4 text-green-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                            <p className="text-sm text-gray-600 leading-relaxed">{p}</p>
+                        </div>
                     ))}
                     {related.length > 0 && (
                         <div className="pt-1">

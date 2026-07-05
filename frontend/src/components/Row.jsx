@@ -10,6 +10,7 @@ import StatusBadge from "./StatusBadge";
 import { DeveloperBadge } from './index'
 import { API_URL as rowApiLink } from "../config/api";
 import Modal from "./Modal";
+import EmailComposeModal from "./EmailComposeModal";
 
 import { ExpandIcon } from "./Icons";
 
@@ -260,6 +261,8 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [isDeletingCompany, setIsDeletingCompany] = useState(false);
     const [showDeleteCompanyConfirm, setShowDeleteCompanyConfirm] = useState(false);
+    const [applicantsOpen, setApplicantsOpen] = useState(false);
+    const [showEmailCompose, setShowEmailCompose] = useState(false);
 
     const [ isClicked, setIsClicked ] = useState(false)
 
@@ -471,10 +474,10 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                                        <a href={`mailto:${companyEmail}`} onClick={(e) => e.stopPropagation()} title="Email this company"
+                                        <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowEmailCompose(true); }} title="Email this company"
                                             className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                        </a>
+                                        </button>
                                         <button type="button" title="Copy email"
                                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (companyEmail) { navigator.clipboard.writeText(companyEmail); } }}
                                             className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
@@ -649,15 +652,18 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                     </div>
                                 </div>
 
-                                {/* Representatives */}
+                                {/* Representatives — these are people's names, so a
+                                    plain readable list reads better than tag pills */}
                                 <div className="bg-gray-50 rounded-lg p-3 md:p-4">
                                     <h3 className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 md:mb-3">Representatives</h3>
-                                    <div className="flex flex-wrap gap-1.5 md:gap-2">
-                                        {companyRepresentatives?.split(',').map((rep, idx) => (
-                                            <span key={idx} className="bg-blue-100 text-blue-800 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs">
-                                                {rep.trim()}
-                                            </span>
+                                    <div className="flex flex-col gap-1.5">
+                                        {companyRepresentatives?.split(',').map((r) => r.trim()).filter(Boolean).map((rep, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs md:text-sm text-gray-700">
+                                                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-semibold flex items-center justify-center shrink-0">{rep.charAt(0).toUpperCase()}</span>
+                                                <span className="truncate">{rep}</span>
+                                            </div>
                                         ))}
+                                        {!companyRepresentatives?.trim() && <p className="text-xs text-gray-400">None listed</p>}
                                     </div>
                                 </div>
 
@@ -709,12 +715,23 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                     </div>
                                 )}
 
-                                {/* Applicants List */}
+                                {/* Applicants List — collapsible so it doesn't dominate the modal */}
                                 {companyApplicants?.length > 0 && (
                                     <div className="bg-gray-50 rounded-lg p-3 md:p-4 md:col-span-2">
-                                        <h3 className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 md:mb-3">
-                                            Applicants ({companyApplicants.length})
-                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setApplicantsOpen((v) => !v); }}
+                                            className="w-full flex items-center justify-between mb-2 md:mb-3"
+                                        >
+                                            <h3 className="text-[10px] md:text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                                Applicants ({companyApplicants.length})
+                                            </h3>
+                                            <span className="flex items-center gap-1 text-[10px] md:text-xs text-gray-400">
+                                                {applicantsOpen ? "Hide" : "Show"}
+                                                <svg className={`w-3.5 h-3.5 transition-transform ${applicantsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                                            </span>
+                                        </button>
+                                        {applicantsOpen && (
                                         <div className="max-h-[200px] md:max-h-[280px] overflow-y-auto border border-gray-200 rounded-lg bg-white">
                                             {companyApplicants.map((applicant, idx) => (
                                                 <div
@@ -739,7 +756,8 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                                 </div>
                                             ))}
                                         </div>
-                                        {companyApplicants.length > 10 && (
+                                        )}
+                                        {applicantsOpen && companyApplicants.length > 10 && (
                                             <p className="text-[10px] md:text-xs text-gray-500 mt-2 text-center">Scroll to see all {companyApplicants.length} applicants</p>
                                         )}
                                     </div>
@@ -749,6 +767,13 @@ const ApplicantModal = ({visible, onClose, children}) => {
                             </div>
                         </div>
                     </ApplicantModal>
+
+                    <EmailComposeModal
+                        visible={showEmailCompose}
+                        onClose={() => setShowEmailCompose(false)}
+                        to={companyEmail}
+                        companyName={companyName}
+                    />
                 </div>
 
 

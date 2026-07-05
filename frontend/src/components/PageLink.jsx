@@ -14,11 +14,15 @@ const ICON_MAP = {
 
 // itemRef lets the parent NavBar track this link's DOM node so a single shared
 // pill element can glide to it — no separate pill is rendered here.
-const PageLink = ({ title, icon, link, itemRef }) => {
+// `matchPaths` lets a top-level link stay highlighted while the user is on one
+// of its nested/child pages (e.g. Event Settings stays active on /view-as and
+// /dev), so the nav always shows where you are.
+const PageLink = ({ title, icon, link, itemRef, matchPaths = [] }) => {
     const path = useLocation().pathname;
-    const cleanPath = path.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    const cleanLink = link.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    const isActive = cleanPath === cleanLink;
+    const clean = (s) => s.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    const cleanPath = clean(path);
+    const cleanLink = clean(link);
+    const isActive = cleanPath === cleanLink || matchPaths.some((p) => cleanPath === clean(p));
 
     return (
         <Link to={link} ref={itemRef} data-active={isActive || undefined} className="relative block">

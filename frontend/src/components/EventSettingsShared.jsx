@@ -1,4 +1,4 @@
-import { useRef, useLayoutEffect } from "react";
+import { useRef, useLayoutEffect, useEffect, useCallback } from "react";
 import { formatWhen } from "../context/EventOpsContext";
 
 // Small presentational pieces shared between the Event Operations and Event
@@ -55,12 +55,37 @@ export const ChevronIcon = ({ open }) => (
 
 export const inputCls = "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white";
 
+// Highlights the matched substring of a search query — same yellow mark used on
+// the Applicants/Companies lists, so every search bar across the app behaves
+// consistently.
+export const Highlight = ({ text, query }) => {
+  if (!query || !query.trim() || text == null) return <>{text}</>;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = String(text).split(new RegExp(`(${escaped})`, "gi"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+          ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded-[2px] px-[1px]">{part}</mark>
+          : part
+      )}
+    </>
+  );
+};
+
 // Sub-tab bar (Attendance sections, View As mode switch, etc.)
 export const SubTabBar = ({ tabs, active, onChange }) => {
   const btnRefs = useRef([]);
   const pillRef = useRef(null);
+  const wrapRef = useRef(null);
 
-  useLayoutEffect(() => {
+  // Position the sliding pill under the active tab. This must survive being
+  // mounted while the container is briefly zero-width (page fade-in animation)
+  // or before web-fonts settle — a one-shot measurement on [active] alone read
+  // 0 in those cases and never recovered, leaving the pill (and the active
+  // tab's white-on-nothing label) looking broken/hidden. Re-measure on the next
+  // frame and whenever the bar resizes so it always lands correctly.
+  const positionPill = useCallback(() => {
     const btn = btnRefs.current[active];
     const pill = pillRef.current;
     if (!btn || !pill) return;
@@ -68,8 +93,22 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
     pill.style.width = `${btn.offsetWidth}px`;
   }, [active]);
 
+  useLayoutEffect(() => {
+    positionPill();
+    // Second pass after layout/fonts settle (handles zero-width first paint)
+    const raf = requestAnimationFrame(positionPill);
+    return () => cancelAnimationFrame(raf);
+  }, [positionPill, tabs]);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined" || !wrapRef.current) return;
+    const ro = new ResizeObserver(() => positionPill());
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [positionPill]);
+
   return (
-    <div className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto">
+    <div ref={wrapRef} className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto shrink-0">
       <div
         ref={pillRef}
         className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
