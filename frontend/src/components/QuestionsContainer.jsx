@@ -341,11 +341,21 @@ const QuestionsContainer = () => {
 
               {/* Companies that haven't answered yet */}
               {pending.length > 0 && (
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-2 flex-wrap">
-                  <span className="text-xs font-semibold text-gray-500">Awaiting response:</span>
-                  {pending.map((c) => (
-                    <span key={c.companyName} className="text-[11px] bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2.5 py-0.5">{c.companyName}</span>
-                  ))}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-gray-500">Awaiting response</span>
+                    <span className="text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2 py-0.5">{pending.length}</span>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
+                      {pending.map((c) => (
+                        <div key={c.companyName} className="flex items-center gap-1.5 text-xs text-gray-600 py-0.5 truncate" title={c.companyName}>
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                          <span className="truncate">{c.companyName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 

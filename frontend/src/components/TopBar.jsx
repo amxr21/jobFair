@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { ManagerIcon, CastoIcon, VisitorIcon } from "./Icons";
+import NotificationBell from "./NotificationBell";
 
 const TopBar = ({user}) => {
     
@@ -76,9 +77,12 @@ const TopBar = ({user}) => {
                     <h6 className="text-[9px] md:text-[10px] font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
                 </div>
             </div>
-            <div className="hidden md:block time text-right">
-                <h4 className="time text-xl font-bold">{time}</h4>
-                <p className="date text-[10px] font-extralight text-gray-400">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
+            <div className="flex items-center gap-2 md:gap-3">
+                {user && <NotificationBell />}
+                <div className="hidden md:block time text-right">
+                    <h4 className="time text-xl font-bold">{time}</h4>
+                    <p className="date text-[10px] font-extralight text-gray-400">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
+                </div>
             </div>
         </div>
     )

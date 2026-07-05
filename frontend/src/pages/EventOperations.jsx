@@ -1,99 +1,14 @@
-import { useState, useRef, useMemo, useLayoutEffect, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsContext";
+import { useEventOps, formatWhen } from "../context/EventOpsContext";
 import { useToast } from "../components/Toast";
 import CompactSelect from "../components/CompactSelect";
 import Modal from "../components/Modal";
-import CompanyStatus from "./CompanyStatus";
 import { API_URL } from "../config/api";
-
-// ─── Small building blocks ─────────────────────────────────────────────────────
-
-const BADGE_COLORS = {
-  green: "bg-green-100 text-green-700",
-  yellow: "bg-amber-100 text-amber-700",
-  red: "bg-red-100 text-red-600",
-  gray: "bg-gray-100 text-gray-500",
-  blue: "bg-blue-100 text-blue-700",
-  orange: "bg-orange-100 text-orange-700",
-  purple: "bg-purple-100 text-purple-700",
-};
-
-const Badge = ({ label, color = "gray" }) => (
-  <span className={`rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ${BADGE_COLORS[color] || BADGE_COLORS.gray}`}>
-    {label}
-  </span>
-);
-
-const statusColor = (s) => ({
-  Assigned: "green", Available: "gray", Reserved: "yellow",
-  Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
-  Fulfilled: "green", "In Progress": "blue", Open: "yellow", Partial: "yellow", Pending: "gray",
-  Present: "green", Absent: "red", "Checked In": "green",
-  Ended: "gray", Live: "green", Upcoming: "blue",
-  Active: "green", Used: "gray", Revoked: "red",
-  Critical: "red", High: "orange", Medium: "yellow", Low: "gray",
-}[s] || "gray");
-
-const StatCard = ({ label, value, sub, color = "#0E7F41" }) => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1 min-w-0">
-    <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-    <p className="text-2xl font-bold truncate" style={{ color }}>{value}</p>
-    {sub && <p className="text-xs text-gray-400 truncate">{sub}</p>}
-  </div>
-);
-
-// "Who touched this last" — shown on every editable row/card
-const LastEdited = ({ row }) => (
-  <span className="text-[10px] text-gray-400 whitespace-nowrap" title={row?.updatedAt}>
-    Updated by <span className="font-medium text-gray-500">{row?.updatedBy || "—"}</span> · {formatWhen(row?.updatedAt)}
-  </span>
-);
-
-const CheckIcon = () => (
-  <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
-);
-
-const ChevronIcon = ({ open }) => (
-  <svg className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-);
-
-const inputCls = "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white";
-
-// Sub-tab bar (Attendance sections etc.)
-const SubTabBar = ({ tabs, active, onChange }) => {
-  const btnRefs = useRef([]);
-  const pillRef = useRef(null);
-
-  useLayoutEffect(() => {
-    const btn = btnRefs.current[active];
-    const pill = pillRef.current;
-    if (!btn || !pill) return;
-    pill.style.left = `${btn.offsetLeft}px`;
-    pill.style.width = `${btn.offsetWidth}px`;
-  }, [active]);
-
-  return (
-    <div className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto">
-      <div
-        ref={pillRef}
-        className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
-        style={{ background: "#0E7F41", left: 0, width: 0, transition: "left 0.2s cubic-bezier(0.4,0,0.2,1), width 0.2s cubic-bezier(0.4,0,0.2,1)" }}
-      />
-      {tabs.map((t, i) => (
-        <button
-          key={t}
-          ref={(el) => (btnRefs.current[i] = el)}
-          onClick={() => onChange(i)}
-          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
-        >{t}</button>
-      ))}
-    </div>
-  );
-};
+import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, TabIcon } from "../components/EventSettingsShared";
 
 // ─── Booth floor map (circular hall, center island, hover info, hide toggle) ──
 
@@ -188,15 +103,8 @@ const VenueMapping = () => {
   const [assigningId, setAssigningId] = useState(null);
   const [formCompany, setFormCompany] = useState("");
   const [formType, setFormType] = useState("Standard");
-  const [mapHidden, setMapHidden] = useState(() => localStorage.getItem("event_ops_map_hidden") === "1");
+  const [showMap, setShowMap] = useState(false);
   const cardRefs = useRef({});
-
-  const toggleMap = () => {
-    setMapHidden((v) => {
-      localStorage.setItem("event_ops_map_hidden", v ? "0" : "1");
-      return !v;
-    });
-  };
 
   const startAssign = (booth) => { setAssigningId(booth.id); setFormCompany(booth.company || ""); setFormType(booth.type); };
   const cancelAssign = () => { setAssigningId(null); setFormCompany(""); setFormType("Standard"); };
@@ -210,9 +118,15 @@ const VenueMapping = () => {
     cancelAssign();
   };
 
+  // Closes the map modal first, then scrolls to the matching zone card once the
+  // modal's own close animation has finished (see components/Modal.jsx, 240ms) —
+  // scrolling while the modal is still animating out fights the layout.
   const selectFromMap = (booth) => {
+    setShowMap(false);
     startAssign(booth);
-    cardRefs.current[booth.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => {
+      cardRefs.current[booth.id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 260);
   };
 
   const assigned = booths.filter((b) => b.status === "Assigned").length;
@@ -229,20 +143,31 @@ const VenueMapping = () => {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs font-semibold text-gray-500">{assigned} / {booths.length} assigned</span>
-          <button onClick={toggleMap} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-            {mapHidden ? "Show floor map" : "Hide floor map"}
+          <button onClick={() => setShowMap(true)} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
+            Show floor map
           </button>
         </div>
       </div>
 
-      {!mapHidden && (
-        <div className="flex flex-col gap-1.5">
+      <Modal visible={showMap} onClose={() => setShowMap(false)} maxWidth="max-w-3xl" contentClassName="max-h-[85vh]">
+        <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
+          <div>
+            <h2 className="text-lg font-bold">Floor Map</h2>
+            <p className="text-xs text-white/80 mt-0.5">Click a booth to manage its assignment</p>
+          </div>
+          <button onClick={() => setShowMap(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="p-4 md:p-5 overflow-y-auto flex flex-col gap-1.5">
           <BoothMap booths={booths} onSelect={selectFromMap} />
           <p className="text-[11px] text-gray-400 text-center">
             Schematic layout — will be replaced by the real venue map. Hover a booth for details, click to manage it.
           </p>
         </div>
-      )}
+      </Modal>
 
       {["A", "B", "C"].map((zone) => (
         <div key={zone}>
@@ -300,12 +225,31 @@ const VenueMapping = () => {
 
 const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
 
+// Real values found in the banners table today — these are item TYPES
+// (what's being printed), not physical materials like vinyl/fabric.
+const BANNER_MATERIALS = ["Roll-up Banner", "Backdrop", "Table Skirt", "Digital Screen Graphic", "Other"];
+
+// `size` is stored as one "{width} × {height} cm" string (real data already
+// uses this exact format, e.g. "85 × 200 cm") — parsed into two fields for
+// editing, then recomposed back into that same string shape on save so the
+// DB column (and every other reader of `size`) doesn't need to change.
+const SIZE_RE = /^(\d+(?:\.\d+)?)\s*[×x]\s*(\d+(?:\.\d+)?)\s*cm$/i;
+function parseSize(size) {
+  const m = SIZE_RE.exec(String(size || "").trim());
+  return m ? { width: m[1], height: m[2] } : { width: "", height: "" };
+}
+function composeSize(width, height) {
+  if (!width && !height) return "";
+  return `${width || "?"} × ${height || "?"} cm`;
+}
+
 const BannerBranding = () => {
   const { data, update } = useEventOps();
   const toast = useToast();
   const banners = data.banners;
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({});
+  const [uploadingId, setUploadingId] = useState(null);
 
   const stepIdx = (status) => BANNER_STEPS.indexOf(status);
 
@@ -316,15 +260,41 @@ const BannerBranding = () => {
     toast(`${row.company} banner marked ${next}`, { type: "success" });
   };
 
-  const startEdit = (row) => { setEditingId(row.id); setForm({ ...row }); };
+  const startEdit = (row) => { setEditingId(row.id); setForm({ ...row, ...parseSize(row.size) }); };
   const saveEdit = () => {
+    const size = composeSize(form.width, form.height);
     update("banners", `Updated ${form.company} branding details`, (rows, who) =>
-      rows.map((b) => (b.id === editingId ? { ...b, ...form, quantity: Number(form.quantity) || 1, ...who } : b)));
+      rows.map((b) => (b.id === editingId ? { ...b, ...form, size, quantity: Number(form.quantity) || 1, ...who } : b)));
     toast("Branding details saved", { type: "success" });
     setEditingId(null);
   };
 
   const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  // Uploads the real file to Cloudinary via the backend, then updates just
+  // this banner's artwork URL — both in local state (so it shows immediately)
+  // and via update(...) so it persists through the normal event-ops save path.
+  const uploadArtwork = async (row, file) => {
+    if (!file) return;
+    setUploadingId(row.id);
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      const formData = new FormData();
+      formData.append("artwork", file);
+      formData.append("bannerId", row.id);
+      const res = await axios.post(`${API_URL}/banners/${row.id}/artwork`, formData, {
+        headers: { Authorization: storedUser?.token ? `Bearer ${storedUser.token}` : undefined },
+      });
+      update("banners", `Uploaded artwork for ${row.company}`, (rows, who) =>
+        rows.map((b) => (b.id === row.id ? { ...b, artwork: res.data.artwork, ...who } : b)));
+      if (editingId === row.id) setForm((f) => ({ ...f, artwork: res.data.artwork }));
+      toast("Artwork uploaded", { type: "success" });
+    } catch (err) {
+      toast(err.response?.data?.error || "Failed to upload artwork", { type: "error" });
+    } finally {
+      setUploadingId(null);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -367,7 +337,6 @@ const BannerBranding = () => {
                   {[
                     ["Size", row.size],
                     ["Quantity", row.quantity],
-                    ["Artwork file", row.artwork || "Not received"],
                     ["Company contact", row.contact],
                     ["Print deadline", row.deadline],
                   ].map(([k, v]) => (
@@ -376,18 +345,59 @@ const BannerBranding = () => {
                       <p className={`font-medium truncate ${v === "Not received" ? "text-red-500" : "text-gray-700"}`}>{v}</p>
                     </div>
                   ))}
+                  <div className="min-w-0">
+                    <p className="text-gray-400">Artwork file</p>
+                    {row.artwork ? (
+                      <a href={row.artwork} target="_blank" rel="noreferrer" className="font-medium text-blue-600 hover:underline truncate block">View file</a>
+                    ) : (
+                      <p className="font-medium text-red-500 truncate">Not received</p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-[#F3F6FF] rounded-lg p-3 border border-blue-100">
-                  {[
-                    ["Material", "material"], ["Size", "size"], ["Quantity", "quantity"],
-                    ["Artwork file", "artwork"], ["Company contact", "contact"], ["Print deadline", "deadline"],
-                  ].map(([label, key]) => (
-                    <div key={key} className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-500 font-medium">{label}</label>
-                      <input className={`text-xs ${inputCls}`} value={form[key] ?? ""} onChange={F(key)} />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Material</label>
+                    <CompactSelect className="text-xs" value={form.material ?? ""} onChange={F("material")} options={BANNER_MATERIALS} placeholder="Select type…" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Width (cm)</label>
+                    <input type="number" min="0" className={`text-xs ${inputCls}`} value={form.width ?? ""} onChange={F("width")} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Height (cm)</label>
+                    <input type="number" min="0" className={`text-xs ${inputCls}`} value={form.height ?? ""} onChange={F("height")} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Quantity</label>
+                    <input type="number" min="1" step="1" className={`text-xs ${inputCls}`} value={form.quantity ?? ""} onChange={F("quantity")} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Company contact</label>
+                    <input className={`text-xs ${inputCls}`} value={form.contact ?? ""} onChange={F("contact")} />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-500 font-medium">Print deadline</label>
+                    <input type="date" className={`text-xs ${inputCls}`} value={form.deadline ? String(form.deadline).slice(0, 10) : ""} onChange={F("deadline")} />
+                  </div>
+                  <div className="flex flex-col gap-1 col-span-2 md:col-span-3">
+                    <label className="text-xs text-gray-500 font-medium">Artwork file</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf,.ai,.eps"
+                        disabled={uploadingId === row.id}
+                        onChange={(e) => uploadArtwork(row, e.target.files[0])}
+                        className="text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-[#0E7F41] file:text-white hover:file:bg-[#0a5f31] file:cursor-pointer disabled:opacity-50"
+                      />
+                      {uploadingId === row.id && <span className="text-xs text-gray-400">Uploading…</span>}
                     </div>
-                  ))}
+                    {form.artwork && (
+                      <a href={form.artwork} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline truncate">
+                        View current file
+                      </a>
+                    )}
+                  </div>
                   <div className="flex flex-col gap-1 col-span-2 md:col-span-3">
                     <label className="text-xs text-gray-500 font-medium">Notes</label>
                     <input className={`text-xs ${inputCls}`} value={form.notes ?? ""} onChange={F("notes")} />
@@ -439,7 +449,10 @@ const SpecialRequirements = () => {
   const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = () => {
-    if (!form.description.trim()) return;
+    if (!form.description.trim()) {
+      toast("Please describe the requirement before saving", { type: "error" });
+      return;
+    }
     const company = form.company || companies[0];
     update("requirements", `Added requirement for ${company}: ${form.description.slice(0, 40)}`, (prev, who) =>
       [...prev, { ...form, company, id: Date.now(), ...who }]);
@@ -491,7 +504,7 @@ const SpecialRequirements = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} className="text-sm font-semibold text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save</button>
+            <button onClick={handleAdd} disabled={!form.description.trim()} className="text-sm font-semibold text-white rounded-xl px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>Save</button>
           </div>
         </div>
       )}
@@ -527,11 +540,34 @@ const SpecialRequirements = () => {
 // ─── Tab: Equipment & Logistics ───────────────────────────────────────────────
 
 const EquipmentLogistics = () => {
-  const { data, update } = useEventOps();
+  const { data, update, companies: allCompanyNames } = useEventOps();
   const toast = useToast();
-  const rows = data.equipment;
+  const allRows = data.equipment;
+  const [search, setSearch] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ company: "", booth: "", item: "", qtyReq: "1" });
 
-  const total = (kw) => rows.filter((r) => kw.some((k) => r.item.toLowerCase().includes(k))).reduce((a, r) => a + r.qtyReq, 0);
+  const total = (kw) => allRows.filter((r) => kw.some((k) => r.item.toLowerCase().includes(k))).reduce((a, r) => a + r.qtyReq, 0);
+
+  const rows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? allRows.filter((r) => r.entity.toLowerCase().includes(q) || r.item.toLowerCase().includes(q)) : allRows;
+  }, [allRows, search]);
+
+  const addRequest = () => {
+    if (!form.company || !form.item.trim()) {
+      toast("Company and item are both required", { type: "error" });
+      return;
+    }
+    const entity = form.booth.trim() ? `${form.company} / ${form.booth.trim()}` : form.company;
+    const qtyReq = Number(form.qtyReq) || 1;
+    update("equipment", `Added ${form.item} request for ${entity}`, (prev, who) =>
+      [...prev, { id: Date.now(), entity, item: form.item.trim(), qtyReq, qtyFul: 0, status: "Pending", ...who }]);
+    toast(`${form.item.trim()} request added for ${form.company}`, { type: "success" });
+    setForm({ company: "", booth: "", item: "", qtyReq: "1" });
+    setShowForm(false);
+  };
+
   const fulfillItem = (row) => {
     update("equipment", `Fulfilled ${row.item} for ${row.entity}`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled", ...who } : r)));
@@ -553,6 +589,45 @@ const EquipmentLogistics = () => {
         <StatCard label="Power / Cables" value={total(["power", "extension", "cable"])} sub="Strips & cables" color="#f59e0b" />
         <StatCard label="Screens" value={total(["screen", "monitor"])} sub="Monitors & displays" color="#8b5cf6" />
       </div>
+
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="relative">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search company, booth or item…"
+            className="w-full sm:w-80 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </div>
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
+          {showForm ? "Cancel" : "+ Add Equipment Request"}
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+          <div className="flex flex-col gap-1 md:col-span-2">
+            <label className="text-xs text-gray-500 font-medium">Company</label>
+            <CompactSelect value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} placeholder="Select company…" options={allCompanyNames} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500 font-medium">Booth (optional)</label>
+            <input className={inputCls} placeholder="e.g. B03" value={form.booth} onChange={(e) => setForm((f) => ({ ...f, booth: e.target.value }))} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500 font-medium">Item</label>
+            <input className={inputCls} placeholder="e.g. Folding Table" value={form.item} onChange={(e) => setForm((f) => ({ ...f, item: e.target.value }))} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs text-gray-500 font-medium">Qty</label>
+            <div className="flex gap-2">
+              <input type="number" min="1" className={inputCls} value={form.qtyReq} onChange={(e) => setForm((f) => ({ ...f, qtyReq: e.target.value }))} />
+              <button onClick={addRequest} className="text-xs font-semibold text-white rounded-lg px-3 shrink-0" style={{ background: "#0E7F41" }}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-gray-100">
         <table className="w-full text-sm min-w-[640px]">
@@ -585,6 +660,9 @@ const EquipmentLogistics = () => {
                 </td>
               </tr>
             ))}
+            {rows.length === 0 && (
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-gray-400">No equipment matches "{search}".</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -595,75 +673,147 @@ const EquipmentLogistics = () => {
 // ─── Tab: Delegates ───────────────────────────────────────────────────────────
 
 const DelegateList = () => {
-  const { data, update } = useEventOps();
-  const companies = data.delegates;
-  const [expanded, setExpanded] = useState(new Set([0]));
+  const { data, update, companies: allCompanyNames } = useEventOps();
+  const [expanded, setExpanded] = useState(new Set());
+  const [search, setSearch] = useState("");
 
-  const totalDelegates = companies.reduce((a, c) => a + c.delegates.length, 0);
-  const totalPrinted = companies.reduce((a, c) => a + c.delegates.filter((d) => d.badge === "Printed").length, 0);
+  // Every registered company appears here — not just the handful that already
+  // have delegates. Companies with delegates keep their real rows; the rest
+  // show as empty "no delegates yet" entries so all 70+ are covered and
+  // trackable. Mutations still key on company name, never array position.
+  const withDelegates = data.delegates;
+  const mergedAll = useMemo(() => {
+    const map = new Map();
+    withDelegates.forEach((c) => map.set(c.company, c));
+    allCompanyNames.forEach((name) => { if (!map.has(name)) map.set(name, { company: name, delegates: [] }); });
+    return [...map.values()].sort((a, b) => a.company.localeCompare(b.company));
+  }, [withDelegates, allCompanyNames]);
+
+  const companies = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? mergedAll.filter((c) => c.company.toLowerCase().includes(q)) : mergedAll;
+  }, [mergedAll, search]);
+
+  const totalDelegates = mergedAll.reduce((a, c) => a + c.delegates.length, 0);
+  const totalPrinted = mergedAll.reduce((a, c) => a + c.delegates.filter((d) => d.badge === "Printed").length, 0);
+  const companiesWithDelegates = mergedAll.filter((c) => c.delegates.length > 0).length;
 
   const toggle = (idx) => setExpanded((prev) => { const n = new Set(prev); n.has(idx) ? n.delete(idx) : n.add(idx); return n; });
 
-  const printBadge = (cIdx, dIdx, d) => {
-    update("delegates", `Printed badge for ${d.name} (${companies[cIdx].company})`, (prev, who) =>
-      prev.map((c, ci) => ci !== cIdx ? c : {
+  // Opens an actual printable badge (name/role/company card sized for a
+  // standard badge holder) in a new tab and triggers the browser's print
+  // dialog — this is a real print action, not just a status flip. The
+  // delegate is only marked "Printed" once the browser actually opens that
+  // dialog (the win.onafterprint / immediate print() call below), not before.
+  const printBadge = (company, dIdx, d) => {
+    const win = window.open("", "_blank", "width=420,height=620");
+    if (!win) return;
+    win.document.write(`<!DOCTYPE html><html><head><title>Badge — ${d.name}</title>
+      <style>
+        @page { size: 3.5in 5.5in; margin: 0; }
+        body { margin: 0; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #f3f4f6; }
+        .badge { width: 3.5in; height: 5.5in; background: white; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; box-sizing: border-box; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .stripe { width: 100%; height: 90px; background: #0E7F41; border-radius: 12px 12px 0 0; position: absolute; top: 0; left: 0; }
+        .name { font-size: 22px; font-weight: 700; color: #111827; text-align: center; }
+        .role { font-size: 14px; color: #6b7280; text-align: center; }
+        .company { font-size: 16px; font-weight: 600; color: #0E7F41; text-align: center; margin-top: 12px; }
+        @media print { body { background: white; } .badge { box-shadow: none; } }
+      </style></head>
+      <body>
+        <div class="badge">
+          <p class="name">${d.name}</p>
+          <p class="role">${d.role || ""}</p>
+          <p class="company">${company}</p>
+        </div>
+        <script>window.onload = () => { window.print(); };</script>
+      </body></html>`);
+    win.document.close();
+
+    update("delegates", `Printed badge for ${d.name} (${company})`, (prev, who) =>
+      prev.map((c) => c.company !== company ? c : {
         ...c, delegates: c.delegates.map((dd, di) => di !== dIdx ? dd : { ...dd, badge: "Printed", ...who })
       }));
   };
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Delegates" value={totalDelegates} sub="Across all companies" />
         <StatCard label="Badges Printed" value={totalPrinted} sub={`${totalDelegates - totalPrinted} pending`} color="#2959A6" />
-        <StatCard label="Companies" value={companies.length} sub="With delegates registered" color="#8b5cf6" />
+        <StatCard label="Companies" value={mergedAll.length} sub="All registered" color="#8b5cf6" />
+        <StatCard label="With Delegates" value={companiesWithDelegates} sub={`${mergedAll.length - companiesWithDelegates} awaiting`} color="#f59e0b" />
+      </div>
+
+      <div className="relative">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search company…"
+          className="w-full sm:w-72 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+        />
+        <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </div>
 
       <div className="flex flex-col gap-2">
-        {companies.map((company, idx) => (
-          <div key={company.company} className="rounded-xl border border-gray-200 overflow-hidden">
-            <button onClick={() => toggle(idx)} className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-gray-800 text-sm">{company.company}</span>
-                <Badge label={`${company.delegates.length} delegates`} color="blue" />
-                <Badge label={`${company.delegates.filter(d => d.badge === "Printed").length} badges printed`} color="green" />
-              </div>
-              <span className="text-gray-400"><ChevronIcon open={expanded.has(idx)} /></span>
-            </button>
+        {companies.map((company) => {
+          const open = expanded.has(company.company);
+          const empty = company.delegates.length === 0;
+          return (
+            <div key={company.company} className="rounded-xl border border-gray-200 overflow-hidden">
+              <button onClick={() => toggle(company.company)} className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="font-semibold text-gray-800 text-sm truncate">{company.company}</span>
+                  {empty ? (
+                    <Badge label="No delegates yet" color="gray" />
+                  ) : (
+                    <>
+                      <Badge label={`${company.delegates.length} delegates`} color="blue" />
+                      <Badge label={`${company.delegates.filter(d => d.badge === "Printed").length} badges printed`} color="green" />
+                    </>
+                  )}
+                </div>
+                <span className="text-gray-400"><ChevronIcon open={open} /></span>
+              </button>
 
-            {expanded.has(idx) && (
-              <div className="border-t border-gray-100 overflow-x-auto">
-                <table className="w-full text-sm min-w-[520px]">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      {["Name", "Role", "Email", "Phone", "Badge", ""].map((h, i) => (
-                        <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {company.delegates.map((d, di) => (
-                      <tr key={di} className="border-t border-gray-50 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-2.5 font-medium text-gray-800">{d.name}</td>
-                        <td className="px-4 py-2.5 text-gray-600 text-xs">{d.role}</td>
-                        <td className="px-4 py-2.5 text-gray-500 text-xs">{d.email}</td>
-                        <td className="px-4 py-2.5 text-gray-500 text-xs">{d.phone}</td>
-                        <td className="px-4 py-2.5"><Badge label={d.badge} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
-                        <td className="px-4 py-2.5">
-                          {d.badge !== "Printed" && (
-                            <button onClick={() => printBadge(idx, di, d)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                              Print Badge
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        ))}
+              {open && (
+                <div className="border-t border-gray-100 overflow-x-auto">
+                  {empty ? (
+                    <p className="text-xs text-gray-400 px-4 py-4">No delegates registered for this company yet. They'll appear here once added.</p>
+                  ) : (
+                    <table className="w-full text-sm min-w-[520px]">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          {["Name", "Role", "Email", "Phone", "Badge", ""].map((h, i) => (
+                            <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {company.delegates.map((d, di) => (
+                          <tr key={di} className="border-t border-gray-50 hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-2.5 font-medium text-gray-800">{d.name}</td>
+                            <td className="px-4 py-2.5 text-gray-600 text-xs">{d.role}</td>
+                            <td className="px-4 py-2.5 text-gray-500 text-xs">{d.email}</td>
+                            <td className="px-4 py-2.5 text-gray-500 text-xs">{d.phone}</td>
+                            <td className="px-4 py-2.5"><Badge label={d.badge} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
+                            <td className="px-4 py-2.5">
+                              {d.badge !== "Printed" && (
+                                <button onClick={() => printBadge(company.company, di, d)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
+                                  Print Badge
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {companies.length === 0 && <p className="text-xs text-gray-400 text-center py-6">No companies match "{search}".</p>}
       </div>
     </div>
   );
@@ -673,6 +823,32 @@ const DelegateList = () => {
 
 const boothQrValue = (booth) => `jobfair:attendance:${booth.number}`;
 
+// Converts the on-screen QRCodeSVG (rendered inline as an <svg> by qrcode.react)
+// into a downloadable PNG by drawing it onto an offscreen canvas — no
+// server round-trip and no extra dependency, since the SVG markup is already
+// self-contained (no external image refs) and can be rasterized directly.
+function downloadQrAsPng(svgEl, filename) {
+  const svgData = new XMLSerializer().serializeToString(svgEl);
+  const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width || 256;
+    canvas.height = img.height || 256;
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = filename;
+    a.click();
+  };
+  img.src = url;
+}
+
 const AttendanceCheckin = () => {
   const { data, update } = useEventOps();
   const toast = useToast();
@@ -680,6 +856,7 @@ const AttendanceCheckin = () => {
   const students = data.attendanceStudents;
   const companies = data.attendanceCompanies;
   const booths = data.booths.filter((b) => b.company);
+  const qrRefs = useRef({});
 
   const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
   const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
@@ -707,6 +884,10 @@ const AttendanceCheckin = () => {
       <SubTabBar tabs={["Companies", "Students", "Booth QR Codes"]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
+        <div className="flex flex-col gap-3">
+        <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
+          Companies check themselves in by scanning their booth QR on arrival (or tapping “I've arrived” on their Status page) — that's the normal flow. The buttons below are a manual override for when a company can't scan.
+        </p>
         <div className="overflow-x-auto rounded-xl border border-gray-100">
           <table className="w-full text-sm min-w-[620px]">
             <thead>
@@ -728,20 +909,16 @@ const AttendanceCheckin = () => {
                   <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
                   <td className="px-4 py-3">
                     {row.status !== "Present" && (
-                      <div className="flex gap-1.5">
-                        <button onClick={() => checkInCompany(row, "QR")} className="text-xs font-medium border border-blue-200 rounded-lg px-2.5 py-1 hover:bg-blue-50 text-blue-600 transition-colors" title="Simulates the booth QR being scanned">
-                          QR Scan
-                        </button>
-                        <button onClick={() => checkInCompany(row, "Manual")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                          Manual
-                        </button>
-                      </div>
+                      <button onClick={() => checkInCompany(row, "Manual")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500" title="Manual override — use only if the company can't scan their booth QR">
+                        Check in manually
+                      </button>
                     )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
         </div>
       )}
 
@@ -786,10 +963,18 @@ const AttendanceCheckin = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {booths.map((b) => (
               <div key={b.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2">
-                <QRCodeSVG value={boothQrValue(b)} size={96} fgColor="#111827" />
+                <div ref={(el) => { if (el) qrRefs.current[b.id] = el.querySelector("svg"); }}>
+                  <QRCodeSVG value={boothQrValue(b)} size={96} fgColor="#111827" />
+                </div>
                 <p className="font-bold text-sm text-gray-800">{b.number}</p>
                 <p className="text-xs text-gray-500 text-center truncate w-full">{b.company}</p>
                 <span className="text-[10px] font-mono text-gray-400">{boothQrValue(b)}</span>
+                <button
+                  onClick={() => qrRefs.current[b.id] && downloadQrAsPng(qrRefs.current[b.id], `booth-${b.number}-qr.png`)}
+                  className="text-[11px] font-medium border border-gray-200 rounded-lg px-2 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors"
+                >
+                  Download
+                </button>
               </div>
             ))}
           </div>
@@ -814,7 +999,10 @@ const ManageStaff = () => {
   const [revealedCode, setRevealedCode] = useState(null); // { name, code } — shown once after creation
 
   const handleAdd = () => {
-    if (!form.name.trim() || !form.email.trim()) return;
+    if (!form.name.trim() || !form.email.trim()) {
+      toast("Name and email are both required", { type: "error" });
+      return;
+    }
     const code = addStaffer(form.name.trim(), form.email.trim());
     setRevealedCode({ name: form.name.trim(), code });
     setForm({ name: "", email: "" });
@@ -838,6 +1026,24 @@ const ManageStaff = () => {
         <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/student-checkin</a>
         with that code, fill in their own remaining details, and can then check students in without a CASTO or company account.
         Each account's check-ins are logged separately below — no one sees anyone else's activity.
+        <button
+          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/student-checkin`); toast("Check-in link copied", { type: "success", duration: 1800 }); }}
+          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 rounded-lg px-2 py-1 text-blue-700 hover:bg-blue-100 transition-colors align-middle"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+          Copy link
+        </button>
+        <br />
+        Students who lost their ticket can retrieve their own QR code at
+        <a href="/my-qr-code" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/my-qr-code</a>
+        using the University ID they applied with.
+        <button
+          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/my-qr-code`); toast("Student ticket link copied", { type: "success", duration: 1800 }); }}
+          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 rounded-lg px-2 py-1 text-blue-700 hover:bg-blue-100 transition-colors align-middle"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+          Copy link
+        </button>
       </p>
 
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
@@ -917,20 +1123,51 @@ const ManageStaff = () => {
 
 // ─── Tab: Schedule ────────────────────────────────────────────────────────────
 
+// Fixed set of venue areas sessions can actually be held in — keeps
+// Schedule's "Location" consistent instead of free text that can typo or
+// drift from what the floor map / signage actually says.
+const SCHEDULE_LOCATIONS = ["Main Entrance", "Main Hall", "Exhibition Floor", "Cafeteria", "Main Stage"];
+
 const ScheduleSlots = () => {
   const { data, update } = useEventOps();
+  const toast = useToast();
   const slots = data.schedule;
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   const F = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  const EF = (key) => (e) => setEditForm((f) => ({ ...f, [key]: e.target.value }));
 
   const handleAdd = () => {
-    if (!form.title.trim() || !form.start) return;
+    if (!form.title.trim() || !form.start) {
+      toast("Session title and start time are both required", { type: "error" });
+      return;
+    }
     update("schedule", `Added time slot "${form.title}"`, (prev, who) =>
       [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: 0, ...who }]);
     setForm({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
     setShowForm(false);
+  };
+
+  const startEdit = (slot) => { setEditingId(slot.id); setEditForm({ ...slot }); };
+  const cancelEdit = () => { setEditingId(null); setEditForm({}); };
+  const saveEdit = () => {
+    if (!editForm.title?.trim() || !editForm.start) {
+      toast("Session title and start time are both required", { type: "error" });
+      return;
+    }
+    update("schedule", `Edited time slot "${editForm.title}"`, (prev, who) =>
+      prev.map((s) => (s.id === editingId ? { ...s, ...editForm, capacity: Number(editForm.capacity) || 0, ...who } : s)));
+    toast("Time slot updated", { type: "success" });
+    cancelEdit();
+  };
+
+  const removeSlot = (slot) => {
+    update("schedule", `Removed time slot "${slot.title}"`, (prev) => prev.filter((s) => s.id !== slot.id));
+    toast(`Removed "${slot.title}"`, { type: "info" });
+    if (editingId === slot.id) cancelEdit();
   };
 
   const cycleStatus = (slot) => {
@@ -965,7 +1202,7 @@ const ScheduleSlots = () => {
               { label: "Start", el: <input type="time" className={inputCls} value={form.start} onChange={F("start")} /> },
               { label: "End", el: <input type="time" className={inputCls} value={form.end} onChange={F("end")} /> },
               { label: "Host", el: <input className={inputCls} placeholder="Host / team" value={form.host} onChange={F("host")} /> },
-              { label: "Location", el: <input className={inputCls} placeholder="Room / area" value={form.location} onChange={F("location")} /> },
+              { label: "Location", el: <CompactSelect value={form.location} onChange={F("location")} options={SCHEDULE_LOCATIONS} placeholder="Select area" /> },
             ].map(({ label, el }) => (
               <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
             ))}
@@ -983,7 +1220,7 @@ const ScheduleSlots = () => {
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} className="text-sm font-semibold text-white rounded-xl px-4 py-2" style={{ background: "#0E7F41" }}>Save Slot</button>
+            <button onClick={handleAdd} disabled={!form.title.trim() || !form.start} className="text-sm font-semibold text-white rounded-xl px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>Save Slot</button>
           </div>
         </div>
       )}
@@ -1000,28 +1237,55 @@ const ScheduleSlots = () => {
               slot.status === "Live" ? "border-green-300 bg-green-50"
               : slot.status === "Ended" ? "border-gray-200 bg-gray-50"
               : "border-blue-200 bg-blue-50"}`}>
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="font-semibold text-gray-800 text-sm">{slot.title}</span>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge label={slot.status} color={statusColor(slot.status)} />
-                  <button onClick={() => cycleStatus(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
-                    Next status
-                  </button>
+              {editingId === slot.id ? (
+                /* Inline editor — change the time or any detail of an existing slot */
+                <div className="flex flex-col gap-2.5">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Start</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.start || ""} onChange={EF("start")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">End</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.end || ""} onChange={EF("end")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Host</label><input className={`text-xs ${inputCls}`} value={editForm.host || ""} onChange={EF("host")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Location</label><CompactSelect className="text-xs" value={editForm.location || ""} onChange={EF("location")} options={SCHEDULE_LOCATIONS} placeholder="Select area" /></div>
+                    <div className="flex flex-col gap-1 col-span-2"><label className="text-[11px] text-gray-500 font-medium">Title</label><input className={`text-xs ${inputCls}`} value={editForm.title || ""} onChange={EF("title")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Capacity</label><input type="number" className={`text-xs ${inputCls}`} value={editForm.capacity ?? ""} onChange={EF("capacity")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Status</label><CompactSelect className="text-xs" value={editForm.status || "Upcoming"} onChange={EF("status")} options={["Upcoming", "Live", "Ended"]} /></div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
+                    <button onClick={saveEdit} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5" style={{ background: "#0E7F41" }}>Save</button>
+                  </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                {slot.host && <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>}
-                {slot.location && <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>}
-                {slot.capacity > 0 && <span>Registered: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>}
-                <LastEdited row={slot} />
-              </div>
-              {slot.capacity > 0 && (
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div className="h-1.5 rounded-full transition-all duration-500" style={{
-                    width: `${Math.min(100, Math.round((slot.registered / slot.capacity) * 100))}%`,
-                    background: slot.status === "Live" ? "#0E7F41" : slot.status === "Ended" ? "#9ca3af" : "#2959A6"
-                  }} />
-                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="font-semibold text-gray-800 text-sm">{slot.title}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge label={slot.status} color={statusColor(slot.status)} />
+                      <button onClick={() => cycleStatus(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
+                        Next status
+                      </button>
+                      <button onClick={() => startEdit(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
+                        Edit
+                      </button>
+                      <button onClick={() => removeSlot(slot)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-0.5 text-red-500 hover:bg-red-50 transition-colors bg-white/60">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                    {slot.host && <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>}
+                    {slot.location && <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>}
+                    {slot.capacity > 0 && <span>Registered: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>}
+                    <LastEdited row={slot} />
+                  </div>
+                  {slot.capacity > 0 && (
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="h-1.5 rounded-full transition-all duration-500" style={{
+                        width: `${Math.min(100, Math.round((slot.registered / slot.capacity) * 100))}%`,
+                        background: slot.status === "Live" ? "#0E7F41" : slot.status === "Ended" ? "#9ca3af" : "#2959A6"
+                      }} />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1034,21 +1298,37 @@ const ScheduleSlots = () => {
 // ─── Tab: Access Passes ───────────────────────────────────────────────────────
 
 const AccessPasses = () => {
-  const { data, update } = useEventOps();
+  const { data, update, companies: allCompanyNames } = useEventOps();
   const toast = useToast();
   const passes = data.passes;
   const [filter, setFilter] = useState("All");
   const [view, setView] = useState(0); // 0 = table, 1 = by company
   const [editingParking, setEditingParking] = useState(null); // pass id
   const [parkingForm, setParkingForm] = useState({ slot: "", location: "" });
+  const [companySearch, setCompanySearch] = useState("");
 
   const types = ["All", "Entry", "Parking"];
   const shown = filter === "All" ? passes : passes.filter((p) => p.type === filter);
+  // Every registered company appears in the By-Company view, even those with no
+  // passes issued yet, so all 70+ are visible and can have a pass issued.
   const byCompany = useMemo(() => {
     const m = new Map();
+    allCompanyNames.forEach((name) => m.set(name, []));
     passes.forEach((p) => m.set(p.company, [...(m.get(p.company) || []), p]));
-    return [...m.entries()];
-  }, [passes]);
+    const entries = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    const q = companySearch.trim().toLowerCase();
+    return q ? entries.filter(([name]) => name.toLowerCase().includes(q)) : entries;
+  }, [passes, allCompanyNames, companySearch]);
+
+  // Issues a fresh Entry pass for a company that has none yet — gives the
+  // By-Company view an action instead of just displaying an empty card.
+  const issueEntryPass = (company) => {
+    const seq = String(passes.filter((p) => p.company === company).length + 1).padStart(3, "0");
+    const code = `ENT-${company.slice(0, 3).toUpperCase()}-${seq}`;
+    update("passes", `Issued entry pass ${code} for ${company}`, (prev, who) =>
+      [...prev, { id: Date.now(), company, delegate: "Unassigned", type: "Entry", code, issued: new Date().toISOString().slice(0, 10), status: "Active", ...who }]);
+    toast(`Entry pass issued for ${company}`, { type: "success" });
+  };
 
   const setStatus = (row, status) => {
     update("passes", `${status === "Revoked" ? "Revoked" : "Reactivated"} pass ${row.code} (${row.company})`, (prev, who) =>
@@ -1142,13 +1422,30 @@ const AccessPasses = () => {
           </table>
         </div>
       ) : (
+        <>
+        <div className="relative">
+          <input
+            value={companySearch}
+            onChange={(e) => setCompanySearch(e.target.value)}
+            placeholder="Search company…"
+            className="w-full sm:w-72 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          />
+          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {byCompany.map(([company, rows]) => (
             <div key={company} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-gray-800 text-sm">{company}</p>
-                <Badge label={`${rows.length} passes`} color="blue" />
+                <p className="font-semibold text-gray-800 text-sm truncate">{company}</p>
+                {rows.length > 0
+                  ? <Badge label={`${rows.length} passes`} color="blue" />
+                  : <Badge label="No passes yet" color="gray" />}
               </div>
+              {rows.length === 0 && (
+                <button onClick={() => issueEntryPass(company)} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-2 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors self-start">
+                  + Issue entry pass
+                </button>
+              )}
               <div className="flex flex-col gap-2">
                 {rows.map((p) => (
                   <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
@@ -1165,166 +1462,21 @@ const AccessPasses = () => {
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-gray-400">This exact view is what {company} sees in their settings page.</p>
+              {rows.length > 0 && <p className="text-[10px] text-gray-400">This exact view is what {company} sees in their settings page.</p>}
             </div>
           ))}
+          {byCompany.length === 0 && <p className="text-xs text-gray-400 text-center py-6 col-span-2">No companies match "{companySearch}".</p>}
         </div>
+        </>
       )}
     </div>
   );
 };
 
-// ─── Tab: Post-Event Report ───────────────────────────────────────────────────
-// Every number here is computed from real data — applicants/companies fetched
-// from the backend, plus the booths/banners/passes already tracked in
-// EventOpsContext. Nothing is a static placeholder.
 
-const uniqueApplicants = (applicants) => {
-  const seen = new Set();
-  return (applicants || []).filter((a) => {
-    const id = a.applicantDetails?.uniId;
-    if (id && !seen.has(id)) { seen.add(id); return true; }
-    return false;
-  });
-};
+// ─── Tab definitions (operational modules only) ───────────────────────────────
 
-const PostEventReporting = ({ applicants, companies }) => {
-  const { data } = useEventOps();
-
-  const stats = useMemo(() => {
-    const uniqueApps = uniqueApplicants(applicants);
-    const checkedInApps = uniqueApps.filter((a) => a.attended).length;
-    const checkinRate = uniqueApps.length > 0 ? Math.round((checkedInApps / uniqueApps.length) * 100) : 0;
-
-    const confirmedCompanies = (companies || []).filter((c) => c.status === "Confirmed").length;
-    const assignedBooths = data.booths.filter((b) => b.company).length;
-    const totalApplications = (applicants || []).length; // every submission, not deduped — mirrors "applications made"
-
-    return {
-      totalCompanies: companies?.length || 0,
-      confirmedCompanies,
-      totalStudents: uniqueApps.length,
-      checkinRate,
-      totalApplications,
-      assignedBooths,
-      totalBooths: data.booths.length,
-      passesIssued: data.passes.length,
-      bannersPlaced: data.banners.filter((b) => b.status === "Placed").length,
-      totalBanners: data.banners.length,
-    };
-  }, [applicants, companies, data]);
-
-  // Ops completion by module — derived from the same live event-ops data
-  // shown throughout the rest of this page, not a separate mock feedback score
-  const completionBreakdown = useMemo(() => {
-    const pct = (done, total) => (total > 0 ? Math.round((done / total) * 100) : 0);
-    const boothPct = pct(stats.assignedBooths, stats.totalBooths);
-    const bannerPct = pct(stats.bannersPlaced, stats.totalBanners);
-    const reqDone = data.requirements.filter((r) => r.status === "Fulfilled").length;
-    const reqPct = pct(reqDone, data.requirements.length);
-    const eqDone = data.equipment.filter((e) => e.status === "Fulfilled").length;
-    const eqPct = pct(eqDone, data.equipment.length);
-    return [
-      { label: "Booths Assigned", pct: boothPct, sub: `${stats.assignedBooths} / ${stats.totalBooths}` },
-      { label: "Banners Placed", pct: bannerPct, sub: `${stats.bannersPlaced} / ${stats.totalBanners}` },
-      { label: "Requirements Fulfilled", pct: reqPct, sub: `${reqDone} / ${data.requirements.length}` },
-      { label: "Equipment Fulfilled", pct: eqPct, sub: `${eqDone} / ${data.equipment.length}` },
-    ];
-  }, [data, stats]);
-
-  const exportCsv = (filename, rows) => {
-    if (!rows.length) return;
-    const headers = Object.keys(rows[0]);
-    const csv = [headers.join(","), ...rows.map((r) => headers.map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportCompanies = () => exportCsv("companies.csv", (companies || []).map((c) => ({
-    name: c.companyName, email: c.email, status: c.status || "Pending", sector: c.sector, city: c.city,
-  })));
-
-  const exportStudents = () => exportCsv("students.csv", uniqueApplicants(applicants).map((a) => ({
-    name: a.applicantDetails?.fullName, uniId: a.applicantDetails?.uniId, major: a.applicantDetails?.major, attended: a.attended ? "Yes" : "No",
-  })));
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard label="Total Companies" value={stats.totalCompanies} sub={`${stats.confirmedCompanies} confirmed`} />
-        <StatCard label="Total Students" value={stats.totalStudents.toLocaleString()} sub="Unique registrations" color="#2959A6" />
-        <StatCard label="Check-in Rate" value={`${stats.checkinRate}%`} sub="Of registered students" />
-        <StatCard label="Applications Made" value={stats.totalApplications.toLocaleString()} sub="Total submissions" color="#8b5cf6" />
-        <StatCard label="Booths Assigned" value={`${stats.assignedBooths}/${stats.totalBooths}`} sub="Companies placed" color="#f59e0b" />
-        <StatCard label="Access Passes Issued" value={stats.passesIssued} sub={`${stats.bannersPlaced}/${stats.totalBanners} banners placed`} color="#0891b2" />
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-4">Operations Completion</p>
-        <div className="flex flex-col gap-3">
-          {completionBreakdown.map((cat) => (
-            <div key={cat.label} className="flex items-center gap-3">
-              <div className="w-44 text-xs text-gray-600 text-right flex-shrink-0">{cat.label}</div>
-              <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
-                <div className="h-5 rounded-full flex items-center justify-end pr-2 transition-all duration-700" style={{ width: `${Math.max(cat.pct, 4)}%`, background: "#0E7F41" }}>
-                  {cat.pct >= 15 && <span className="text-white text-[10px] font-bold">{cat.pct}%</span>}
-                </div>
-              </div>
-              <div className="w-16 text-xs text-gray-400 flex-shrink-0">{cat.sub}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-semibold text-gray-700 mb-3">Export Reports</p>
-        <div className="flex flex-wrap gap-3">
-          <button onClick={exportCompanies} className="flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-all hover:opacity-90 border" style={{ background: "white", color: "#0E7F41", borderColor: "#0E7F41" }}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Companies CSV
-          </button>
-          <button onClick={exportStudents} className="flex items-center gap-2 text-sm font-semibold rounded-xl px-4 py-2 transition-all hover:opacity-90 border" style={{ background: "white", color: "#2959A6", borderColor: "#2959A6" }}>
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Students CSV
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ─── Tab icons (SVG — no emojis) ──────────────────────────────────────────────
-
-const TabIcon = ({ id }) => {
-  const paths = {
-    venue: "M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21",
-    banners: "M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42",
-    requirements: "M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z",
-    equipment: "m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0-3-3m3 3 3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z",
-    delegates: "M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z",
-    attendance: "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
-    manageStaff: "M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z",
-    schedule: "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5",
-    passes: "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z",
-    report: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z",
-  };
-  return (
-    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.6} viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" d={paths[id] || paths.venue} />
-    </svg>
-  );
-};
-
-// ─── Tab definitions ──────────────────────────────────────────────────────────
-
-const TABS = [
+const OPERATIONS_TABS = [
   { id: "venue",        label: "Venue & Booths",        component: VenueMapping },
   { id: "banners",      label: "Banners & Branding",    component: BannerBranding },
   { id: "requirements", label: "Special Requirements",  component: SpecialRequirements },
@@ -1334,428 +1486,52 @@ const TABS = [
   { id: "manageStaff",  label: "Manage Staff",          component: ManageStaff },
   { id: "schedule",     label: "Schedule",              component: ScheduleSlots },
   { id: "passes",       label: "Access Passes",         component: AccessPasses },
-  { id: "report",       label: "Post-Event Report",     component: PostEventReporting },
 ];
 
-// ─── Activity panel (audit trail) ─────────────────────────────────────────────
+// ─── Main component: Event Operations ──────────────────────────────────────────
+// Day-to-day modules each team member owns a slice of — split out of the
+// original single EventSettings.jsx into this page plus EventAdmin.jsx
+// (Post-Event Report, Customize, and the Team/ViewAs/Activity/Import panels).
 
-const ActivityPanel = ({ open, onClose }) => {
-  const { data } = useEventOps();
-  const [mounted, setMounted] = useState(open);
-  const [phase, setPhase] = useState(open ? "open" : "closed");
-  const closeTimer = useRef(null);
+const OPERATIONS_TAB_KEY = "event_ops_active_tab";
 
-  useEffect(() => {
-    if (open) {
-      clearTimeout(closeTimer.current);
-      setMounted(true);
-      setPhase("opening");
-      const id = requestAnimationFrame(() => requestAnimationFrame(() => setPhase("open")));
-      return () => cancelAnimationFrame(id);
-    } else if (mounted) {
-      setPhase("closing");
-      closeTimer.current = setTimeout(() => setMounted(false), 240);
-    }
-    return () => clearTimeout(closeTimer.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
-
-  if (!mounted) return null;
-
-  const backdropState = phase === "open" ? "backdrop-open" : phase === "closing" ? "backdrop-close" : "";
-  const drawerState = phase === "open" ? "drawer-open" : phase === "closing" ? "drawer-close" : "";
-
-  return (
-    <>
-      <div className={`expandDetails-backdrop fixed inset-0 bg-black/30 z-[300] ${backdropState}`} onClick={onClose} />
-      <div className={`drawerPanel fixed right-0 top-0 bottom-0 w-[320px] max-w-[85vw] bg-white z-[301] shadow-2xl flex flex-col ${drawerState}`}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-          <p className="text-sm font-bold text-gray-800">Recent Activity</p>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
-          {(data.audit || []).length === 0 && <p className="text-xs text-gray-400 text-center py-6">No activity yet</p>}
-          {(data.audit || []).map((a) => (
-            <div key={a.id} className="bg-gray-50 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="w-6 h-6 rounded-full bg-[#0E7F41] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                  {a.by?.[0] || "?"}
-                </span>
-                <span className="text-xs font-semibold text-gray-700">{a.by}</span>
-                <span className="text-[10px] text-gray-400 ml-auto">{formatWhen(a.at)}</span>
-              </div>
-              <p className="text-xs text-gray-600">{a.message}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5">{a.section}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-};
-
-// ─── View As panel ─────────────────────────────────────────────────────────────
-// Lets Rana preview what each role's world looks like — without swapping her
-// real CASTO session (which could break her own login if anything went
-// wrong). Company/staff previews are read-only panels built from data
-// already loaded here; the student check-in view is genuinely public, so it
-// just opens in a new tab.
-
-const ViewAsPanel = ({ open, onClose }) => {
-  const { companies, companyIds, data } = useEventOps();
-  const [mode, setMode] = useState("manager");
-  const [selectedCompany, setSelectedCompany] = useState(companies[0] || "");
-  const [selectedStaff, setSelectedStaff] = useState(data.attendanceStaff?.[0]?.id ?? null);
-
-  const staffer = (data.attendanceStaff || []).find((s) => s.id === selectedStaff);
-  const stafferLog = staffer ? (data.checkinLog || []).filter((c) => c.byId === staffer.id) : [];
-  const selectedCompanyId = companyIds[selectedCompany];
-
-  return (
-    <Modal visible={open} onClose={onClose} maxWidth={mode === "manager" ? "max-w-4xl" : "max-w-2xl"} contentClassName="max-h-[85vh]">
-      <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
-        <div>
-          <h2 className="text-lg font-bold">View As</h2>
-          <p className="text-xs text-white/80 mt-0.5">Preview what other roles see — read-only, doesn't touch your session</p>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="p-5 flex flex-col gap-4 overflow-y-auto">
-        <SubTabBar tabs={["Manager (Company)", "Attendance Staff", "Student Check-in"]} active={mode === "manager" ? 0 : mode === "staff" ? 1 : 2}
-          onChange={(i) => setMode(i === 0 ? "manager" : i === 1 ? "staff" : "student")} />
-
-        {mode === "manager" && (
-          <div className="flex flex-col gap-3">
-            <CompactSelect value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)} options={companies} placeholder="Choose a company…" />
-            {!selectedCompany ? (
-              <p className="text-xs text-gray-400 text-center py-8">Select a company to preview their full status page.</p>
-            ) : !selectedCompanyId ? (
-              <p className="text-xs text-gray-400 text-center py-8">
-                {selectedCompany} hasn't registered a real account yet — only seed/demo companies without a backend record can't be previewed this way.
-              </p>
-            ) : (
-              <div className="border border-gray-100 rounded-xl overflow-hidden bg-[#F3F6FF] flex flex-col" style={{ height: "55vh" }}>
-                <CompanyStatus viewCompanyId={selectedCompanyId} readOnly />
-              </div>
-            )}
-          </div>
-        )}
-
-        {mode === "staff" && (
-          <div className="flex flex-col gap-3">
-            <CompactSelect
-              value={selectedStaff}
-              onChange={(e) => setSelectedStaff(Number(e.target.value))}
-              options={(data.attendanceStaff || []).map((s) => ({ value: s.id, label: s.name }))}
-              placeholder="Choose a staff account…"
-            />
-            {!staffer ? (
-              <p className="text-xs text-gray-400 text-center py-8">No staff accounts yet — create one in the Manage Staff tab.</p>
-            ) : (
-              <div className="border border-gray-100 rounded-xl p-4 flex flex-col gap-3 bg-[#F3F6FF]">
-                <p className="text-xs font-semibold text-gray-500">This is what {staffer.name} sees at /student-checkin:</p>
-                <div className="bg-white rounded-lg p-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-bold text-gray-800">{staffer.name}</p>
-                    <p className="text-xs text-gray-500">{staffer.email}</p>
-                  </div>
-                  <Badge label={staffer.status === "active" ? "Active" : "Invited"} color={staffer.status === "active" ? "green" : "yellow"} />
-                </div>
-                <p className="text-xs text-gray-500">Checked in {stafferLog.length} student{stafferLog.length === 1 ? "" : "s"} today</p>
-                {stafferLog.slice(0, 5).map((c) => (
-                  <div key={c.id} className="bg-white rounded-lg px-3 py-2 flex items-center justify-between text-xs">
-                    <span className="text-gray-700">{c.name || c.uniId}</span>
-                    <span className="text-gray-400">{formatWhen(c.at)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {mode === "student" && (
-          <div className="flex flex-col items-center gap-3 py-6 text-center">
-            <p className="text-sm text-gray-600 max-w-sm">
-              The student check-in page is fully public — it needs a real access code to log in, so the truest preview is opening it directly.
-            </p>
-            <a href="/student-checkin" target="_blank" rel="noreferrer" className="text-sm font-semibold text-white rounded-lg px-5 py-2.5" style={{ background: "#0E7F41" }}>
-              Open /student-checkin in a new tab
-            </a>
-          </div>
-        )}
-      </div>
-    </Modal>
-  );
-};
-
-// ─── Team & Roles panel ────────────────────────────────────────────────────────
-// Shows every team member's responsibilities. Rana (Event Lead) additionally
-// gets the ability to reassign who owns which module, gated behind a 2-step
-// check: her real CASTO login password, then a one-time code shown on screen
-// (there's no per-employee inbox to actually deliver it to).
-
-const genCode = () => String(Math.floor(100000 + Math.random() * 900000));
-
-const TeamPanel = ({ open, onClose }) => {
-  const { team, employee, updateTeamFocus } = useEventOps();
-  const toast = useToast();
-  const canReassign = employee.id === "rana";
-
-  const [reassigning, setReassigning] = useState(null); // member id being edited
-  const [draftFocus, setDraftFocus] = useState([]);
-  const [verifyStep, setVerifyStep] = useState(null); // null | 'password' | 'code'
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [checkingPassword, setCheckingPassword] = useState(false);
-  const [sentCode, setSentCode] = useState("");
-  const [codeInput, setCodeInput] = useState("");
-  const [codeError, setCodeError] = useState("");
-
-  const resetVerification = () => {
-    setVerifyStep(null); setPassword(""); setPasswordError("");
-    setSentCode(""); setCodeInput(""); setCodeError("");
-  };
-
-  const startReassign = (member) => {
-    setReassigning(member.id);
-    setDraftFocus(member.focus);
-    resetVerification();
-  };
-
-  const cancelReassign = () => {
-    setReassigning(null);
-    resetVerification();
-  };
-
-  const toggleModule = (id) => {
-    setDraftFocus((prev) => (prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]));
-  };
-
-  const requestVerification = () => setVerifyStep("password");
-
-  const checkPassword = async () => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
-    if (!password.trim() || !storedUser?.email) return;
-    setCheckingPassword(true);
-    setPasswordError("");
-    try {
-      const res = await axios.post(`${API_URL}/user/login`, {
-        email: storedUser.email, password, companyName: storedUser.companyName,
-      });
-      if (res.status === 200) {
-        const code = genCode();
-        setSentCode(code);
-        setVerifyStep("code");
-        toast(`Verification code: ${code} (no real inbox tied to this account — shown here instead)`, { type: "info", duration: 8000 });
-      }
-    } catch {
-      setPasswordError("Incorrect password");
-    } finally {
-      setCheckingPassword(false);
-    }
-  };
-
-  const confirmCode = () => {
-    if (codeInput.trim() !== sentCode) {
-      setCodeError("That code doesn't match");
-      return;
-    }
-    updateTeamFocus(reassigning, draftFocus);
-    toast("Role responsibilities updated", { type: "success" });
-    setReassigning(null);
-    resetVerification();
-  };
-
-  const allModules = Object.keys(MODULE_LABELS);
-
-  return (
-    <Modal visible={open} onClose={onClose} maxWidth="max-w-xl" contentClassName="max-h-[85vh]">
-      <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
-        <div>
-          <h2 className="text-lg font-bold">Team & Roles</h2>
-          <p className="text-xs text-white/80 mt-0.5">Who owns what across Event Settings</p>
-        </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="p-5 overflow-y-auto flex flex-col gap-3">
-        {team.map((m) => {
-          const isEditing = reassigning === m.id;
-          return (
-            <div key={m.id} className="border border-gray-100 rounded-xl p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-8 h-8 rounded-full bg-[#0E7F41] text-white text-xs font-bold flex items-center justify-center shrink-0">{m.name[0]}</span>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">{m.name}</p>
-                    <p className="text-xs text-gray-500">{m.role}</p>
-                  </div>
-                </div>
-                {canReassign && !isEditing && (
-                  <button onClick={() => startReassign(m)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors shrink-0">
-                    Reassign
-                  </button>
-                )}
-              </div>
-
-              <p className="text-xs text-gray-500 leading-relaxed mt-2.5">{m.responsibilities}</p>
-
-              <div className="flex flex-wrap gap-1.5 mt-2.5">
-                {m.focus.map((id) => (
-                  <span key={id} className="text-[10px] font-medium bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">{MODULE_LABELS[id] || id}</span>
-                ))}
-              </div>
-
-              {isEditing && (
-                <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-3">
-                  {!verifyStep && (
-                    <>
-                      <p className="text-xs font-semibold text-gray-600">Select the modules {m.name} should own:</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {allModules.map((id) => {
-                          const checked = draftFocus.includes(id);
-                          return (
-                            <button key={id} type="button" onClick={() => toggleModule(id)}
-                              className={`text-xs font-medium rounded-full px-2.5 py-1 border transition-colors ${checked ? "bg-[#0E7F41] text-white border-[#0E7F41]" : "bg-white text-gray-500 border-gray-200 hover:border-green-300"}`}>
-                              {MODULE_LABELS[id]}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={cancelReassign} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
-                        <button onClick={requestVerification} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5" style={{ background: "#0E7F41" }}>
-                          Save changes
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {verifyStep === "password" && (
-                    <div className="bg-[#F3F6FF] rounded-xl p-3 flex flex-col gap-2.5">
-                      <p className="text-xs font-semibold text-gray-700">Step 1 of 2 — confirm your admin password</p>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
-                        onKeyDown={(e) => e.key === "Enter" && checkPassword()}
-                        placeholder="CASTO account password"
-                        autoFocus
-                        className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                      />
-                      {passwordError && <p className="text-xs text-red-500">{passwordError}</p>}
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={cancelReassign} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
-                        <button onClick={checkPassword} disabled={checkingPassword || !password.trim()} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-                          {checkingPassword ? "Checking…" : "Continue"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {verifyStep === "code" && (
-                    <div className="bg-[#F3F6FF] rounded-xl p-3 flex flex-col gap-2.5">
-                      <p className="text-xs font-semibold text-gray-700">Step 2 of 2 — enter the verification code</p>
-                      <p className="text-[11px] text-gray-500">A code was generated for this change — check the notification in the top-right corner.</p>
-                      <input
-                        value={codeInput}
-                        onChange={(e) => { setCodeInput(e.target.value); setCodeError(""); }}
-                        onKeyDown={(e) => e.key === "Enter" && confirmCode()}
-                        placeholder="6-digit code"
-                        maxLength={6}
-                        autoFocus
-                        className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm tracking-widest text-center font-mono focus:outline-none focus:ring-1 focus:ring-green-500"
-                      />
-                      {codeError && <p className="text-xs text-red-500">{codeError}</p>}
-                      <div className="flex gap-2 justify-end">
-                        <button onClick={cancelReassign} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
-                        <button onClick={confirmCode} disabled={codeInput.trim().length !== 6} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-                          Confirm & Save
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-
-        {!canReassign && (
-          <p className="text-[11px] text-gray-400 text-center pt-1">Only the Event Lead can reassign team responsibilities.</p>
-        )}
-      </div>
-    </Modal>
-  );
-};
-
-// ─── Main component ───────────────────────────────────────────────────────────
-
-const EventSettings = ({ link }) => {
+const EventOperations = () => {
   const { user } = useAuthContext();
   const { employee, team, setActingAs } = useEventOps();
-  const [activeTab, setActiveTab] = useState(TABS[0].id);
-  const [showActivity, setShowActivity] = useState(false);
-  const [showTeamPanel, setShowTeamPanel] = useState(false);
-  const [showViewAs, setShowViewAs] = useState(false);
-  const [reportData, setReportData] = useState({ applicants: [], companies: [] });
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem(OPERATIONS_TAB_KEY) || OPERATIONS_TABS[0].id);
 
-  // Fetch real applicants/companies once, on demand — only the Post-Event
-  // Report tab needs them, but fetching here keeps the tab switch instant
-  useEffect(() => {
-    (async () => {
-      try {
-        const [applicantsRes, companiesRes] = await Promise.all([
-          axios.get(`${link}/applicants?limit=10000`),
-          axios.get(`${link}/companies`),
-        ]);
-        setReportData({
-          applicants: applicantsRes?.data?.applicants || applicantsRes?.data || [],
-          companies: companiesRes?.data || [],
-        });
-      } catch { /* report tab will show zeros until this succeeds */ }
-    })();
-  }, [link]);
-
-  // Each employee sees their own view: their modules come first and are marked
+  // Rana (Event Lead) sees every module, matching her "final point of
+  // contact" responsibility and the same employee.id === "rana" check the
+  // Team & Roles panel (EventAdmin.jsx) uses for reassignment permission.
+  // Everyone else sees only their own assigned modules.
   const orderedTabs = useMemo(() => {
     const focus = employee.focus || [];
-    return [...TABS].sort((a, b) => {
+    const visible = employee.id === "rana" ? OPERATIONS_TABS : OPERATIONS_TABS.filter((t) => focus.includes(t.id));
+    return [...visible].sort((a, b) => {
       const ai = focus.indexOf(a.id), bi = focus.indexOf(b.id);
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
   }, [employee]);
 
-  const ActiveComponent = TABS.find((t) => t.id === activeTab)?.component || VenueMapping;
-  const activeComponentProps = activeTab === "report" ? reportData : {};
+  // If switching "Viewing as" leaves the currently-open tab outside this
+  // employee's visible set, fall back to their first visible tab instead of
+  // silently rendering a tab that's no longer shown in the tab bar.
+  useEffect(() => {
+    if (!orderedTabs.some((t) => t.id === activeTab) && orderedTabs.length > 0) {
+      setActiveTab(orderedTabs[0].id);
+    }
+  }, [orderedTabs, activeTab]);
+
+  // Remember the open tab across reloads, so refreshing the page reopens
+  // wherever the user left off instead of always resetting to the first tab.
+  useEffect(() => {
+    try { localStorage.setItem(OPERATIONS_TAB_KEY, activeTab); } catch { /* quota */ }
+  }, [activeTab]);
+
+  const ActiveComponent = OPERATIONS_TABS.find((t) => t.id === activeTab)?.component || VenueMapping;
 
   return (
-    <PageContainer
-      user={user}
-      title="Event Settings"
-      headerRight={
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowViewAs(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-            View As
-          </button>
-          <button onClick={() => setShowTeamPanel(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-            Team & Roles
-          </button>
-          <button onClick={() => setShowActivity(true)} className="text-xs font-semibold border border-gray-200 rounded-xl px-3 py-2 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-            Activity Log
-          </button>
-        </div>
-      }
-    >
+    <PageContainer user={user} title="Event Operations" collapsibleTopBar>
       <div className="flex flex-col gap-3 flex-1 min-h-0">
         {/* Team view switcher — one CASTO account, one view per employee */}
         <div className="flex items-center gap-2 flex-wrap shrink-0">
@@ -1778,6 +1554,9 @@ const EventSettings = ({ link }) => {
             </button>
           ))}
           <span className="text-[11px] text-gray-400 ml-1 hidden lg:inline">{employee.role} — changes are recorded under {employee.name}</span>
+          <a href="/event-admin" className="ml-auto text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors shrink-0">
+            Admin →
+          </a>
         </div>
 
         {/* Tab bar — employee's modules first, marked with a dot */}
@@ -1807,16 +1586,12 @@ const EventSettings = ({ link }) => {
         {/* Content — its own scroll area so every tab is fully reachable */}
         <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
           <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
-            <ActiveComponent {...activeComponentProps} />
+            <ActiveComponent />
           </div>
         </div>
       </div>
-
-      <ActivityPanel open={showActivity} onClose={() => setShowActivity(false)} />
-      <TeamPanel open={showTeamPanel} onClose={() => setShowTeamPanel(false)} />
-      <ViewAsPanel open={showViewAs} onClose={() => setShowViewAs(false)} />
     </PageContainer>
   );
 };
 
-export default EventSettings;
+export default EventOperations;

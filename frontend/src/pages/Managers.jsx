@@ -6,6 +6,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
 import { useToast } from "../components/Toast";
 import Modal from "../components/Modal";
+import LoadListError from "../components/LoadListError";
 
 import { CircularProgress } from "@mui/material";
 
@@ -238,17 +239,17 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
         if (visible) { setSelectedCompanies([]); setResult(null); setSearch(""); }
     }, [visible]);
 
-    const allVisibleSelected = visibleCompanies.length > 0 && visibleCompanies.every(c => selectedCompanies.includes(c._id));
+    const allVisibleSelected = visibleCompanies.length > 0 && visibleCompanies.every(c => selectedCompanies.includes(c.id));
 
     const toggleSelectAllVisible = () => {
         if (allVisibleSelected) {
-            setSelectedCompanies(prev => prev.filter(id => !visibleCompanies.some(c => c._id === id)));
+            setSelectedCompanies(prev => prev.filter(id => !visibleCompanies.some(c => c.id === id)));
         } else {
-            setSelectedCompanies(prev => [...new Set([...prev, ...visibleCompanies.map(c => c._id)])]);
+            setSelectedCompanies(prev => [...new Set([...prev, ...visibleCompanies.map(c => c.id)])]);
         }
     };
 
-    const selectGroup = (group) => setSelectedCompanies(prev => [...new Set([...prev, ...group.map(c => c._id)])]);
+    const selectGroup = (group) => setSelectedCompanies(prev => [...new Set([...prev, ...group.map(c => c.id)])]);
 
     const handleToggleCompany = (companyId) => {
         setSelectedCompanies(prev =>
@@ -335,10 +336,10 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                                 <p className="text-center text-sm text-gray-400 py-8">No companies match "{search}"</p>
                             )}
                             {visibleCompanies.map(company => {
-                                const checked = selectedCompanies.includes(company._id);
+                                const checked = selectedCompanies.includes(company.id);
                                 return (
                                     <label
-                                        key={company._id}
+                                        key={company.id}
                                         className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
                                             checked ? 'border-[#0E7F41] bg-[#0E7F41]/5' : 'border-gray-100 hover:border-gray-200'
                                         }`}
@@ -346,7 +347,7 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                                         <input
                                             type="checkbox"
                                             checked={checked}
-                                            onChange={() => handleToggleCompany(company._id)}
+                                            onChange={() => handleToggleCompany(company.id)}
                                             className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41] shrink-0"
                                         />
                                         <div className="flex-1 min-w-0">
@@ -417,7 +418,11 @@ const Managers = ({link}) => {
     const toast = useToast();
     const [filterCriteriaa, setFilterCriteria] = useState("")
     const [finalList, setFinalList] = useState([]);
-    const [isLoading, setIsLoading] = useState(false)
+    // Starts true whenever a user is already known at mount (e.g. after a
+    // page reload) so the loading skeleton shows immediately instead of a
+    // brief flash of the empty/table-only state before the fetch effect runs.
+    const [isLoading, setIsLoading] = useState(() => !!user)
+    const [loadError, setLoadError] = useState(false)
     const [isAscending, setIsAscending] = useState(true)
     const [filterSelected, setFilterSelected] = useState('')
     const [showReminderModal, setShowReminderModal] = useState(false)
@@ -499,8 +504,7 @@ const Managers = ({link}) => {
             case "Company Email":
                 return sortedArray.sort((a, b) => direction * (a.email || '').localeCompare(b.email || ''));
             case "Representatives":
-                // Note: 'representitives' is the field name in the database (kept for backward compatibility)
-                return sortedArray.sort((a, b) => direction * (a.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.representitives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
+                return sortedArray.sort((a, b) => direction * (a.representatives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.representatives?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
             case "Sector":
                 return sortedArray.sort((a, b) => direction * (a.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase() || '').localeCompare(b.sector?.replace(/[^a-zA-Z]/g, '').toLowerCase() || ''));
             case "City":
@@ -629,59 +633,62 @@ const Managers = ({link}) => {
 
 
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true);
+    const fetchData = useCallback(async () => {
+        try {
+            setIsLoading(true);
+            setLoadError(false);
 
-                // 1. Fetch applicants (if casto) - use high limit to get all for counting
-                let applicants = [];
-                if (user?.email === "casto@sharjah.ac.ae") {
-                    const applicantsResponse = await axios.get(`${link}/applicants?limit=10000`, {
-                        headers: user ? { Authorization: `Bearer ${user.token}` } : {},
-                    });
-                    // Handle new paginated response format
-                    applicants = applicantsResponse.data.applicants || applicantsResponse.data;
-                    setApplicantsList(applicants);
-                }
-
-                // 2. Fetch companies
-                const companiesResponse = await axios.get(`${link}/companies`, {
+            // 1. Fetch applicants (if casto) - use high limit to get all for counting
+            let applicants = [];
+            if (user?.email === "casto@sharjah.ac.ae") {
+                const applicantsResponse = await axios.get(`${link}/applicants?limit=10000`, {
                     headers: user ? { Authorization: `Bearer ${user.token}` } : {},
                 });
-
-                const companiesData = companiesResponse.data;
-    
-                if (user) {
-                    if (user.email === "casto@sharjah.ac.ae") {
-                        // Build a map of applicants per company
-                        const updatedCompanies = companiesData.map((company) => {
-                            const num = applicants.filter((app) =>
-                                app.user_id.includes(company.companyName)
-                            ).length;
-    
-                            return {
-                                ...company,
-                                numberOfApplicants: num,
-                            };
-                        });
-    
-                        setCompanies([...updatedCompanies].slice(1));
-                    } else {
-                        const filtered = companiesData.filter((applicant) =>
-                            applicant.user_id.includes(user.email)
-                        );
-                        setCompanies(filtered);
-                    }
-                }
-    
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setTimeout(() => setIsLoading(false), 2000);
+                // Handle new paginated response format
+                applicants = applicantsResponse.data.applicants || applicantsResponse.data;
+                setApplicantsList(applicants);
             }
-        };
-    
+
+            // 2. Fetch companies
+            const companiesResponse = await axios.get(`${link}/companies`, {
+                headers: user ? { Authorization: `Bearer ${user.token}` } : {},
+            });
+
+            const companiesData = companiesResponse.data;
+
+            if (user) {
+                if (user.email === "casto@sharjah.ac.ae") {
+                    // Build a map of applicants per company
+                    const updatedCompanies = companiesData.map((company) => {
+                        const num = applicants.filter((app) =>
+                            app.user_id.includes(company.companyName)
+                        ).length;
+
+                        return {
+                            ...company,
+                            numberOfApplicants: num,
+                        };
+                    });
+
+                    // Excludes the CASTO Office's own company row from the managers list
+                    setCompanies(updatedCompanies.filter((c) => c.companyName !== "CASTO Office"));
+                } else {
+                    const filtered = companiesData.filter((applicant) =>
+                        applicant.user_id.includes(user.email)
+                    );
+                    setCompanies(filtered);
+                }
+            }
+
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setLoadError(true);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [user, link]);
+
+    useEffect(() => {
         if (user) {
             fetchData();
             if (!localStorage.getItem(MANAGERS_TOUR_KEY)) {
@@ -689,7 +696,7 @@ const Managers = ({link}) => {
             }
         }
 
-    }, [user, link]);
+    }, [user, link, fetchData]);
     
 
 
@@ -765,7 +772,9 @@ const Managers = ({link}) => {
                 </div>
 
                 {isLoading ? (
-                    <LoadingApplicants />
+                    <LoadingApplicants userType="manager" />
+                ) : loadError ? (
+                    <LoadListError label="companies" onRetry={fetchData} />
                 ) : finalList.length > 0 ? (
                     <>
                         <div
@@ -779,14 +788,14 @@ const Managers = ({link}) => {
                                     app.user_id?.includes(company.companyName)
                                 );
                                 return (
-                                    <div key={company._id} data-tour={index === 0 ? 'tour-first-row' : undefined} className="relative flex flex-col">
+                                    <div key={company.id} data-tour={index === 0 ? 'tour-first-row' : undefined} className="relative flex flex-col">
                                         <Row
                                             number={index + 1}
                                             userType={'manager'}
-                                            companyId={company._id}
+                                            companyId={company.id}
                                             companyName={company.companyName}
                                             companyEmail={company.email}
-                                            companyRepresentatives={company.representitives}
+                                            companyRepresentatives={company.representatives}
                                             companyFields={company.fields}
                                             companyStatus={company?.status}
                                             companySector={company.sector}
@@ -802,7 +811,7 @@ const Managers = ({link}) => {
                                             user={user}
                                             onStatusChange={(id, newStatus) => {
                                                 setCompanies(prev => prev.map(c =>
-                                                    c._id === id ? { ...c, status: newStatus } : c
+                                                    c.id === id ? { ...c, status: newStatus } : c
                                                 ));
                                             }}
                                         />

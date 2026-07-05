@@ -179,7 +179,7 @@ export const EventOpsProvider = ({ children }) => {
     });
     const [actingAs, setActingAsState] = useState(() => localStorage.getItem(ACTING_KEY) || DEFAULT_TEAM[0].id);
     const [realCompanies, setRealCompanies] = useState([]);
-    const [companyIds, setCompanyIds] = useState({}); // companyName -> _id, for View As previews
+    const [companyIds, setCompanyIds] = useState({}); // companyName -> id, for View As previews
     const saveTimer = useRef(null);
     // True once this tab has confirmed what the server actually has. Any
     // array-shaped section (attendanceStaff, booths, passes, ...) is only
@@ -206,10 +206,20 @@ export const EventOpsProvider = ({ children }) => {
                 if (Array.isArray(res?.data)) {
                     setRealCompanies(res.data.map((c) => c.companyName).filter(Boolean));
                     const idMap = {};
-                    res.data.forEach((c) => { if (c.companyName && c._id) idMap[c.companyName] = c._id; });
+                    res.data.forEach((c) => { if (c.companyName && c.id) idMap[c.companyName] = c.id; });
                     setCompanyIds(idMap);
                 }
             } catch { /* ignore */ }
+            // Real DB is now the source of truth for team membership — falls back
+            // to whatever was already in state (localStorage cache or DEFAULT_TEAM)
+            // if the backend is unreachable, same resilience as the event-ops fetch above.
+            try {
+                const res = await axios.get(`${API_URL}/casto-team`, { headers: authHeaders() });
+                if (Array.isArray(res?.data) && res.data.length > 0) {
+                    setTeam(res.data);
+                    try { localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(res.data)); } catch { /* quota */ }
+                }
+            } catch { /* backend unavailable — localStorage/DEFAULT_TEAM keeps working */ }
         })();
     }, []);
 
@@ -236,6 +246,29 @@ export const EventOpsProvider = ({ children }) => {
     const updateTeamFocus = useCallback((memberId, newFocus) => {
         setTeam((prev) => {
             const next = prev.map((m) => (m.id === memberId ? { ...m, focus: newFocus } : m));
+            try { localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+            return next;
+        });
+        axios.patch(`${API_URL}/casto-team/${memberId}`, { focus: newFocus }, { headers: authHeaders() }).catch(() => { /* local state still applied */ });
+    }, []);
+
+    // Adds a new team member via the real backend (also sends them a
+    // notification email server-side) and merges the result into local state
+    // once created, so the caller doesn't need a second round-trip.
+    const inviteTeamMember = useCallback(async (name, email, role, focus, responsibilities) => {
+        const res = await axios.post(`${API_URL}/casto-team`, { name, email, role, focus, responsibilities }, { headers: authHeaders() });
+        setTeam((prev) => {
+            const next = [...prev, res.data];
+            try { localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+            return next;
+        });
+        return res.data;
+    }, []);
+
+    const removeTeamMember = useCallback(async (memberId) => {
+        await axios.delete(`${API_URL}/casto-team/${memberId}`, { headers: authHeaders() });
+        setTeam((prev) => {
+            const next = prev.filter((m) => m.id !== memberId);
             try { localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
             return next;
         });
@@ -313,6 +346,29 @@ export const EventOpsProvider = ({ children }) => {
         return () => clearInterval(poll);
     }, []);
 
+    // A company checks itself in by scanning its own booth QR on arrival —
+    // flips its attendance row to Present. Keyed by company name so it works
+    // whether or not this tab created the row. No-op if the company has no
+    // booth/attendance record yet.
+    const companySelfCheckIn = useCallback((companyName) => {
+        if (!companyName) return;
+        const eq = (a, b) => a?.trim().toLowerCase() === b?.trim().toLowerCase();
+        const time = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        update("attendanceCompanies", `${companyName} self-checked in via booth QR`, (prev, who) =>
+            (prev || []).map((c) => eq(c.company, companyName)
+                ? { ...c, checkedIn: c.delegateCount, time, method: "QR", status: "Present", ...who }
+                : c));
+    }, [update]);
+
+    // Whether a given company is already marked present — powers the company-side
+    // "you're checked in" state and silences the hourly reminder once done.
+    const isCompanyCheckedIn = useCallback((companyName) => {
+        if (!companyName) return false;
+        const eq = (a, b) => a?.trim().toLowerCase() === b?.trim().toLowerCase();
+        const row = (data.attendanceCompanies || []).find((c) => eq(c.company, companyName));
+        return row?.status === "Present";
+    }, [data.attendanceCompanies]);
+
     // All assignable company names: seeds + real registered companies
     const companies = [...new Set([...SEED_COMPANIES, ...realCompanies])];
 
@@ -332,7 +388,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, inviteTeamMember, removeTeamMember, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile, companySelfCheckIn, isCompanyCheckedIn }}>
             {children}
         </EventOpsContext.Provider>
     );

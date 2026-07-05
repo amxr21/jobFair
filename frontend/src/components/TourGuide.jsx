@@ -137,17 +137,23 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
         if (!show) return;
         let raf;
         let scrolled = false;
+        let settleFrames = 0;
         const tick = () => {
             const el = document.querySelector(`[data-tour="${current?.target}"]`);
             if (el) {
                 // Bring the target into view once per step, instantly — a smooth scroll
-                // would keep moving the target after we measured it
-                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; }
+                // would keep moving the target after we measured it. The scroll can still
+                // take a few frames to actually land (sticky headers, nested scroll
+                // containers), so keep re-measuring for a short settle window afterward
+                // instead of trusting the very next frame's rect as final — otherwise a
+                // mid-scroll rect can get frozen as the spotlight position.
+                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; settleFrames = 10; }
                 const r = computePosition(el, boxRef.current);
-                if (r) setPos(prev => (samePos(prev, r) ? prev : r));
+                if (r) setPos(prev => (settleFrames > 0 || !samePos(prev, r) ? r : prev));
                 const br = el.getBoundingClientRect();
                 const next = { top: br.top, left: br.left, width: br.width, height: br.height };
-                setSpotRect(prev => (sameRect(prev, next) ? prev : next));
+                setSpotRect(prev => (settleFrames > 0 || !sameRect(prev, next) ? next : prev));
+                if (settleFrames > 0) settleFrames--;
             } else {
                 // Target not in the DOM (data still loading / element hidden): center the
                 // box and drop the spotlight; keep polling — it snaps on as soon as it mounts

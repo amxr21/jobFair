@@ -161,9 +161,8 @@ const Statistics = ({ link }) => {
 
     const reps = [];
     data?.managers.forEach(manager => {
-      // Note: 'representitives' is the field name in the database (kept for backward compatibility)
-      if (typeof manager.representitives === 'string') {
-        reps.push(...manager.representitives.split(',').map(rep => rep.trim()).filter(r => r));
+      if (typeof manager.representatives === 'string') {
+        reps.push(...manager.representatives.split(',').map(rep => rep.trim()).filter(r => r));
       }
     });
 

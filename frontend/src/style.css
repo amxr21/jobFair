@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Tailwind v4 changed the default `border`/`divide` color from gray-200 to
+   currentColor, which rendered every unprefixed `border` class (TopBar,
+   logout button, etc.) black instead of the light gray it was under v3.
+   Restore the old default so bare `border` utilities keep matching. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop {
+    border-color: #e5e7eb;
+  }
+}
+
 /* Custom Theme Colors */
 @theme {
   /* Primary - Green */
@@ -99,9 +112,21 @@
   }
   
 
+/* User-customizable font/size (Customize tab, Event Settings) — defaults below
+   match the app's original hardcoded values exactly, so nothing changes
+   visually until a user picks a preference. See utils/customization.js. */
+:root {
+    --user-font-family: '29LTBukra', 'Inter', sans-serif;
+    --user-font-size: 16px;
+}
+
 *{
-    font-family: '29LTBukra', 'Inter', sans-serif !important;
+    font-family: var(--user-font-family) !important;
     scroll-behavior: smooth !important;
+}
+
+html {
+    font-size: var(--user-font-size);
 }
 
 

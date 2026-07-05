@@ -72,3 +72,4 @@ export {default as StatusBadge} from "./StatusBadge";
 export {default as SectionCard} from "./SectionCard";
 export {default as TagPill} from "./TagPill";
 export {default as StatCard} from "./StatCard";
+export {default as NotificationBell} from "./NotificationBell";

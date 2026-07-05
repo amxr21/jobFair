@@ -419,8 +419,8 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
     // Representatives Count
     const totalRepresentatives = useMemo(() => {
         return companies?.reduce((sum, company) => {
-            if (typeof company.representitives === 'string') {
-                return sum + company.representitives.split(',').filter(r => r.trim()).length;
+            if (typeof company.representatives === 'string') {
+                return sum + company.representatives.split(',').filter(r => r.trim()).length;
             }
             return sum;
         }, 0) || 0;

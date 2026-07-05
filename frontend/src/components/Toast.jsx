@@ -32,7 +32,7 @@ export function ToastProvider({ children }) {
         <ToastContext.Provider value={toast}>
             {children}
             {createPortal(
-                <div className="fixed top-4 right-4 z-[999999] flex flex-col gap-2 items-end pointer-events-none">
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[999999] flex flex-col gap-2 items-center pointer-events-none">
                     {toasts.map(t => (
                         <ToastItem key={t.id} {...t} onDismiss={() => dismiss(t.id)} />
                     ))}
@@ -77,7 +77,7 @@ const STYLES = {
 
 function ToastItem({ message, type, leaving, entering, onDismiss }) {
     // entering (pre-animation) and leaving both collapse to the same off-state,
-    // so a toast always slides in from the right and slides back out the same way
+    // so a toast always slides down from above and slides back out the same way
     const settled = !entering && !leaving;
     return (
         <div
@@ -87,7 +87,7 @@ function ToastItem({ message, type, leaving, entering, onDismiss }) {
                 cursor-pointer pointer-events-auto select-none
                 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
                 ${STYLES[type] ?? STYLES.info}
-                ${settled ? 'opacity-100 translate-x-0 scale-100' : 'opacity-0 translate-x-4 scale-95'}
+                ${settled ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-2 scale-95'}
             `}
             style={{ minWidth: 180, maxWidth: 340 }}
         >
