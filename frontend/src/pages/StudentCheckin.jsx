@@ -7,6 +7,7 @@ import UniLogoWhite from "../assets/images/uniLogo-white.svg";
 import CastoLogoWhite from "../assets/images/castoLogo-white.svg";
 
 const STORAGE_KEY = "checkin_staff_session";
+const logStorageKey = (code) => `checkin_staff_log_${code}`;
 
 // Public, code-gated attendance check-in — for volunteers/helpers who don't
 // have a CASTO or company account. A short code (created by CASTO in Event
@@ -29,7 +30,10 @@ const StudentCheckin = () => {
     const [manualMode, setManualMode] = useState(false);
     const [checking, setChecking] = useState(false);
     const [result, setResult] = useState(null); // { type: 'success'|'error', message, name }
-    const [myLog, setMyLog] = useState([]);
+    const [myLog, setMyLog] = useState(() => {
+        if (!session?.code) return [];
+        try { return JSON.parse(localStorage.getItem(logStorageKey(session.code))) || []; } catch { return []; }
+    });
     const inputRef = useRef(null);
     const scannerRef = useRef(null);
 
@@ -39,6 +43,21 @@ const StudentCheckin = () => {
     useEffect(() => {
         if (session && manualMode) inputRef.current?.focus();
     }, [session, manualMode]);
+
+    // Instant on refresh from localStorage (set above), then reconciled
+    // against the real DB-backed log so it's accurate across devices/sessions
+    // too — not just whatever this browser happened to remember.
+    useEffect(() => {
+        if (!session?.code) return;
+        axios.get(`${API_URL}/attendance-staff/my-checkins`, { params: { code: session.code } })
+            .then((res) => { if (Array.isArray(res.data)) setMyLog(res.data); })
+            .catch(() => { /* keep whatever localStorage had */ });
+    }, [session?.code]);
+
+    useEffect(() => {
+        if (!session?.code) return;
+        localStorage.setItem(logStorageKey(session.code), JSON.stringify(myLog));
+    }, [session?.code, myLog]);
 
     // QR camera is the primary check-in method — same pattern used elsewhere
     // in the app (BarButtons/MobileRegisterFAB): the printed QR encodes the

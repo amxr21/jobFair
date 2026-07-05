@@ -4,10 +4,16 @@ import QRCode from 'qrcode.react';
 import { API_URL as link } from "../config/api";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { ApplicantsContext } from '../context/ApplicantsContext';
+import { useNotifications } from '../context/NotificationsContext';
 
 const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status, graduationYear, flag, shortlistedByStatus, rejectedByStatus, sidebarMode = false, isOtherTab = false, onTake }) => {
     const { user } = useAuthContext();
     const { dispatch } = useContext(ApplicantsContext);
+    const { notify } = useNotifications();
+
+    // The applicant's display name for notification copy — falls back to the
+    // short ticket id when a name isn't passed down to this instance.
+    const applicantLabel = shortName || (ticketId ? ticketId.slice(0, 8) : "an applicant");
 
     const [isProcessing, setIsProcessing] = useState(false);
     const [isTaking, setIsTaking] = useState(false);
@@ -48,6 +54,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
             setLocalRejectedBy(prev => prev.filter(c => c !== user?.companyName));
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, shortlistedBy: updated } });
             updateRowBorder('shortlist');
+            notify(`${user?.companyName || "You"} shortlisted ${applicantLabel}`, { type: 'shortlist', detail: `Added to ${user?.companyName || "your"} shortlist` });
         } catch (err) { console.error('Shortlist error:', err); }
         finally { setIsProcessing(false); }
     };
@@ -77,6 +84,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
             setLocalShortlistedBy(prev => prev.filter(c => c !== user?.companyName));
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, rejectedBy: updated } });
             updateRowBorder('reject');
+            notify(`${user?.companyName || "You"} rejected ${applicantLabel}`, { type: 'reject', detail: `Removed from ${user?.companyName || "your"} consideration` });
         } catch (err) { console.error('Reject error:', err); }
         finally { setIsProcessing(false); }
     };
@@ -104,6 +112,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
             setLocalFlags(updated);
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, flags: updated } });
             updateRowBorder('flag');
+            notify(`${user?.companyName || "You"} flagged ${applicantLabel}`, { type: 'flag', detail: `Marked for follow-up by ${user?.companyName || "you"}` });
         } catch (err) { console.error('Flag error:', err); }
     };
 
