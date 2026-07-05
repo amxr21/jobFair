@@ -23,6 +23,10 @@ jobs:
       # demoStore.js falls back to a small built-in seed automatically
       DEMO_MODE: 'true'
       TOKEN_SIGN: ci-test-secret-not-used-in-prod
+      # postinstall runs `prisma generate`, which only reads the schema but
+      # still needs DATABASE_URL to resolve at config-load time — dummy
+      # value, never actually connected to in demo-mode tests.
+      DATABASE_URL: mysql://ci:ci@localhost:3306/ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
