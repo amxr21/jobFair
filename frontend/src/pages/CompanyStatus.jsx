@@ -74,13 +74,20 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
     const parkingPasses = passes.filter((p) => p.type === "Parking");
     const entryPasses = passes.filter((p) => p.type !== "Parking");
 
-    const submitRequirement = () => {
-        if (!reqDesc.trim() || readOnly) return;
+    const submitRequirement = async () => {
+        if (!reqDesc.trim() || readOnly || reqSubmitting) return;
         setReqSubmitting(true);
-        update("requirements", `${companyName} requested: ${reqDesc.slice(0, 40)}`, (prev, who) =>
-            [...prev, { id: Date.now(), company: companyName, description: reqDesc.trim(), category: reqCategory.trim() || "General", priority: "Medium", status: "Open", notes: "Submitted by company", ...who }]);
-        setReqDesc(""); setReqCategory(""); setReqSubmitting(false); setReqDone(true);
-        setTimeout(() => setReqDone(false), 4000);
+        try {
+            await update("requirements", `${companyName} requested: ${reqDesc.slice(0, 40)}`, (prev, who) =>
+                [...(prev || []), { id: Date.now(), company: companyName, description: reqDesc.trim(), category: reqCategory.trim() || "General", priority: "Medium", status: "Open", notes: "Submitted by company", ...who }]);
+            setReqDesc(""); setReqCategory(""); setReqDone(true);
+            toast("Request submitted — CASTO will follow up", { type: "success" });
+            setTimeout(() => setReqDone(false), 4000);
+        } catch (err) {
+            toast("Couldn't submit your request. Please try again.", { type: "error" });
+        } finally {
+            setReqSubmitting(false);
+        }
     };
 
     return (
