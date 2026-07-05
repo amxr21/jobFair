@@ -55,6 +55,24 @@ export const ChevronIcon = ({ open }) => (
 
 export const inputCls = "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white";
 
+// Highlights the matched substring of a search query — same yellow mark used on
+// the Applicants/Companies lists, so every search bar across the app behaves
+// consistently.
+export const Highlight = ({ text, query }) => {
+  if (!query || !query.trim() || text == null) return <>{text}</>;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = String(text).split(new RegExp(`(${escaped})`, "gi"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part.toLowerCase() === query.toLowerCase()
+          ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded-[2px] px-[1px]">{part}</mark>
+          : part
+      )}
+    </>
+  );
+};
+
 // Sub-tab bar (Attendance sections, View As mode switch, etc.)
 export const SubTabBar = ({ tabs, active, onChange }) => {
   const btnRefs = useRef([]);
