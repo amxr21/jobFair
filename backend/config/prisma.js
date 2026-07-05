@@ -21,7 +21,7 @@ if (wantsSsl) {
   }
   const ssl = caExists
     ? { ca: fs.readFileSync(caPath), rejectUnauthorized: true }
-    : { rejectUnauthorized: !process.env.DB_SSL_INSECURE };
+    : { rejectUnauthorized: process.env.DB_SSL_INSECURE !== "true" };
 
   // The mariadb PoolConfig has no `url` field, so the connection string must
   // be broken into discrete fields to attach `ssl` alongside them.
