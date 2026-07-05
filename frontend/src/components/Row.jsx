@@ -10,6 +10,7 @@ import StatusBadge from "./StatusBadge";
 import { DeveloperBadge } from './index'
 import { API_URL as rowApiLink } from "../config/api";
 import Modal from "./Modal";
+import EmailComposeModal from "./EmailComposeModal";
 
 import { ExpandIcon } from "./Icons";
 
@@ -261,6 +262,7 @@ const Row = ({number, name, ticketId, uniId, email, phoneNumber, studyLevel, maj
     const [isDeletingCompany, setIsDeletingCompany] = useState(false);
     const [showDeleteCompanyConfirm, setShowDeleteCompanyConfirm] = useState(false);
     const [applicantsOpen, setApplicantsOpen] = useState(false);
+    const [showEmailCompose, setShowEmailCompose] = useState(false);
 
     const [ isClicked, setIsClicked ] = useState(false)
 
@@ -472,10 +474,10 @@ const ApplicantModal = ({visible, onClose, children}) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                                        <a href={`mailto:${companyEmail}`} onClick={(e) => e.stopPropagation()} title="Email this company"
+                                        <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowEmailCompose(true); }} title="Email this company"
                                             className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                        </a>
+                                        </button>
                                         <button type="button" title="Copy email"
                                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (companyEmail) { navigator.clipboard.writeText(companyEmail); } }}
                                             className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
@@ -765,6 +767,13 @@ const ApplicantModal = ({visible, onClose, children}) => {
                             </div>
                         </div>
                     </ApplicantModal>
+
+                    <EmailComposeModal
+                        visible={showEmailCompose}
+                        onClose={() => setShowEmailCompose(false)}
+                        to={companyEmail}
+                        companyName={companyName}
+                    />
                 </div>
 
 
