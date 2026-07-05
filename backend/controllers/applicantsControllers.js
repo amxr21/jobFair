@@ -10,7 +10,40 @@ dotenv.config();
 
 const nodemailer = require("nodemailer");
 
+// ─── Outbound email kill-switch ─────────────────────────────────────────────
+// Email is OFF by default. Nothing is ever sent unless EMAIL_ENABLED=true is
+// set explicitly in the environment (which only the maintainer controls). When
+// off, every send is logged (subject / to / from) instead of dispatched, so a
+// student registering or a reminder being triggered can never fire a real
+// email during testing. The most recent attempts are kept in memory for the
+// developer-only email view to display (see getEmailActivity).
+const EMAIL_ENABLED = process.env.EMAIL_ENABLED === "true";
+
+const emailActivity = []; // most-recent-first, capped
+const recordEmailAttempt = (entry) => {
+    emailActivity.unshift(entry);
+    if (emailActivity.length > 100) emailActivity.length = 100;
+};
+const getEmailActivityLog = () => emailActivity;
+const isEmailEnabled = () => EMAIL_ENABLED;
+
 const sendEmail = async (subject, message, send_to, sent_from) => {
+    const attempt = {
+        at: new Date().toISOString(),
+        subject,
+        to: send_to,
+        from: sent_from,
+        sent: false,
+        skippedReason: null,
+    };
+
+    if (!EMAIL_ENABLED) {
+        attempt.skippedReason = "EMAIL_ENABLED is not true — outbound email is off";
+        recordEmailAttempt(attempt);
+        console.log(`[email OFF] would send "${subject}" to ${send_to} (from ${sent_from})`);
+        return;
+    }
+
     const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         service: "Gmail",
@@ -29,8 +62,9 @@ const sendEmail = async (subject, message, send_to, sent_from) => {
     };
 
     transporter.sendMail(options, function (err, info) {
-        if (err) console.log(err);
-        else { console.log("Email sent"); }
+        if (err) { attempt.error = err.message; console.log(err); }
+        else { attempt.sent = true; console.log("Email sent"); }
+        recordEmailAttempt(attempt);
     });
 };
 
@@ -1775,7 +1809,24 @@ const unflagApplicant = async (req, res) => {
     }
 };
 
+// Developer-only: exposes whether outbound email is enabled and the log of
+// recent send attempts (what would have gone out while email is off). Gated to
+// the CASTO account — mirrors how the rest of the admin surface is trusted.
+const getEmailActivity = async (req, res) => {
+    try {
+        if (!isCastoAccount(req)) return res.status(403).json({ error: "Not authorized" });
+        res.status(200).json({
+            enabled: isEmailEnabled(),
+            fromAddress: process.env.EMAIL_USER || null,
+            attempts: getEmailActivityLog(),
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
+    getEmailActivity,
     getAllApplicants, addApplicant, getApplicant, updateApplicant, testFunc, addApplicantPublic,
     emailRequest, apply, getCompanies, getCompany, confirmAttendant, flagApplicant, getApplicantFlag,
     shortlistApplicant, rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant,

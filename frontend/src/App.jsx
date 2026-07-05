@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
-import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, CompanySettings, NotFound, EventOperations, EventAdmin, StudentCheckin, MyQrCode, ViewAs } from "./pages/index";
+import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, CompanySettings, NotFound, EventOperations, EventAdmin, StudentCheckin, MyQrCode, ViewAs, DevPanel } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
@@ -95,6 +95,7 @@ const AppLayout = ({ user, isCASTO }) => {
                         <Route path="/event-settings" element={isCASTO ? <EventOperations link={link} /> : <Navigate to="/" replace />} />
                         <Route path="/event-admin" element={isCASTO ? <EventAdmin link={link} /> : <Navigate to="/" replace />} />
                         <Route path="/view-as" element={isCASTO ? <ViewAs /> : <Navigate to="/" replace />} />
+                        <Route path="/dev" element={isCASTO ? <DevPanel /> : <Navigate to="/" replace />} />
                         <Route path="/company-status" element={user && !isCASTO ? <CompanyStatus /> : <Navigate to="/" replace />} />
                         <Route path="/company-settings" element={user && !isCASTO ? <CompanySettings /> : <Navigate to="/" replace />} />
                         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
