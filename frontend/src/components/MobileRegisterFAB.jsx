@@ -17,7 +17,7 @@ const MobileRegisterFAB = () => {
     const [showMenu, setShowMenu] = useState(false);
 
     // Hide on certain routes
-    const hideRoutes = ['/login', '/signup', '/confirm-attendance', '/survey'];
+    const hideRoutes = ['/login', '/signup', '/confirm-attendance', '/survey', '/student-checkin', '/my-qr-code'];
     const shouldHide = hideRoutes.some(route =>
         location.pathname === route || location.pathname.startsWith(route + '/')
     );

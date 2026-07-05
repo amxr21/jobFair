@@ -440,7 +440,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
         :
             <div className="row-manager grid py-2 pl-3 md:pl-5 pr-3 md:pr-5 mr-1 h-[46px] bg-white border border-transparent rounded-lg items-center mb-1.5 text-[11px] xl:text-xs">
                 <h2 className="flex items-center truncate">{number}</h2>
-                <h2 className="flex items-center truncate font-medium">{companyName}</h2>
+                <h2 className="flex items-center truncate font-medium"><HighlightText text={companyName} query={searchQuery} /></h2>
                 <h2 className={`${hideOnMobile} items-center truncate`}>
                     <a href={`mailto:${companyEmail}`} className="hover:text-blue-600 transition-colors">{companyEmail}</a>
                 </h2>
@@ -457,25 +457,49 @@ const ApplicantModal = ({visible, onClose, children}) => {
 
                     <ApplicantModal visible={isClicked} onClose={() => setIsClicked(false)}>
                         <div className="flex flex-col gap-3 md:gap-4 p-4 md:p-6 overflow-y-auto flex-1">
-                            {/* Company Header */}
-                            <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-                                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] rounded-lg flex items-center justify-center text-white text-base md:text-xl font-bold flex-shrink-0">
-                                        {companyName?.charAt(0)?.toUpperCase()}
+                            {/* Company Header — gradient banner with monogram, quick actions and at-a-glance stats */}
+                            <div className="-mx-4 md:-mx-6 -mt-4 md:-mt-6 mb-1 px-4 md:px-6 pt-4 md:pt-5 pb-3 bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] text-white">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                                        <div className="w-11 h-11 md:w-14 md:h-14 bg-white/15 backdrop-blur rounded-xl flex items-center justify-center text-white text-lg md:text-2xl font-bold flex-shrink-0 ring-1 ring-white/25">
+                                            {companyName?.charAt(0)?.toUpperCase()}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <h2 className="text-base md:text-lg font-bold truncate">{companyName}</h2>
+                                            <p className="text-[10px] md:text-xs text-white/70">{companySector || '—'} • {companyCity || '—'}</p>
+                                            <div className="mt-1"><StatusBadge status={companyStatus || 'Pending'} /></div>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <h2 className="text-sm md:text-base font-bold text-gray-800 truncate">{companyName}</h2>
-                                        <p className="text-[10px] md:text-xs text-gray-500">{companySector} • {companyCity}</p>
-                                        <StatusBadge status={companyStatus || 'Pending'} className="mt-1" />
+                                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                                        <a href={`mailto:${companyEmail}`} onClick={(e) => e.stopPropagation()} title="Email this company"
+                                            className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                                        </a>
+                                        <button type="button" title="Copy email"
+                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (companyEmail) { navigator.clipboard.writeText(companyEmail); } }}
+                                            className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                        <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsClicked(false); }}
+                                            className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors" aria-label="Close">
+                                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="white" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                                        </button>
                                     </div>
                                 </div>
-                                <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsClicked(false); }}
-                                    style={{ width: 28, height: 28, borderRadius: 6, border: '0.5px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginLeft: 8 }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#F7FAFC'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                    aria-label="Close">
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                                </button>
+                                {/* At-a-glance stat strip */}
+                                <div className="grid grid-cols-4 gap-2 mt-3">
+                                    {[
+                                        ["Positions", numberOfPositions ?? '—'],
+                                        ["Applicants", numebrOfApplicants ?? (companyApplicants?.length || 0)],
+                                        ["Fields", (Array.isArray(companyFields) ? companyFields.length : companyFields?.split(',').filter(Boolean).length) || 0],
+                                        ["Reps", companyRepresentatives?.split(',').filter(Boolean).length || 0],
+                                    ].map(([label, value]) => (
+                                        <div key={label} className="bg-white/10 rounded-lg px-2 py-1.5 text-center">
+                                            <p className="text-base md:text-lg font-bold leading-none">{value}</p>
+                                            <p className="text-[9px] md:text-[10px] text-white/70 mt-0.5 uppercase tracking-wide">{label}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
 
                                 {/* Admin Actions - Mark as Canceled */}

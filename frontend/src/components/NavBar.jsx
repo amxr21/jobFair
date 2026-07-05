@@ -112,6 +112,7 @@ const NavBar = ({ link }) => {
                         <SlidingPill containerRef={mainGroupRef} />
                         <PageLink link='' title={'Applicants'} icon={'applicants'} />
                         {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={'My Status'} icon={'status'} />}
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={'Settings'} icon={'settings'} />}
                         {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" &&
                             <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
                         {isCASTOAdmin && <PageLink link='managers' title={'Managers'} icon={'managers'} />}

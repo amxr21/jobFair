@@ -54,10 +54,9 @@ const StatisticsElement = ({ data = {}, type }) => {
 
   const applicants = getUniqueLatestApplicants(applicantsRaw);
 
-  // Note: 'representitives' is the field name in the database (kept for backward compatibility)
   const representativesCount = managers.reduce((acc, manager) => {
-    if (typeof manager.representitives === "string") {
-      return acc + manager.representitives.split(",").length;
+    if (typeof manager.representatives === "string") {
+      return acc + manager.representatives.split(",").length;
     }
     return acc;
   }, 0);

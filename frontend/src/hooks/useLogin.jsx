@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useAuthContext } from "./useAuthContext"
-import axios from "axios";
 import { API_URL as link } from "../config/api";
 
 export const useLogin = () => {
@@ -12,28 +11,16 @@ export const useLogin = () => {
         setIsLoading(true);
         setError(null);
 
-        let fields = "";
-        let representatives = "";
-        let companyName = "";
-
-        try {
-            const response = await axios.get(`${link}/companies`);
-            const companies = response.data;
-            const selected = companies.find(company => company.email?.trim() === email?.trim());
-
-            if (selected) {
-                fields = selected.fields;
-                representatives = selected.representitives;
-                companyName = selected.companyName;
-            }
-        } catch (err) {
-            // Continue with login even if company fetch fails
-        }
-
+        // The backend now resolves the authoritative company record itself
+        // (including secondary/approved login emails) and returns its own
+        // fields/representatives/companyName — no client-side pre-fetch
+        // needed, and none would work correctly for a secondary email anyway
+        // since it wouldn't match the primary `company.email` this used to
+        // search by.
         const response = await fetch(`${link}/user/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, fields, representitives: representatives, companyName })
+            body: JSON.stringify({ email, password })
         })
 
         const json = await response.json();

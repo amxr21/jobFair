@@ -5,8 +5,7 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import { Row, TableHeader, BarButtons, FlagButton, NoApplicants, LoadingApplicants, ScrollToTopButton, PageContainer, FilterDropdown } from "./index";
 import TourGuide, { APPLICANTS_TOUR_KEY } from "./TourGuide";
 import { useToast } from "./Toast";
-
-
+import LoadListError from "./LoadListError";
 
 const MainBanner = ({link}) => {
 
@@ -20,7 +19,12 @@ const MainBanner = ({link}) => {
     const [ isFlagged, setIsFlagged ] = useState(false)
     const [ isAscending, setIsAscending ] = useState(true)
     const [ activeFilters, setActiveFilters ] = useState({})
-    const [isLoading, setIsLoading] = useState(false)
+    // Starts true whenever a user is already known at mount (e.g. after a
+    // page reload, since the auth context reads localStorage synchronously)
+    // so the loading skeleton shows immediately instead of a brief flash of
+    // the empty/table-only state before the fetch effect below has run.
+    const [isLoading, setIsLoading] = useState(() => !!user)
+    const [loadError, setLoadError] = useState(false)
     const [applicants, setApplicants] = useState([]); // State to store the list of applicants
     const [otherApplicants, setOtherApplicants] = useState([]); // State to store the list of applicants
     const [filterCriteriaa, setFilterCriteria] = useState("")
@@ -168,15 +172,15 @@ const MainBanner = ({link}) => {
         const sorted = [...applicantsList].sort((a, b) =>
             new Date(b.createdAt) - new Date(a.createdAt)
         );
-        // Keep only the first occurrence of each uniId (which is the latest due to sorting)
+        // Keep only the first occurrence of each uniId (which is the latest due to sorting).
+        // Applicants with no uniId at all aren't duplicates of anything — always keep them.
         const seenIds = new Set();
         return sorted.filter((applicant) => {
             const uniId = applicant.applicantDetails?.uniId;
-            if (uniId && !seenIds.has(uniId)) {
-                seenIds.add(uniId);
-                return true;
-            }
-            return false;
+            if (!uniId) return true;
+            if (seenIds.has(uniId)) return false;
+            seenIds.add(uniId);
+            return true;
         });
     };
 
@@ -243,6 +247,7 @@ const MainBanner = ({link}) => {
     const fetchApplicants = async (page = 1, search = '', fetchAll = false) => {
         try {
             setIsLoading(true);
+            setLoadError(false);
             const params = new URLSearchParams({
                 page: fetchAll ? '1' : page.toString(),
                 limit: fetchAll ? '10000' : '50',
@@ -280,7 +285,8 @@ const MainBanner = ({link}) => {
             setPagination(paginationData);
             setShowAll(fetchAll);
         } catch (err) {
-            // Error fetching applicants
+            setLoadError(true);
+            toast(err.response?.data?.error || 'Failed to load applicants', { type: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -510,6 +516,10 @@ const MainBanner = ({link}) => {
                         ?
                         <LoadingApplicants />
                         :
+                        loadError
+                        ?
+                        <LoadListError label="applicants" onRetry={() => fetchApplicants(pagination.currentPage, searchQuery, showAll)} />
+                        :
                         finalList.length > 0
                         ?
                         <>
@@ -581,6 +591,10 @@ const MainBanner = ({link}) => {
                         isLoading
                         ?
                         <LoadingApplicants />
+                        :
+                        loadError
+                        ?
+                        <LoadListError label="applicants" onRetry={() => fetchApplicants(pagination.currentPage, searchQuery, showAll)} />
                         :
                         finalOtherList?.length > 0
                         ?
