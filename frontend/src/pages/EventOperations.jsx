@@ -73,10 +73,19 @@ const BoothMap = ({ booths, onSelect }) => {
       {hover && (
         <div
           className="absolute z-20 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 p-3 w-56"
-          style={{
-            left: Math.min(hover.x + 14, (wrapRef.current?.offsetWidth || 300) - 235),
-            top: Math.max(hover.y - 10, 4),
-          }}
+          style={(() => {
+            // Keep the card fully inside the map on every edge: flip to the left
+            // of the cursor when it would overflow right, and clamp top/bottom so
+            // it never spills out of line below the container.
+            const W = wrapRef.current?.offsetWidth || 300;
+            const H = wrapRef.current?.offsetHeight || 300;
+            const cardW = 224, cardH = 150, pad = 6;
+            let left = hover.x + 14;
+            if (left + cardW > W - pad) left = hover.x - cardW - 14;
+            left = Math.max(pad, Math.min(left, W - cardW - pad));
+            const top = Math.max(pad, Math.min(hover.y - 10, H - cardH - pad));
+            return { left, top };
+          })()}
         >
           <div className="flex items-center justify-between mb-1.5">
             <span className="font-bold text-sm text-gray-800">{hover.booth.number} · Zone {hover.booth.zone}</span>
