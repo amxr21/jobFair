@@ -1,0 +1,474 @@
+// Prisma schema — translated 1:1 from migrations/schema.sql.
+// Any constraint present there (nullability, ENUM values, UNIQUE, FK
+// ON DELETE behavior) must match here. If they diverge, schema.sql is
+// wrong or stale — treat it as the source of truth and fix schema.sql too.
+
+generator client {
+  provider     = "prisma-client-js"
+  output       = "../node_modules/.prisma/client"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ─── Companies (formerly the "User" Mongoose model) ────────────────────────
+model Company {
+  id                     String    @id @db.VarChar(24)
+  companyName            String    @map("company_name") @db.VarChar(255)
+  email                  String    @unique @db.VarChar(255)
+  password               String    @db.VarChar(255)
+  phone                  String?   @db.VarChar(50)
+  representatives        String?   @db.VarChar(255)
+  fields                 Json?
+  sector                 CompanySector?
+  city                   String?   @db.VarChar(100)
+  noOfPositions          String?   @map("no_of_positions") @db.VarChar(50)
+  preferredMajors        Json?     @map("preferred_majors")
+  opportunityTypes       Json?     @map("opportunity_types")
+  preferredQualities     String?   @map("preferred_qualities") @db.Text
+  status                 CompanyStatus @default(Pending)
+  confirmationToken      String?   @map("confirmation_token") @db.VarChar(255)
+  confirmationTokenExpiry DateTime? @map("confirmation_token_expiry")
+  reminderSentAt         DateTime? @map("reminder_sent_at")
+
+  surveyResponses        CompanySurveyResponse[]
+  relations              ApplicantCompanyRelation[]
+  booths                 Booth[]
+  banners                Banner[]
+  requirements           SpecialRequirement[]
+  delegates              CompanyDelegate[]
+  attendance             CompanyAttendance[]
+  loginEmails            CompanyLoginEmail[]
+
+  @@map("companies")
+}
+
+enum CompanyStatus {
+  Pending
+  Confirmed
+  Canceled
+}
+
+// ─── Additional login emails for a company (shared password, mirrors how ─────
+// the CASTO office runs one login across several staff members) ─────────────
+model CompanyLoginEmail {
+  id        Int      @id @default(autoincrement())
+  companyId String   @map("company_id") @db.VarChar(24)
+  email     String   @unique @db.VarChar(255)
+  addedBy   String?  @map("added_by") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@map("company_login_emails")
+}
+
+enum CompanySector {
+  Private
+  Semi
+  Local
+  Federal
+}
+
+// ─── Applicants (formerly "applicants_details.file") ───────────────────────
+model Applicant {
+  id                   String    @id @db.VarChar(24)
+
+  uniId                String?   @map("uni_id") @db.VarChar(50)
+  fullName             String?   @map("full_name") @db.VarChar(255)
+  birthdate            DateTime? @db.Date
+  gender               ApplicantGender?
+  nationality          String?   @db.VarChar(100)
+  studyLevel           StudyLevel? @map("study_level")
+  college              String?   @db.VarChar(255)
+  major                String?   @db.VarChar(255)
+  email                String?   @db.VarChar(255)
+  phoneNumber          String?   @map("phone_number") @db.VarChar(50)
+  // DECIMAL(3,2) — see schema.sql for the source-data audit and the one
+  // corrected outlier ("40" -> 4.00).
+  cgpa                 Decimal?  @db.Decimal(3, 2)
+  city                 String?   @db.VarChar(100)
+  linkedIn             String?   @map("linked_in") @db.VarChar(500)
+  technicalSkills      String?   @map("technical_skills") @db.Text
+  nonTechnicalSkills   String?   @map("non_technical_skills") @db.Text
+  experience           String?   @db.Text
+  languages            String?   @db.VarChar(255)
+  expectedToGraduate   DateTime? @map("expected_to_graduate") @db.Date
+
+  fieldInterest        Json?     @map("field_interest")
+  opportunityType      Json?     @map("opportunity_type")
+  preferredWorkCity    String?   @map("preferred_work_city") @db.VarChar(100)
+  careerGoals          String?   @map("career_goals") @db.Text
+  availability         String?   @db.VarChar(50)
+
+  cvMetadata           Json?     @map("cv_metadata")
+
+  attended             Boolean   @default(false)
+
+  createdAt            DateTime? @map("created_at")
+  updatedAt            DateTime? @map("updated_at")
+
+  relations            ApplicantCompanyRelation[]
+  checkins             CheckinLog[]
+  attendanceViewRows   StudentAttendanceView[]
+
+  @@index([email], map: "idx_applicants_email")
+  @@index([uniId], map: "idx_applicants_uni_id")
+  @@map("applicants")
+}
+
+// ─── Applicant <-> Company relations ────────────────────────────────────────
+model ApplicantCompanyRelation {
+  applicantId  String       @map("applicant_id") @db.VarChar(24)
+  companyId    String       @map("company_id") @db.VarChar(24)
+  relationType RelationType @map("relation_type")
+
+  applicant    Applicant    @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@id([applicantId, companyId, relationType])
+  @@index([companyId], map: "idx_acr_company")
+  @@index([applicantId], map: "idx_acr_applicant")
+  @@map("applicant_company_relations")
+}
+
+enum RelationType {
+  applied
+  flagged
+  rejected
+  shortlisted
+}
+
+enum ApplicantGender {
+  Male
+  Female
+}
+
+enum StudyLevel {
+  Bachelor
+  Master
+  PhD
+  Diploma
+}
+
+// ─── Company survey responses ───────────────────────────────────────────────
+model CompanySurveyResponse {
+  id           Int      @id @default(autoincrement())
+  companyId    String   @map("company_id") @db.VarChar(24)
+  questionId   String   @map("question_id") @db.VarChar(20)
+  questionText String   @map("question_text") @db.Text
+  response     String?  @db.Text
+
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, questionId], map: "uq_company_question")
+  @@map("company_survey_responses")
+}
+
+// ─── Attendance staff roster ────────────────────────────────────────────────
+model AttendanceStaff {
+  id         Int          @id @default(autoincrement())
+  legacyId   BigInt?      @map("legacy_id")
+  name       String       @db.VarChar(255)
+  email      String       @db.VarChar(255)
+  phone      String?      @default("") @db.VarChar(50)
+  code       String       @unique @db.VarChar(20)
+  status     StaffStatus  @default(invited)
+  updatedBy  String?      @map("updated_by") @db.VarChar(255)
+  updatedAt  DateTime?    @map("updated_at")
+
+  checkins   CheckinLog[]
+
+  @@map("attendance_staff")
+}
+
+enum StaffStatus {
+  invited
+  active
+}
+
+// ─── Check-in log ────────────────────────────────────────────────────────────
+model CheckinLog {
+  id                 BigInt    @id
+  applicantId        String    @map("applicant_id") @db.VarChar(24)
+  uniIdSnapshot      String?   @map("uni_id_snapshot") @db.VarChar(50)
+  fullNameSnapshot   String?   @map("full_name_snapshot") @db.VarChar(255)
+  checkedInByStaffId Int?      @map("checked_in_by_staff_id")
+  checkedInByName    String?   @map("checked_in_by_name") @db.VarChar(255)
+  checkedInAt        DateTime  @map("checked_in_at")
+
+  applicant          Applicant        @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+  checkedInByStaff   AttendanceStaff? @relation(fields: [checkedInByStaffId], references: [id], onDelete: SetNull)
+
+  @@index([checkedInByStaffId], map: "idx_checkin_staff")
+  @@map("checkin_log")
+}
+
+// ─── Access passes (entry / parking) ────────────────────────────────────────
+model AccessPass {
+  id          Int        @id @default(autoincrement())
+  legacyId    BigInt?    @map("legacy_id")
+  companyName String?    @map("company_name") @db.VarChar(255)
+  delegate    String?    @db.VarChar(255)
+  passType    PassType   @map("pass_type")
+  code        String     @unique @db.VarChar(50)
+  issuedDate  DateTime?  @map("issued_date") @db.Date
+  status      PassStatus @default(Active)
+  slot        String?    @db.VarChar(50)
+  location    String?    @db.VarChar(255)
+  updatedBy   String?    @map("updated_by") @db.VarChar(255)
+  updatedAt   DateTime?  @map("updated_at")
+
+  @@map("access_passes")
+}
+
+enum PassType {
+  Entry
+  Parking
+}
+
+enum PassStatus {
+  Active
+  Used
+  Revoked
+}
+
+// ─── Booths ─────────────────────────────────────────────────────────────────
+model Booth {
+  id          Int          @id @default(autoincrement())
+  legacyId    BigInt?      @map("legacy_id")
+  number      String       @db.VarChar(20)
+  zone        String?      @db.VarChar(10)
+  ring        String?      @db.VarChar(20)
+  companyName String?      @map("company_name") @db.VarChar(255)
+  companyId   String?      @map("company_id") @db.VarChar(24)
+  boothType   String?      @map("booth_type") @db.VarChar(50)
+  status      BoothStatus  @default(Available)
+  updatedBy   String?      @map("updated_by") @db.VarChar(255)
+  updatedAt   DateTime?    @map("updated_at")
+
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  equipment   EquipmentRequest[]
+
+  @@map("booths")
+}
+
+enum BoothStatus {
+  Available
+  Reserved
+  Assigned
+}
+
+// ─── Banners / branding assets ──────────────────────────────────────────────
+model Banner {
+  id          Int          @id @default(autoincrement())
+  legacyId    BigInt?      @map("legacy_id")
+  companyName String?      @map("company_name") @db.VarChar(255)
+  companyId   String?      @map("company_id") @db.VarChar(24)
+  material    String?      @db.VarChar(100)
+  size        String?      @db.VarChar(50)
+  quantity    Int?
+  artwork     String?      @db.VarChar(255)
+  contact     String?      @db.VarChar(255)
+  deadline    DateTime?    @db.Date
+  status      BannerStatus @default(NotSubmitted)
+  notes       String?      @db.Text
+  updatedBy   String?      @map("updated_by") @db.VarChar(255)
+  updatedAt   DateTime?    @map("updated_at")
+
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@map("banners")
+}
+
+enum BannerStatus {
+  NotSubmitted @map("Not Submitted")
+  Submitted
+  Approved
+  Printed
+  Placed
+}
+
+// ─── Special requirements ───────────────────────────────────────────────────
+model SpecialRequirement {
+  id          Int              @id @default(autoincrement())
+  legacyId    BigInt?          @map("legacy_id")
+  companyName String?          @map("company_name") @db.VarChar(255)
+  companyId   String?          @map("company_id") @db.VarChar(24)
+  description String?          @db.Text
+  category    String?          @db.VarChar(100)
+  priority    RequirementPriority @default(Low)
+  status      RequirementStatus   @default(Open)
+  notes       String?          @db.Text
+  updatedBy   String?          @map("updated_by") @db.VarChar(255)
+  updatedAt   DateTime?        @map("updated_at")
+
+  company     Company?         @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@map("special_requirements")
+}
+
+enum RequirementPriority {
+  Low
+  Medium
+  High
+  Critical
+}
+
+enum RequirementStatus {
+  Open
+  InProgress @map("In Progress")
+  Fulfilled
+}
+
+// ─── Equipment requests ─────────────────────────────────────────────────────
+model EquipmentRequest {
+  id            Int             @id @default(autoincrement())
+  legacyId      BigInt?         @map("legacy_id")
+  entityLabel   String?         @map("entity_label") @db.VarChar(255)
+  boothId       Int?            @map("booth_id")
+  item          String?         @db.VarChar(255)
+  qtyRequested  Int?            @map("qty_requested")
+  qtyFulfilled  Int?            @map("qty_fulfilled")
+  status        EquipmentStatus @default(Pending)
+  updatedBy     String?         @map("updated_by") @db.VarChar(255)
+  updatedAt     DateTime?       @map("updated_at")
+
+  booth         Booth?          @relation(fields: [boothId], references: [id], onDelete: SetNull)
+
+  @@map("equipment_requests")
+}
+
+enum EquipmentStatus {
+  Pending
+  Partial
+  Fulfilled
+}
+
+// ─── Company delegates ───────────────────────────────────────────────────────
+model CompanyDelegate {
+  id          Int          @id @default(autoincrement())
+  companyName String       @map("company_name") @db.VarChar(255)
+  companyId   String?      @map("company_id") @db.VarChar(24)
+  name        String       @db.VarChar(255)
+  role        String?      @db.VarChar(255)
+  email       String?      @db.VarChar(255)
+  phone       String?      @db.VarChar(50)
+  badgeStatus BadgeStatus  @default(Pending) @map("badge_status")
+
+  company     Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@map("company_delegates")
+}
+
+enum BadgeStatus {
+  Pending
+  Printed
+}
+
+// ─── Event-day company attendance ───────────────────────────────────────────
+model CompanyAttendance {
+  id              Int                @id @default(autoincrement())
+  boothNumber     String?            @map("booth_number") @db.VarChar(20)
+  companyName     String?            @map("company_name") @db.VarChar(255)
+  companyId       String?            @map("company_id") @db.VarChar(24)
+  delegateCount   Int?               @map("delegate_count")
+  checkedInCount  Int?               @map("checked_in_count")
+  checkInTime     String?            @map("check_in_time") @db.VarChar(20)
+  method          String?            @db.VarChar(20)
+  status          CompanyAttendanceStatus @default(Absent)
+  updatedBy       String?            @map("updated_by") @db.VarChar(255)
+  updatedAt       DateTime?          @map("updated_at")
+
+  company         Company?           @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@map("company_attendance")
+}
+
+enum CompanyAttendanceStatus {
+  Present
+  Partial
+  Absent
+}
+
+// ─── Event-day student attendance (CASTO-side view) ─────────────────────────
+model StudentAttendanceView {
+  id            Int                   @id @default(autoincrement())
+  uniId         String?               @map("uni_id") @db.VarChar(50)
+  applicantId   String?               @map("applicant_id") @db.VarChar(24)
+  studentName   String?               @map("student_name") @db.VarChar(255)
+  checkInTime   String?               @map("check_in_time") @db.VarChar(20)
+  method        String?               @db.VarChar(20)
+  status        StudentAttendanceStatus @default(Pending)
+
+  applicant     Applicant?            @relation(fields: [applicantId], references: [id], onDelete: SetNull)
+
+  @@map("student_attendance_view")
+}
+
+enum StudentAttendanceStatus {
+  Pending
+  CheckedIn @map("Checked In")
+}
+
+// ─── Event schedule ──────────────────────────────────────────────────────────
+model EventSchedule {
+  id         Int              @id @default(autoincrement())
+  legacyId   BigInt?          @map("legacy_id")
+  startTime  String?          @map("start_time") @db.VarChar(10)
+  endTime    String?          @map("end_time") @db.VarChar(10)
+  title      String           @db.VarChar(255)
+  host       String?          @db.VarChar(255)
+  location   String?          @db.VarChar(255)
+  capacity   Int?
+  registered Int?
+  status     ScheduleStatus   @default(Upcoming)
+  updatedBy  String?          @map("updated_by") @db.VarChar(255)
+  updatedAt  DateTime?        @map("updated_at")
+
+  @@map("event_schedule")
+}
+
+enum ScheduleStatus {
+  Upcoming
+  Live
+  Ended
+}
+
+// ─── CASTO team members ──────────────────────────────────────────────────────
+model CastoTeamMember {
+  id               String   @id @db.VarChar(50)
+  name             String   @db.VarChar(255)
+  email            String?  @unique @db.VarChar(255)
+  role             String?  @db.VarChar(255)
+  focusModules     Json?    @map("focus_modules")
+  responsibilities String?  @db.Text
+  invitedBy        String?  @map("invited_by") @db.VarChar(255)
+  createdAt        DateTime? @default(now()) @map("created_at")
+
+  @@map("casto_team_members")
+}
+
+// ─── Event-ops audit trail ───────────────────────────────────────────────────
+model EventOpsAuditLog {
+  id         Int       @id @default(autoincrement())
+  legacyId   BigInt?   @map("legacy_id")
+  occurredAt DateTime  @map("occurred_at")
+  actorName  String?   @map("actor_name") @db.VarChar(255)
+  section    String?   @db.VarChar(100)
+  message    String?   @db.Text
+
+  @@map("event_ops_audit_log")
+}
+
+// ─── Settings (key/value config store) ──────────────────────────────────────
+model Setting {
+  key       String   @id @db.VarChar(100)
+  value     Json
+  updatedAt DateTime @default(now()) @map("updated_at")
+  updatedBy String?  @map("updated_by") @db.VarChar(255)
+
+  @@map("settings")
+}

@@ -437,6 +437,14 @@ const checkinByStaff = (req, res) => {
     res.status(200).json({ applicant, checkedInBy: staffer.name });
 };
 
+// A staffer's own check-in history, so their list survives a page refresh
+const getMyCheckins = (req, res) => {
+    const staffer = findStaffer(req.query.code);
+    if (!staffer) return res.status(401).json({ error: "Invalid access code" });
+    const mine = (EVENT_OPS.checkinLog || []).filter((c) => c.byId === staffer.id);
+    res.status(200).json(mine);
+};
+
 // CV download — no real files in demo
 const downloadCV = (req, res) => {
     res.status(200).json({ message: "CV download not available in demo mode." });
@@ -603,7 +611,7 @@ module.exports = {
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     // settings
     getSettings, updateSettings, getEventOps, updateEventOps,
-    verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile,
+    verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile, getMyCheckins,
     // user auth
     loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany,
     // middleware

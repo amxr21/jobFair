@@ -5,17 +5,18 @@ const mongoose = require("mongoose");
 
 const isDemo = process.env.DEMO_MODE === "true";
 
-let requireAuth, upload, controllers;
+let requireAuth, upload, uploadArtwork, controllers;
 
 if (isDemo) {
     const demo = require("../demo/demoControllers");
     requireAuth = demo.requireAuthDemo;
     upload = { single: () => (req, res, next) => next() };
+    uploadArtwork = upload;
     controllers = demo;
     console.log("[DEMO MODE] Using in-memory data store — no MongoDB required");
 } else {
     requireAuth = require("../middlewares/requireAuth");
-    ({ upload } = require("../config/cloudinary"));
+    ({ upload, uploadArtwork } = require("../config/cloudinary"));
     controllers = require("../controllers/applicantsControllers");
 }
 
@@ -28,6 +29,10 @@ const {
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     getSettings, updateSettings, getEventOps, updateEventOps,
     verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile,
+    bulkImportCompanies, lookupApplicantByUniId, getMyCheckins,
+    getCompanyLoginEmails, addCompanyLoginEmail, removeCompanyLoginEmail, updateCompanyProfile,
+    getCastoTeam, inviteCastoTeamMember, updateCastoTeamMember, removeCastoTeamMember,
+    uploadBannerArtwork,
 } = controllers;
 
 const router = express.Router();
@@ -59,6 +64,14 @@ router.get("/settings", getSettings);
 router.post("/attendance-staff/verify", verifyAttendanceStaff);
 router.patch("/attendance-staff/checkin", checkinByStaff);
 router.patch("/attendance-staff/profile", updateAttendanceStaffProfile);
+if (getMyCheckins) {
+    router.get("/attendance-staff/my-checkins", getMyCheckins);
+}
+// Public: a student retrieves their own QR code after the fact by University
+// ID, without needing to have kept the confirmation screen open
+if (lookupApplicantByUniId) {
+    router.get("/applicants/lookup/:uniId", lookupApplicantByUniId);
+}
 
 // Protected routes
 router.use(requireAuth);
@@ -69,6 +82,25 @@ router.put("/event-ops", updateEventOps);
 router.post("/companies/send-reminders", sendCompanyReminders);
 router.patch("/companies/:id/status", updateCompanyStatus);
 router.delete("/companies/:id", deleteCompany);
+// Real-mode only for now — no demo-store equivalent exists yet
+if (bulkImportCompanies) {
+    router.post("/companies/bulk-import", bulkImportCompanies);
+}
+if (updateCompanyProfile) {
+    router.patch("/companies/:id/profile", updateCompanyProfile);
+    router.get("/companies/:id/login-emails", getCompanyLoginEmails);
+    router.post("/companies/:id/login-emails", addCompanyLoginEmail);
+    router.delete("/companies/:id/login-emails/:emailId", removeCompanyLoginEmail);
+}
+if (getCastoTeam) {
+    router.get("/casto-team", getCastoTeam);
+    router.post("/casto-team", inviteCastoTeamMember);
+    router.patch("/casto-team/:id", updateCastoTeamMember);
+    router.delete("/casto-team/:id", removeCastoTeamMember);
+}
+if (uploadBannerArtwork) {
+    router.post("/banners/:id/artwork", uploadArtwork.single("artwork"), uploadBannerArtwork);
+}
 
 router.get("/", testFunc);
 router.get("/applicants/:id", getApplicant);
