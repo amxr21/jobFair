@@ -1400,7 +1400,7 @@ const passRowToJson = (p) => ({
     id: p.legacyId !== null ? Number(p.legacyId) : p.id,
     company: p.companyName, delegate: p.delegate, type: p.passType, code: p.code,
     issued: dateOnlyString(p.issuedDate),
-    status: p.status, slot: p.slot, location: p.location,
+    status: p.status, slot: p.slot, location: p.location, mapUrl: p.mapUrl,
     updatedBy: p.updatedBy, updatedAt: p.updatedAt,
 });
 
@@ -1432,6 +1432,12 @@ async function loadEventOps() {
         prisma.setting.findUnique({ where: { key: "eventOpsAudit" } }),
     ]);
 
+    // supportStaff (services/logistics helpers + their task lists) is nested
+    // JSON, so — like `audit` — it round-trips through the settings table
+    // rather than its own relational tables. Loaded separately to keep the
+    // Promise.all destructuring above stable.
+    const supportStaffSetting = await prisma.setting.findUnique({ where: { key: "eventOpsSupportStaff" } });
+
     // delegates[] groups flat rows back into {company, delegates: [...]}
     const delegatesByCompany = new Map();
     for (const d of delegateRows) {
@@ -1452,6 +1458,7 @@ async function loadEventOps() {
         passes: passes.map(passRowToJson),
         attendanceStaff: staff.map(staffRowToJson),
         checkinLog: checkins.map(checkinRowToJson),
+        supportStaff: supportStaffSetting ? supportStaffSetting.value : [],
         audit: auditSetting ? auditSetting.value : [],
     };
 }
@@ -1583,6 +1590,7 @@ const SECTION_WRITERS = {
                 legacyId: p.id ?? null, companyName: p.company ?? null, delegate: p.delegate ?? null,
                 passType: p.type, code: p.code, issuedDate: p.issued ? new Date(p.issued) : null,
                 status: p.status ?? "Active", slot: p.slot ?? null, location: p.location ?? null,
+                mapUrl: p.mapUrl ?? null,
                 updatedBy: p.updatedBy ?? null, updatedAt: p.updatedAt ? new Date(p.updatedAt) : null,
             }});
         }
@@ -1630,6 +1638,16 @@ const SECTION_WRITERS = {
         await tx.setting.upsert({
             where: { key: "eventOpsAudit" },
             create: { key: "eventOpsAudit", value: rows },
+            update: { value: rows, updatedAt: new Date() },
+        });
+    },
+    // Support staff + their nested task lists — settings-backed JSON, same as
+    // audit. Whole section replaced on each write (matching every other
+    // section's contract).
+    supportStaff: async (tx, rows) => {
+        await tx.setting.upsert({
+            where: { key: "eventOpsSupportStaff" },
+            create: { key: "eventOpsSupportStaff", value: rows },
             update: { value: rows, updatedAt: new Date() },
         });
     },

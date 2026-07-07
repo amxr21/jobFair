@@ -21,6 +21,30 @@ const MiniBadge = ({ label, tone = "gray" }) => {
     return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${tones[tone] || tones.gray}`}>{label}</span>;
 };
 
+// Parking map preview. Once a mapUrl (a Google Maps share/pin link) is set by
+// CASTO, the delegate gets a tappable "Open in Maps" and a placeholder preview
+// box. The live embedded map (an <iframe> Google Maps Embed) is deliberately
+// NOT wired up yet — it needs a Maps Embed API key + billing — so this renders
+// a styled placeholder in its place, ready to swap for the real embed later.
+const ParkingMapPreview = ({ mapUrl }) => {
+    if (!mapUrl) return null;
+    return (
+        <div className="mt-1.5">
+            {/* Placeholder for the future embedded map. Replace this block with
+                <iframe src={`https://www.google.com/maps/embed/v1/place?key=${KEY}&q=...`} />
+                once a Maps Embed API key is available. */}
+            <div className="relative h-16 rounded-lg overflow-hidden border border-amber-200 bg-[repeating-linear-gradient(45deg,#fef3c7,#fef3c7_8px,#fde68a_8px,#fde68a_16px)] flex items-center justify-center">
+                <span className="text-amber-700/80 text-[10px] font-semibold bg-white/70 rounded px-1.5 py-0.5">Map preview</span>
+                <span className="absolute text-lg" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.2))" }}>📍</span>
+            </div>
+            <a href={mapUrl} target="_blank" rel="noopener noreferrer"
+                className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 hover:text-amber-800 hover:underline">
+                📍 Open in Maps
+            </a>
+        </div>
+    );
+};
+
 const statusTone = (s) => ({
     Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
     Fulfilled: "green", "In Progress": "blue", Open: "yellow", Partial: "yellow", Pending: "gray",
@@ -244,6 +268,7 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                                         <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
                                         <p className="text-sm font-bold text-amber-700 mt-0.5">Slot {p.slot || "—"}</p>
                                         {p.location && <p className="text-[10px] text-amber-600">{p.location}</p>}
+                                        <ParkingMapPreview mapUrl={p.mapUrl} />
                                     </div>
                                     <MiniBadge label={p.status} tone={statusTone(p.status)} />
                                 </div>
