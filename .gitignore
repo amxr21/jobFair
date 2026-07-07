@@ -30,6 +30,9 @@ sampleData*.json
 # ─── Internal / private docs ──────────────────────────────────────────────────
 CHANGELOG_INTERNAL.md
 INTERNAL_*.md
+# Working docs are kept local only, never pushed.
+docs/
+AUTONOMOUS_NOTES.md
 
 # ─── IDE and editor ───────────────────────────────────────────────────────────
 .vscode/

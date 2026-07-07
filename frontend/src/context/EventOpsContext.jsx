@@ -139,6 +139,15 @@ const SEED = {
         { id: 1, name: "Volunteer Desk 1", email: "volunteer1@example.com", code: "DESK1", status: "active", ...stamp("Maha", t(28, 9, 0)) },
         { id: 2, name: "Volunteer Desk 2", email: "volunteer2@example.com", code: "DESK2", status: "invited", ...stamp("Maha", t(28, 9, 1)) },
     ],
+    // Support / services staff — known helpers CASTO manages directly (printing,
+    // supplies, setup, runners), each with a task list. Distinct from the
+    // code-gated door volunteers in attendanceStaff above.
+    supportStaff: [
+        { id: 101, name: "Yousef (Services)", role: "Printing & Supplies", phone: "+971 50 000 1111", email: "services@example.com", tasks: [
+            { id: 1001, title: "Print 200 delegate badges", status: "In Progress", linkedTo: null },
+            { id: 1002, title: "Bring 10 extra chairs to Zone B", status: "Pending", linkedTo: null },
+        ], ...stamp("Rana", t(29, 10, 0)) },
+    ],
     checkinLog: [],
     audit: [
         { id: 1, at: t(30, 12, 45), by: "Rana",    section: "Venue & Booths",   message: "Assigned booth B11 to ADNOC" },
@@ -367,6 +376,46 @@ export const EventOpsProvider = ({ children }) => {
             (rows || []).map((s) => (s.id === id ? { ...s, ...patch, status: "active" } : s)));
     }, [update]);
 
+    // ─── Support / services staff (printing, supplies, setup, runners …) ───────
+    // Distinct from attendanceStaff (code-gated door volunteers): these are
+    // known helpers CASTO manages directly, each carrying a role and a task
+    // list. Tasks can optionally reference an Equipment or Requirement row
+    // (linkedTo), so "bring 6 chairs to B07" traces back to the actual request.
+    const addSupportStaff = useCallback((name, role, phone = "", email = "") => {
+        update("supportStaff", `Added support staff ${name}${role ? ` (${role})` : ""}`, (rows, who) =>
+            [...(rows || []), { id: Date.now(), name, role, phone, email, tasks: [], ...who }]);
+    }, [update]);
+
+    const updateSupportStaff = useCallback((id, patch) => {
+        update("supportStaff", `Updated support staff details`, (rows) =>
+            (rows || []).map((s) => (s.id === id ? { ...s, ...patch } : s)));
+    }, [update]);
+
+    const removeSupportStaff = useCallback((id) => {
+        update("supportStaff", "Removed a support staff member", (rows) => (rows || []).filter((s) => s.id !== id));
+    }, [update]);
+
+    const addSupportTask = useCallback((staffId, title, linkedTo = null) => {
+        update("supportStaff", `Assigned task "${title}"`, (rows, who) =>
+            (rows || []).map((s) => (s.id === staffId
+                ? { ...s, tasks: [...(s.tasks || []), { id: Date.now(), title, status: "Pending", linkedTo }], ...who }
+                : s)));
+    }, [update]);
+
+    const setSupportTaskStatus = useCallback((staffId, taskId, status) => {
+        update("supportStaff", `Set a task to ${status}`, (rows, who) =>
+            (rows || []).map((s) => (s.id === staffId
+                ? { ...s, tasks: (s.tasks || []).map((t) => (t.id === taskId ? { ...t, status } : t)), ...who }
+                : s)));
+    }, [update]);
+
+    const removeSupportTask = useCallback((staffId, taskId) => {
+        update("supportStaff", "Removed a task", (rows) =>
+            (rows || []).map((s) => (s.id === staffId
+                ? { ...s, tasks: (s.tasks || []).filter((t) => t.id !== taskId) }
+                : s)));
+    }, [update]);
+
     // Refresh checkinLog periodically — staffers write to it through a public
     // endpoint the CASTO session never calls, so polling is how it shows up here
     useEffect(() => {
@@ -421,7 +470,7 @@ export const EventOpsProvider = ({ children }) => {
     }, [data]);
 
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, inviteTeamMember, removeTeamMember, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile, companySelfCheckIn, isCompanyCheckedIn }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, inviteTeamMember, removeTeamMember, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile, addSupportStaff, updateSupportStaff, removeSupportStaff, addSupportTask, setSupportTaskStatus, removeSupportTask, companySelfCheckIn, isCompanyCheckedIn }}>
             {children}
         </EventOpsContext.Provider>
     );

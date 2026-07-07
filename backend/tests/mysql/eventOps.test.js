@@ -85,4 +85,27 @@ describe("eventOps (12-table split, section-scoped writes)", () => {
         expect(remaining.length).toBe(1);
         expect(remaining[0].code).toBe("CODE1");
     });
+
+    it("supportStaff (services helpers + nested task lists) round-trips through settings", async () => {
+        await request(app).put("/event-ops").send({
+            supportStaff: [
+                { id: 1, name: "Print Guy", role: "Printing & Supplies", phone: "+971 50 1", tasks: [
+                    { id: 11, title: "Print 200 badges", status: "In Progress", linkedTo: null },
+                    { id: 12, title: "Bring 10 chairs to B07", status: "Pending", linkedTo: null },
+                ]},
+            ],
+        });
+
+        const res = await request(app).get("/event-ops");
+        expect(res.body.supportStaff).toHaveLength(1);
+        expect(res.body.supportStaff[0].name).toBe("Print Guy");
+        expect(res.body.supportStaff[0].tasks).toHaveLength(2);
+        expect(res.body.supportStaff[0].tasks[0].status).toBe("In Progress");
+
+        // A section-scoped update to a different section must leave it intact.
+        await request(app).put("/event-ops").send({ booths: [{ id: 1, number: "B01", status: "Available" }] });
+        const after = await request(app).get("/event-ops");
+        expect(after.body.supportStaff).toHaveLength(1);
+        expect(after.body.supportStaff[0].tasks).toHaveLength(2);
+    });
 });

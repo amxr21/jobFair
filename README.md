@@ -24,7 +24,7 @@ One shared office account, optionally split across several named officers (each 
 - **Applicants** — see every applicant across all companies; open full profiles, CVs, and QR tickets.
 - **Companies** — manage all registered companies: profiles, representatives, status (Pending / Confirmed / Canceled), reminders, cancel/delete.
 - **Statistics** — live counters plus multi-tab advanced analytics (demographics, education, companies, skills, recruitment, profiles).
-- **Event Settings (operations)** — booth assignments + floor map, banners & branding, special requirements, equipment & logistics (fully editable), delegate lists, attendance & check-in, event schedule (editable), and access passes. All coverage spans **every** registered company, not just a sample.
+- **Event Settings (operations)** — booth assignments + floor map, banners & branding, special requirements, equipment & logistics (fully editable), delegate lists, attendance & check-in, staff management (support staff + task lists, and code-gated check-in volunteers), event schedule (editable), and access passes (with parking slot/location + optional Google Maps link). All coverage spans **every** registered company, not just a sample.
 - **Event Admin** — post-event report, team & roles (reassign module owners behind two-step verification, with notifications describing exactly what changed), company import, activity log, and the **View As** preview.
 - **View As** (`/view-as`) — preview exactly what a company, an attendance staffer, or the public student check-in sees — read-only, without touching the live session.
 - **Developer panel** (`/dev`) — confirm whether outbound email is on/off and inspect the log of send attempts.
@@ -34,7 +34,7 @@ One shared office account, optionally split across several named officers (each 
 Each company logs in to a self-service portal.
 
 - **Applicants** — the applicants who selected their company; shortlist / flag / reject with undo (each action confirmed in the notification bell).
-- **My Status** — Overview (profile, applicant count) and **Event Day** (booth QR, banners & status, parking slot/location, entry passes, the live event schedule, self check-in, and a form to raise special requirements).
+- **My Status** — Overview (profile, applicant count) and **Event Day** (booth QR, banners & status, parking slot/location with an "Open in Maps" link, entry passes, the live event schedule, self check-in, and a form to raise special requirements).
 - **Self check-in** — on arrival, scan the booth QR or tap "I've arrived"; an hourly reminder nudges until checked in.
 - **Company Settings** — edit profile, manage additional login emails, confirm attendance, and set display preferences (font/size).
 
@@ -46,7 +46,7 @@ Each company logs in to a self-service portal.
 
 ## Features in depth
 
-The platform covers the full event lifecycle. Every feature below is implemented and exercised by the automated test suites (see [`docs/API_ENDPOINT_TEST_REPORT.md`](docs/API_ENDPOINT_TEST_REPORT.md) for the endpoint-by-endpoint coverage).
+The platform covers the full event lifecycle. Every feature below is implemented and exercised by the automated test suites.
 
 ### Authentication & accounts
 
@@ -118,6 +118,8 @@ A tabbed console covering everything CASTO manages on event day. Each tab is sea
 
 | Area | Details |
 |---|---|
+| **Parking passes** | Per-delegate slot + exact location, plus an optional **Google Maps link** — the company sees an "Open in Maps" action and a map preview on their Event Day page. |
+| **Staff management** | Two rosters: **Support Staff** (services/printing/logistics helpers with an assignable task list, Pending → In Progress → Done) and **Check-in Staff** (code-gated door volunteers, activity logged per person). |
 | **Notifications** | In-app bell for flag/shortlist/reject actions, team reassignments, and the hourly check-in reminder; plus app-wide toasts (success/error/info/warning). |
 | **View As** | Full-page **read-only** preview of the company, attendance-staff, or student experience — without touching your live session. |
 | **Per-page help** | A "?" in every page header (auto-opens once per page/session) with an icon, tagline, and links to related pages. |
@@ -139,11 +141,9 @@ All routes are served by the Express backend. Public routes are open; everything
 | **Attendance staff** (code-gated) | `POST /attendance-staff/verify`, `PATCH /attendance-staff/checkin`, `PATCH /attendance-staff/profile`, `GET /attendance-staff/my-checkins` |
 | **Applicants** (protected) | `GET /applicants`, `GET /applicants/:id`, `PATCH /applicants/:id`, `.../flag`, `.../shortlist`, `.../reject` (+ un- variants), `.../confirm`, `.../survey`, `DELETE /applicants/:id` |
 | **Companies** (protected) | `PATCH /companies/:id/status`, `DELETE /companies/:id`, `POST /companies/send-reminders`, `POST /companies/bulk-import`, `PATCH /companies/:id/profile`, `.../login-emails` (GET/POST/DELETE) |
-| **Event ops** (protected) | `GET /event-ops`, `PUT /event-ops` (section-scoped writes: booths, banners, requirements, equipment, delegates, attendance, schedule, passes, staff, audit), `POST /banners/:id/artwork` |
+| **Event ops** (protected) | `GET /event-ops`, `PUT /event-ops` (section-scoped writes: booths, banners, requirements, equipment, delegates, attendance, schedule, passes, staff, support-staff, audit), `POST /banners/:id/artwork` |
 | **Team** (protected, CASTO-only) | `GET/POST /casto-team`, `PATCH/DELETE /casto-team/:id` |
 | **Dev** (protected) | `GET /dev/email-activity` |
-
-Full request/response detail lives in [`docs/api-reference.md`](docs/api-reference.md); verified behavior per endpoint is in [`docs/API_ENDPOINT_TEST_REPORT.md`](docs/API_ENDPOINT_TEST_REPORT.md).
 
 ---
 
