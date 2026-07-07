@@ -37,6 +37,11 @@ if (wantsSsl) {
     // TLS + auth handshake past the driver's 1s default connectTimeout, so
     // the pool never gets a single connection and times out generically.
     connectTimeout: 15000,
+    // acquireTimeout is the pool's own deadline for handing a connection to a
+    // query (default 10s). It must exceed connectTimeout, otherwise the pool
+    // reports "failed to retrieve a connection from pool after 10000ms" while
+    // the first connection attempt is still mid-handshake.
+    acquireTimeout: 30000,
   };
 }
 
