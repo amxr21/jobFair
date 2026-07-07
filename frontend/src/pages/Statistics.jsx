@@ -119,8 +119,9 @@ const Statistics = ({ link }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const authHeader = user?.token ? { headers: { Authorization: `Bearer ${user.token}` } } : {};
         const [applicantsRes, managersRes] = await Promise.all([
-          axios.get(`${link}/applicants?limit=10000`),
+          axios.get(`${link}/applicants?limit=10000`, authHeader),
           axios.get(`${link}/companies`)
         ]);
 

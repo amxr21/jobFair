@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const prisma = require("../../config/prisma");
 
 // Deletes all rows from every table this test suite might have written to,
@@ -35,4 +36,17 @@ function testId() {
     return idCounter.toString(16).padStart(24, "0");
 }
 
-module.exports = { prisma, resetDb, testId };
+// Creates a real CASTO company row and returns a signed token for it, so
+// tests can call auth-protected routes (requireAuth looks the company up by
+// the JWT's _id). Returns { token, authHeader } where authHeader is ready to
+// spread into a supertest `.set(...)` call.
+async function seedAuth(email = "casto@sharjah.ac.ae") {
+    const id = testId();
+    await prisma.company.create({
+        data: { id, companyName: "CASTO Office", email, password: "x" },
+    });
+    const token = jwt.sign({ _id: id }, process.env.TOKEN_SIGN, { expiresIn: "1h" });
+    return { id, token, authHeader: ["Authorization", `Bearer ${token}`] };
+}
+
+module.exports = { prisma, resetDb, testId, seedAuth };

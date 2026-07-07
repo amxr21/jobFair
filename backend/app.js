@@ -45,8 +45,13 @@ app.use(express.json());
 const routers = require("./routers/applicantRouter");
 const userRoutes = require("./routers/userRoutes");
 
-app.use("/", routers);
+// /user (login, signup, ...) is mounted first and is entirely public. The
+// applicant router is mounted at "/" and installs requireAuth as path-less
+// middleware partway through, so every request that reaches it runs that gate
+// — mounting /user ahead of it keeps auth from intercepting the login/signup
+// requests a user makes before they even have a token.
 app.use("/user", userRoutes);
+app.use("/", routers);
 
 // Anything not matched by the routers above (typo'd path, wrong method, etc.)
 // — without this Express 5 falls through to its default HTML 404 page.

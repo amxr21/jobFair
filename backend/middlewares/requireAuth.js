@@ -6,8 +6,12 @@ dotenv.config();
 const requireAuth = async (req, res, next) => {
     const { authorization } = req.headers;
 
+    // A missing token is not an anonymous pass — every route mounted after
+    // requireAuth is protected (applicant PII, company management, event ops).
+    // The public routes are all registered BEFORE requireAuth in the router,
+    // so they never reach here. (A malformed token is rejected below.)
     if (!authorization) {
-        return next();
+        return res.status(401).json({ error: "Authorization token required" });
     }
 
     const token = authorization.split(" ")[1];

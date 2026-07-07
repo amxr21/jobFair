@@ -76,6 +76,8 @@ const BarButtons = ({link}) => {
                     try {
                         await axios.patch(`${link}/applicants/confirm/`+result, {
                             attended: true
+                        }, {
+                            headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {}
                         })
                         confirmAttendanceButton.current.textContent = "Confirmed";
                         setTimeout(()=>{confirmAttendanceButton.current.textContent = "Confirm";}, 2000)

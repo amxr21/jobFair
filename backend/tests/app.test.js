@@ -41,13 +41,7 @@ describe("auth", () => {
     });
 });
 
-describe("protected routes reject a malformed token", () => {
-    // NOTE: in demo mode, requireAuthDemo only rejects a *present but invalid*
-    // token — a request with no Authorization header at all currently passes
-    // through with req.user = null (see demo/demoControllers.js). That's an
-    // existing gap, not something these tests changed; asserting the
-    // malformed-token case here so a real regression (e.g. breaking JWT
-    // verification) still fails CI.
+describe("protected routes reject unauthenticated requests", () => {
     it("GET /applicants with a garbage token returns 401", async () => {
         const res = await request(app).get("/applicants").set("Authorization", "Bearer not-a-real-token");
         expect(res.status).toBe(401);
@@ -56,5 +50,29 @@ describe("protected routes reject a malformed token", () => {
     it("GET /event-ops with a garbage token returns 401", async () => {
         const res = await request(app).get("/event-ops").set("Authorization", "Bearer not-a-real-token");
         expect(res.status).toBe(401);
+    });
+
+    // Regression for the auth gap: a request with NO Authorization header used
+    // to pass through requireAuthDemo (req.user = null) and reach the handler,
+    // exposing applicant PII to unauthenticated callers. It must now 401.
+    it("GET /applicants with no Authorization header returns 401", async () => {
+        const res = await request(app).get("/applicants");
+        expect(res.status).toBe(401);
+    });
+
+    it("GET /event-ops with no Authorization header returns 401", async () => {
+        const res = await request(app).get("/event-ops");
+        expect(res.status).toBe(401);
+    });
+
+    it("PATCH /applicants/flag/:id with no Authorization header returns 401", async () => {
+        const res = await request(app).patch("/applicants/flag/anyid").send({ flags: ["X"] });
+        expect(res.status).toBe(401);
+    });
+
+    // Public routes are registered before requireAuth, so they stay open.
+    it("public GET /companies still works with no token", async () => {
+        const res = await request(app).get("/companies");
+        expect(res.status).toBe(200);
     });
 });

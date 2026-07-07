@@ -583,9 +583,10 @@ const reinitializeCompany = async (req, res) => {
 
 const requireAuthDemo = (req, res, next) => {
     const { authorization } = req.headers;
+    // Mirror real-mode requireAuth: a missing token is rejected, not waved
+    // through as anonymous. Public routes sit before requireAuth in the router.
     if (!authorization) {
-        req.user = null;
-        return next();
+        return res.status(401).json({ error: "Authorization token required" });
     }
     const token = authorization.split(" ")[1];
     try {

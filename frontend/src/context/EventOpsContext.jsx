@@ -186,6 +186,11 @@ export const EventOpsProvider = ({ children }) => {
     // safe to read-modify-write locally after this — see the comment on
     // `update` for the bug this was closing.
     const hydratedRef = useRef(false);
+    // Sections this tab has edited locally. The initial GET /event-ops can
+    // resolve *after* the user's first edit — merging it blindly would
+    // overwrite that edit with the server's pre-edit copy (booth assignments
+    // visibly "snapping back"), so hydration skips any section listed here.
+    const dirtySectionsRef = useRef(new Set());
 
     const authHeaders = () => {
         const u = JSON.parse(localStorage.getItem("user") || "null");
@@ -197,7 +202,13 @@ export const EventOpsProvider = ({ children }) => {
         (async () => {
             try {
                 const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
-                if (res?.data?.booths) setData((prev) => ({ ...prev, ...res.data }));
+                if (res?.data?.booths) setData((prev) => {
+                    const merged = { ...prev };
+                    for (const [key, value] of Object.entries(res.data)) {
+                        if (!dirtySectionsRef.current.has(key)) merged[key] = value;
+                    }
+                    return merged;
+                });
             } catch { /* backend unavailable — localStorage/seed keeps working */ } finally {
                 hydratedRef.current = true;
             }
@@ -231,11 +242,23 @@ export const EventOpsProvider = ({ children }) => {
     // silently wiping out sections (e.g. attendance-staff codes) that a
     // different tab had just written. The backend also merges rather than
     // replaces, so this is defense in depth, not the only fix.
+    // Debounced patches accumulate across edits: resetting the timer used to
+    // throw away the previous patch too, so two quick edits to *different*
+    // sections (booth assigned, then anything else within 800ms) silently
+    // dropped the first section's PUT — the booth looked assigned locally but
+    // the server never heard about it, and the next refresh reverted it.
+    const pendingPatchRef = useRef({});
     const persist = useCallback((next, patch) => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
+        pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
         clearTimeout(saveTimer.current);
         saveTimer.current = setTimeout(() => {
-            axios.put(`${API_URL}/event-ops`, patch, { headers: authHeaders() }).catch(() => {});
+            const body = pendingPatchRef.current;
+            pendingPatchRef.current = {};
+            axios.put(`${API_URL}/event-ops`, body, { headers: authHeaders() })
+                // On failure, put the patch back so the next edit retries it
+                // instead of losing it forever.
+                .catch(() => { pendingPatchRef.current = { ...body, ...pendingPatchRef.current }; });
         }, 800);
     }, []);
 
@@ -282,20 +305,30 @@ export const EventOpsProvider = ({ children }) => {
     // Without this, a freshly-opened tab creating e.g. a staff account would
     // read-modify-write from its own empty `attendanceStaff: []`, silently
     // dropping every staffer another tab had already created.
+    //
+    // Once hydrated, the baseline MUST be `prev[section]` from inside the
+    // setData updater — never `data[section]` from this callback's closure.
+    // `update` is memoized on [employee.name, persist], so its captured `data`
+    // freezes at creation time: reading it meant every edit was applied to the
+    // page-load snapshot, silently undoing all earlier edits in the same
+    // section (assign booth A, then booth B → A reverts to Available).
     const update = useCallback(async (section, message, updater) => {
-        let baseline = data[section];
+        let serverBaseline; // only used on this tab's very first pre-hydration edit
         if (!hydratedRef.current) {
             try {
                 const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
                 if (res?.data && Object.prototype.hasOwnProperty.call(res.data, section)) {
-                    baseline = res.data[section];
+                    serverBaseline = res.data[section];
                 }
             } catch { /* server unreachable — fall back to local state, same as before */ }
             hydratedRef.current = true;
         }
 
+        dirtySectionsRef.current.add(section);
+        dirtySectionsRef.current.add("audit");
         setData((prev) => {
             const now = new Date().toISOString();
+            const baseline = serverBaseline !== undefined ? serverBaseline : prev[section];
             const updatedSection = updater(baseline, { updatedBy: employee.name, updatedAt: now });
             const updatedAudit = [
                 { id: Date.now(), at: now, by: employee.name, section, message },

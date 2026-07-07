@@ -48,7 +48,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         if (!cleanId) return;
         try {
             setIsProcessing(true);
-            await axios.patch(`${link}/applicants/shortlist/${cleanId}`, { shortlistedBy: [user?.companyName] });
+            await axios.patch(`${link}/applicants/shortlist/${cleanId}`, { shortlistedBy: [user?.companyName] }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = [...localShortlistedBy, user?.companyName];
             setLocalShortlistedBy(updated);
             setLocalRejectedBy(prev => prev.filter(c => c !== user?.companyName));
@@ -64,7 +64,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         if (!cleanId) return;
         try {
             setIsProcessing(true);
-            await axios.patch(`${link}/applicants/unshortlist/${cleanId}`, { company: user?.companyName });
+            await axios.patch(`${link}/applicants/unshortlist/${cleanId}`, { company: user?.companyName }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = localShortlistedBy.filter(c => c !== user?.companyName);
             setLocalShortlistedBy(updated);
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, shortlistedBy: updated } });
@@ -78,7 +78,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         if (!cleanId) return;
         try {
             setIsProcessing(true);
-            await axios.patch(`${link}/applicants/reject/${cleanId}`, { rejectedBy: [user?.companyName] });
+            await axios.patch(`${link}/applicants/reject/${cleanId}`, { rejectedBy: [user?.companyName] }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = [...localRejectedBy, user?.companyName];
             setLocalRejectedBy(updated);
             setLocalShortlistedBy(prev => prev.filter(c => c !== user?.companyName));
@@ -94,7 +94,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         if (!cleanId) return;
         try {
             setIsProcessing(true);
-            await axios.patch(`${link}/applicants/unreject/${cleanId}`, { company: user?.companyName });
+            await axios.patch(`${link}/applicants/unreject/${cleanId}`, { company: user?.companyName }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = localRejectedBy.filter(c => c !== user?.companyName);
             setLocalRejectedBy(updated);
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, rejectedBy: updated } });
@@ -107,7 +107,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         e?.stopPropagation();
         if (!cleanId) return;
         try {
-            await axios.patch(`${link}/applicants/flag/${cleanId}`, { flags: [user?.companyName] });
+            await axios.patch(`${link}/applicants/flag/${cleanId}`, { flags: [user?.companyName] }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = [...localFlags, user?.companyName];
             setLocalFlags(updated);
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, flags: updated } });
@@ -120,7 +120,7 @@ const BriefInfo = ({ ticketId, id, shortName, ticketQrCodeSrc, emailRec, status,
         e?.stopPropagation();
         if (!cleanId) return;
         try {
-            await axios.patch(`${link}/applicants/unflag/${cleanId}`, { company: user?.companyName });
+            await axios.patch(`${link}/applicants/unflag/${cleanId}`, { company: user?.companyName }, { headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {} });
             const updated = localFlags.filter(c => c !== user?.companyName);
             setLocalFlags(updated);
             dispatch({ type: 'UPDATE_APPLICANT', payload: { _id: ticketId, flags: updated } });

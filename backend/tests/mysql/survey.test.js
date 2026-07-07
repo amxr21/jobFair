@@ -1,4 +1,5 @@
 const request = require("supertest");
+const jwt = require("jsonwebtoken");
 const { prisma, resetDb, testId } = require("./dbHelpers");
 const app = require("../../app");
 
@@ -9,6 +10,7 @@ const app = require("../../app");
 // REPLACE each question's answer, not add a second row.
 describe("company survey submission (duplication-bug regression)", () => {
     let companyId;
+    let authHeader;
 
     beforeEach(async () => {
         await resetDb();
@@ -19,6 +21,7 @@ describe("company survey submission (duplication-bug regression)", () => {
                 password: "irrelevant-hash", status: "Confirmed",
             },
         });
+        authHeader = ["Authorization", `Bearer ${jwt.sign({ _id: companyId }, process.env.TOKEN_SIGN, { expiresIn: "1h" })}`];
     });
 
     afterAll(async () => {
@@ -27,7 +30,7 @@ describe("company survey submission (duplication-bug regression)", () => {
     });
 
     it("first submission creates one row per question", async () => {
-        const res = await request(app).patch(`/applicants/survey/${companyId}`).send({
+        const res = await request(app).patch(`/applicants/survey/${companyId}`).set(...authHeader).send({
             surveyResult: [
                 { id: "q1", text: "How was it?", responses: "Good" },
                 { id: "q2", text: "Would you return?", responses: "Yes" },
@@ -40,10 +43,10 @@ describe("company survey submission (duplication-bug regression)", () => {
     });
 
     it("resubmitting REPLACES answers instead of duplicating rows (the actual bug fix)", async () => {
-        await request(app).patch(`/applicants/survey/${companyId}`).send({
+        await request(app).patch(`/applicants/survey/${companyId}`).set(...authHeader).send({
             surveyResult: [{ id: "q1", text: "How was it?", responses: "Good" }],
         });
-        await request(app).patch(`/applicants/survey/${companyId}`).send({
+        await request(app).patch(`/applicants/survey/${companyId}`).set(...authHeader).send({
             surveyResult: [{ id: "q1", text: "How was it?", responses: "Excellent" }],
         });
 
@@ -53,13 +56,13 @@ describe("company survey submission (duplication-bug regression)", () => {
     });
 
     it("resubmitting with a subset of questions only updates those, leaves others alone", async () => {
-        await request(app).patch(`/applicants/survey/${companyId}`).send({
+        await request(app).patch(`/applicants/survey/${companyId}`).set(...authHeader).send({
             surveyResult: [
                 { id: "q1", text: "Q1", responses: "A" },
                 { id: "q2", text: "Q2", responses: "B" },
             ],
         });
-        await request(app).patch(`/applicants/survey/${companyId}`).send({
+        await request(app).patch(`/applicants/survey/${companyId}`).set(...authHeader).send({
             surveyResult: [{ id: "q1", text: "Q1", responses: "Updated A" }],
         });
 

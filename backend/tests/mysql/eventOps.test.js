@@ -1,5 +1,5 @@
 const request = require("supertest");
-const { prisma, resetDb, testId } = require("./dbHelpers");
+const { prisma, resetDb, testId, seedAuth } = require("./dbHelpers");
 const app = require("../../app");
 
 // Covers two things found while rewriting getEventOps/updateEventOps:
@@ -11,8 +11,10 @@ const app = require("../../app");
 //    — a naive rewrite would silently orphan check-in history any time the
 //    staff roster was edited. Verified here with a real checked-in student.
 describe("eventOps (12-table split, section-scoped writes)", () => {
+    let authHeader;
     beforeEach(async () => {
         await resetDb();
+        ({ authHeader } = await seedAuth());
     });
 
     afterAll(async () => {
@@ -21,14 +23,14 @@ describe("eventOps (12-table split, section-scoped writes)", () => {
     });
 
     it("updateEventOps only touches the section(s) present in the request body", async () => {
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             schedule: [{ id: 1, start: "09:00", end: "10:00", title: "Opening", status: "Upcoming" }],
         });
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             booths: [{ id: 1, number: "B01", status: "Available" }],
         });
 
-        const res = await request(app).get("/event-ops");
+        const res = await request(app).get("/event-ops").set(...authHeader);
         expect(res.body.schedule.length).toBe(1); // untouched by the booths-only update
         expect(res.body.booths.length).toBe(1);
     });
@@ -36,7 +38,7 @@ describe("eventOps (12-table split, section-scoped writes)", () => {
     it("editing the attendance staff roster does not orphan existing check-in log entries", async () => {
         // Seed one staffer + one applicant, check the applicant in (creates a
         // checkin_log row with a real FK to the staffer).
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             attendanceStaff: [{ id: 1, name: "Staffer One", email: "one@test.local", code: "CODE1", status: "active" }],
         });
 
@@ -52,7 +54,7 @@ describe("eventOps (12-table split, section-scoped writes)", () => {
         expect(beforeCount).toBe(1);
 
         // Now edit the roster: keep Staffer One, add Staffer Two.
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             attendanceStaff: [
                 { id: 1, name: "Staffer One", email: "one@test.local", code: "CODE1", status: "active" },
                 { id: 2, name: "Staffer Two", email: "two@test.local", code: "CODE2", status: "invited" },
@@ -69,13 +71,13 @@ describe("eventOps (12-table split, section-scoped writes)", () => {
     });
 
     it("removing a staffer from the roster deletes only that staffer, not others", async () => {
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             attendanceStaff: [
                 { id: 1, name: "Staffer One", email: "one@test.local", code: "CODE1", status: "active" },
                 { id: 2, name: "Staffer Two", email: "two@test.local", code: "CODE2", status: "invited" },
             ],
         });
-        await request(app).put("/event-ops").send({
+        await request(app).put("/event-ops").set(...authHeader).send({
             attendanceStaff: [{ id: 1, name: "Staffer One", email: "one@test.local", code: "CODE1", status: "active" }],
         });
 

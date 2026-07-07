@@ -3,16 +3,21 @@ const app = require("../app");
 
 // Attendance-staff check-in is deliberately public (no CASTO/company account
 // needed) but gated by a short code stored in the eventOps Settings document.
-// These tests seed that document directly via the (auth-optional, per the
-// existing demo-mode gap) event-ops endpoint, then drive the same flow a
-// real staffer would.
+// These tests seed that document via the event-ops endpoint (which is now
+// auth-protected), then drive the same flow a real staffer would — the
+// check-in endpoints themselves stay public.
 describe("attendance staff check-in", () => {
     const CODE = "TESTCODE";
     const UNI_ID = "20000001"; // matches the fallback seed's single applicant
 
     beforeAll(async () => {
+        const login = await request(app)
+            .post("/user/login")
+            .send({ email: "casto@sharjah.ac.ae", password: "ci-test-password" });
+        const token = login.body.token;
         await request(app)
             .put("/event-ops")
+            .set("Authorization", `Bearer ${token}`)
             .send({
                 booths: [], banners: [], requirements: [], equipment: [], delegates: [],
                 attendanceCompanies: [], attendanceStudents: [], schedule: [], passes: [],
