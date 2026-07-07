@@ -1104,10 +1104,9 @@ const SupportStaffPanel = () => {
         <div className="flex gap-2 items-start flex-wrap">
           <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Full name"
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[160px] focus:outline-none focus:ring-1 focus:ring-green-500" />
-          <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
-            {SUPPORT_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
+          <div className="min-w-[180px]">
+            <CompactSelect value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} options={SUPPORT_ROLES} placeholder="Select role" />
+          </div>
           <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()} placeholder="Phone (optional)"
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[140px] focus:outline-none focus:ring-1 focus:ring-green-500" />
