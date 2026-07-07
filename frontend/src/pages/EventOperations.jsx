@@ -1045,11 +1045,133 @@ const AttendanceCheckin = () => {
 };
 
 // ─── Tab: Manage Staff ─────────────────────────────────────────────────────────
-// Rana (or whoever owns it) creates an attendance-staff account with just a
-// name + email — the staffer fills in the rest (phone, notes) themselves the
-// first time they log in with their code at /student-checkin.
+// Two kinds of people help run the day, split into sub-tabs:
+//   • Support Staff — known helpers CASTO manages directly (printing, supplies,
+//     setup, runners). Each carries a role and an assignable task list.
+//   • Check-in Staff — code-gated door volunteers (mostly temporary). Created
+//     with a name + email; they finish their own profile at /student-checkin.
 
-const ManageStaff = () => {
+const SUPPORT_ROLES = ["Printing & Supplies", "Logistics & Setup", "Runner", "Catering", "Technical / AV", "Other"];
+const TASK_STATUSES = ["Pending", "In Progress", "Done"];
+const taskStatusColor = (s) => (s === "Done" ? "green" : s === "In Progress" ? "blue" : "yellow");
+
+// ── Sub-tab: Support Staff ──
+const SupportStaffPanel = () => {
+  const { data, addSupportStaff, updateSupportStaff, removeSupportStaff, addSupportTask, setSupportTaskStatus, removeSupportTask } = useEventOps();
+  const toast = useToast();
+  const staff = data.supportStaff || [];
+  const [form, setForm] = useState({ name: "", role: SUPPORT_ROLES[0], phone: "" });
+  const [taskDrafts, setTaskDrafts] = useState({}); // staffId -> title being typed
+
+  const handleAdd = () => {
+    if (!form.name.trim()) { toast("Name is required", { type: "error" }); return; }
+    addSupportStaff(form.name.trim(), form.role, form.phone.trim());
+    setForm({ name: "", role: SUPPORT_ROLES[0], phone: "" });
+    toast(`Added ${form.name.trim()}`, { type: "success" });
+  };
+
+  const handleAddTask = (staffId) => {
+    const title = (taskDrafts[staffId] || "").trim();
+    if (!title) return;
+    addSupportTask(staffId, title);
+    setTaskDrafts((d) => ({ ...d, [staffId]: "" }));
+  };
+
+  const cycleStatus = (staffId, task) => {
+    const next = TASK_STATUSES[(TASK_STATUSES.indexOf(task.status) + 1) % TASK_STATUSES.length];
+    setSupportTaskStatus(staffId, task.id, next);
+  };
+
+  const totalTasks = staff.reduce((n, s) => n + (s.tasks?.length || 0), 0);
+  const openTasks = staff.reduce((n, s) => n + (s.tasks?.filter((t) => t.status !== "Done").length || 0), 0);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <StatCard label="Support Staff" value={staff.length} />
+        <StatCard label="Open Tasks" value={openTasks} color="#f59e0b" />
+        <StatCard label="Total Tasks" value={totalTasks} color="#2959A6" />
+      </div>
+
+      <p className="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+        Add the people who handle services on the day — printing, bringing supplies, setup, runners — and assign them tasks.
+        Each task cycles through <span className="font-semibold">Pending → In Progress → Done</span>. This is for staff you manage
+        directly; temporary door helpers who scan students in live under the <span className="font-semibold">Check-in Staff</span> tab.
+      </p>
+
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-gray-700">New Support Staff</p>
+        <div className="flex gap-2 items-start flex-wrap">
+          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Full name"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[160px] focus:outline-none focus:ring-1 focus:ring-green-500" />
+          <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500">
+            {SUPPORT_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
+          <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()} placeholder="Phone (optional)"
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[140px] focus:outline-none focus:ring-1 focus:ring-green-500" />
+          <button onClick={handleAdd} disabled={!form.name.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
+            Add Staff
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {staff.map((s) => {
+          const done = s.tasks?.filter((t) => t.status === "Done").length || 0;
+          return (
+            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{s.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <Badge label={s.role || "Support"} color="gray" />
+                    {s.phone && <span className="text-[11px] text-gray-400">{s.phone}</span>}
+                  </div>
+                </div>
+                <button onClick={() => { removeSupportStaff(s.id); toast(`Removed ${s.name}`, { type: "info" }); }}
+                  className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors shrink-0">
+                  Remove
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Tasks</span>
+                <span className="text-[11px] text-gray-400">{done}/{s.tasks?.length || 0} done</span>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                {(s.tasks || []).map((t) => (
+                  <div key={t.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5">
+                    <button onClick={() => cycleStatus(s.id, t)} title="Click to advance status" className="shrink-0">
+                      <Badge label={t.status} color={taskStatusColor(t.status)} />
+                    </button>
+                    <span className={`text-xs flex-1 min-w-0 truncate ${t.status === "Done" ? "line-through text-gray-400" : "text-gray-700"}`}>{t.title}</span>
+                    <button onClick={() => removeSupportTask(s.id, t.id)} className="text-gray-300 hover:text-red-500 shrink-0 text-sm leading-none">×</button>
+                  </div>
+                ))}
+                {(s.tasks?.length || 0) === 0 && <p className="text-[11px] text-gray-400 italic">No tasks assigned yet.</p>}
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <input value={taskDrafts[s.id] || ""} onChange={(e) => setTaskDrafts((d) => ({ ...d, [s.id]: e.target.value }))}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddTask(s.id)} placeholder="Assign a task…"
+                  className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs flex-1 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                <button onClick={() => handleAddTask(s.id)} disabled={!(taskDrafts[s.id] || "").trim()}
+                  className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 disabled:opacity-40" style={{ background: "#0E7F41" }}>Add</button>
+              </div>
+            </div>
+          );
+        })}
+        {staff.length === 0 && <p className="text-xs text-gray-400 lg:col-span-2 text-center py-6">No support staff added yet.</p>}
+      </div>
+    </div>
+  );
+};
+
+// ── Sub-tab: Check-in Staff (the original code-gated volunteers) ──
+const CheckinStaffPanel = () => {
   const { data, addStaffer, removeStaffer } = useEventOps();
   const toast = useToast();
   const staff = data.attendanceStaff || [];
@@ -1176,6 +1298,19 @@ const ManageStaff = () => {
         })}
         {staff.length === 0 && <p className="text-xs text-gray-400 col-span-2 text-center py-6">No staff accounts created yet.</p>}
       </div>
+    </div>
+  );
+};
+
+// ── Wrapper: Support Staff + Check-in Staff sub-tabs ──
+const MANAGE_STAFF_SUBTAB_KEY = "event_ops_manage_staff_subtab";
+const ManageStaff = () => {
+  const [sub, setSub] = useState(() => Number(localStorage.getItem(MANAGE_STAFF_SUBTAB_KEY)) || 0);
+  useEffect(() => { try { localStorage.setItem(MANAGE_STAFF_SUBTAB_KEY, String(sub)); } catch { /* quota */ } }, [sub]);
+  return (
+    <div className="flex flex-col gap-4">
+      <SubTabBar tabs={["Support Staff", "Check-in Staff"]} active={sub} onChange={setSub} />
+      {sub === 0 ? <SupportStaffPanel /> : <CheckinStaffPanel />}
     </div>
   );
 };
@@ -1363,7 +1498,7 @@ const AccessPasses = () => {
   const [filter, setFilter] = useState("All");
   const [view, setView] = useState(0); // 0 = table, 1 = by company
   const [editingParking, setEditingParking] = useState(null); // pass id
-  const [parkingForm, setParkingForm] = useState({ slot: "", location: "" });
+  const [parkingForm, setParkingForm] = useState({ slot: "", location: "", mapUrl: "" });
   const [companySearch, setCompanySearch] = useState("");
 
   const types = ["All", "Entry", "Parking"];
@@ -1397,12 +1532,12 @@ const AccessPasses = () => {
 
   const startEditParking = (row) => {
     setEditingParking(row.id);
-    setParkingForm({ slot: row.slot || "", location: row.location || "" });
+    setParkingForm({ slot: row.slot || "", location: row.location || "", mapUrl: row.mapUrl || "" });
   };
 
   const saveParking = (row) => {
     update("passes", `Set parking slot ${parkingForm.slot || "—"} for ${row.company}`, (prev, who) =>
-      prev.map((p) => (p.id === row.id ? { ...p, slot: parkingForm.slot, location: parkingForm.location, ...who } : p)));
+      prev.map((p) => (p.id === row.id ? { ...p, slot: parkingForm.slot, location: parkingForm.location, mapUrl: parkingForm.mapUrl.trim(), ...who } : p)));
     toast("Parking assignment saved", { type: "success" });
     setEditingParking(null);
   };
@@ -1447,15 +1582,22 @@ const AccessPasses = () => {
                     {row.type !== "Parking" ? (
                       <span className="text-gray-300 text-xs">—</span>
                     ) : editingParking === row.id ? (
-                      <div className="flex items-center gap-1.5">
-                        <input value={parkingForm.slot} onChange={(e) => setParkingForm((f) => ({ ...f, slot: e.target.value }))} placeholder="Slot e.g. P1-14" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-green-500" />
-                        <input value={parkingForm.location} onChange={(e) => setParkingForm((f) => ({ ...f, location: e.target.value }))} placeholder="Exact location" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-40 focus:outline-none focus:ring-1 focus:ring-green-500" />
-                        <button onClick={() => saveParking(row)} className="text-xs font-semibold text-white rounded-lg px-2 py-1" style={{ background: "#0E7F41" }}>Save</button>
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <input value={parkingForm.slot} onChange={(e) => setParkingForm((f) => ({ ...f, slot: e.target.value }))} placeholder="Slot e.g. P1-14" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                          <input value={parkingForm.location} onChange={(e) => setParkingForm((f) => ({ ...f, location: e.target.value }))} placeholder="Exact location" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-40 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                          <button onClick={() => saveParking(row)} className="text-xs font-semibold text-white rounded-lg px-2 py-1" style={{ background: "#0E7F41" }}>Save</button>
+                        </div>
+                        {/* Google Maps link — paste a share/pin URL; the company
+                            side renders a map preview + "Open in Maps". Placeholder
+                            for now (no live embed API wired up yet). */}
+                        <input value={parkingForm.mapUrl} onChange={(e) => setParkingForm((f) => ({ ...f, mapUrl: e.target.value }))} placeholder="Google Maps link (optional)" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-full focus:outline-none focus:ring-1 focus:ring-green-500" />
                       </div>
                     ) : row.slot ? (
                       <button onClick={() => startEditParking(row)} className="text-left hover:underline">
                         <span className="font-mono text-xs font-semibold text-gray-700">{row.slot}</span>
                         <span className="text-[11px] text-gray-400 block">{row.location}</span>
+                        {row.mapUrl && <span className="text-[10px] text-green-600 block">📍 Map linked</span>}
                       </button>
                     ) : (
                       <button onClick={() => startEditParking(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors">

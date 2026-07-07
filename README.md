@@ -24,7 +24,7 @@ One shared office account, optionally split across several named officers (each 
 - **Applicants** — see every applicant across all companies; open full profiles, CVs, and QR tickets.
 - **Companies** — manage all registered companies: profiles, representatives, status (Pending / Confirmed / Canceled), reminders, cancel/delete.
 - **Statistics** — live counters plus multi-tab advanced analytics (demographics, education, companies, skills, recruitment, profiles).
-- **Event Settings (operations)** — booth assignments + floor map, banners & branding, special requirements, equipment & logistics (fully editable), delegate lists, attendance & check-in, event schedule (editable), and access passes. All coverage spans **every** registered company, not just a sample.
+- **Event Settings (operations)** — booth assignments + floor map, banners & branding, special requirements, equipment & logistics (fully editable), delegate lists, attendance & check-in, staff management (support staff + task lists, and code-gated check-in volunteers), event schedule (editable), and access passes (with parking slot/location + optional Google Maps link). All coverage spans **every** registered company, not just a sample.
 - **Event Admin** — post-event report, team & roles (reassign module owners behind two-step verification, with notifications describing exactly what changed), company import, activity log, and the **View As** preview.
 - **View As** (`/view-as`) — preview exactly what a company, an attendance staffer, or the public student check-in sees — read-only, without touching the live session.
 - **Developer panel** (`/dev`) — confirm whether outbound email is on/off and inspect the log of send attempts.
@@ -34,7 +34,7 @@ One shared office account, optionally split across several named officers (each 
 Each company logs in to a self-service portal.
 
 - **Applicants** — the applicants who selected their company; shortlist / flag / reject with undo (each action confirmed in the notification bell).
-- **My Status** — Overview (profile, applicant count) and **Event Day** (booth QR, banners & status, parking slot/location, entry passes, the live event schedule, self check-in, and a form to raise special requirements).
+- **My Status** — Overview (profile, applicant count) and **Event Day** (booth QR, banners & status, parking slot/location with an "Open in Maps" link, entry passes, the live event schedule, self check-in, and a form to raise special requirements).
 - **Self check-in** — on arrival, scan the booth QR or tap "I've arrived"; an hourly reminder nudges until checked in.
 - **Company Settings** — edit profile, manage additional login emails, confirm attendance, and set display preferences (font/size).
 
@@ -53,6 +53,8 @@ Each company logs in to a self-service portal.
 | **Company management** | Status tracking, representative list (readable, not pills), expandable card, collapsible applicants list, compose-and-send email via the default mail app |
 | **Statistics** | Live counters + multi-tab advanced analytics |
 | **Event operations** | Booths + floor map, banners, requirements, equipment (editable), delegates, passes, schedule — all covering every company, all with search + highlight |
+| **Parking passes** | Per-delegate slot + exact location, plus an optional **Google Maps link** — the company sees an "Open in Maps" action and a map preview on their Event Day page |
+| **Staff management** | Two rosters: **Support Staff** (services/printing/logistics helpers with an assignable task list, Pending → In Progress → Done) and **Check-in Staff** (code-gated door volunteers, activity logged per person) |
 | **Attendance & check-in** | Company self-scan is the primary flow; manual override for CASTO; per-booth QR codes; staff door check-in |
 | **Notifications** | In-app bell (flag/shortlist/reject, reassignment, hourly check-in reminder) |
 | **Per-page help** | A "?" in every page header (auto-opens once per page/session) with an icon, tagline, and links to related pages |

@@ -204,6 +204,9 @@ CREATE TABLE access_passes (
     status         ENUM('Active', 'Used', 'Revoked') NOT NULL DEFAULT 'Active',
     slot           VARCHAR(50) NULL,
     location       VARCHAR(255) NULL,
+    -- Optional Google Maps share/pin link for a parking spot; the company-side
+    -- view renders an "Open in Maps" action (and a placeholder map preview).
+    map_url        VARCHAR(500) NULL,
     updated_by     VARCHAR(255) NULL,
     updated_at     DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
