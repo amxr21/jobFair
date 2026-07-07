@@ -84,6 +84,8 @@ const MobileRegisterFAB = () => {
                     try {
                         await axios.patch(`${link}/applicants/confirm/` + result, {
                             attended: true
+                        }, {
+                            headers: user?.token ? { Authorization: `Bearer ${user.token}` } : {}
                         });
                     } catch (error) {
                         // Error confirming attendance

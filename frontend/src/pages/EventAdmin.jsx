@@ -657,8 +657,9 @@ const EventAdmin = ({ link }) => {
   // Report tab needs them, but fetching here keeps the tab switch instant
   const fetchReportData = useCallback(async () => {
     try {
+      const authHeader = user?.token ? { headers: { Authorization: `Bearer ${user.token}` } } : {};
       const [applicantsRes, companiesRes] = await Promise.all([
-        axios.get(`${link}/applicants?limit=10000`),
+        axios.get(`${link}/applicants?limit=10000`, authHeader),
         axios.get(`${link}/companies`),
       ]);
       setReportData({
@@ -666,7 +667,7 @@ const EventAdmin = ({ link }) => {
         companies: companiesRes?.data || [],
       });
     } catch { /* report tab will show zeros until this succeeds */ }
-  }, [link]);
+  }, [link, user?.token]);
 
   useEffect(() => { fetchReportData(); }, [fetchReportData]);
 
