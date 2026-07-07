@@ -7,8 +7,9 @@ import { API_URL as link } from "../config/api";
 
 
 const SubmitSurveyButton = () => {
-    const userId = JSON.parse(localStorage.getItem('user')).user_id
-    
+    const storedUser = JSON.parse(localStorage.getItem('user'))
+    const userId = storedUser.user_id
+
     const surveyButtonRef = useRef()
      
 
@@ -27,6 +28,8 @@ const SubmitSurveyButton = () => {
 
                 const patchResponse = await axios.patch(link + '/applicants/survey/' + userId.replace(/[^A-Za-z0-9]/g,''), {
                     surveyResult: surveyAnswers
+                }, {
+                    headers: storedUser?.token ? { Authorization: `Bearer ${storedUser.token}` } : {}
                 })
             }
             
