@@ -11,7 +11,7 @@ const VARIANTS = {
 const TagPill = ({ label, variant = 'gray', className = '' }) => {
     if (!label) return null;
     return (
-        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${VARIANTS[variant] || VARIANTS.gray} ${className}`}>
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${VARIANTS[variant] || VARIANTS.gray} ${className}`}>
             {label}
         </span>
     );
