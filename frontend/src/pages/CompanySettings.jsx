@@ -2,23 +2,62 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL } from "../config/api";
-import SectionCard from "../components/SectionCard";
 import TagPill from "../components/TagPill";
 import SelectInput from "../components/SelectInput";
 import MultiSelectInput, { INDUSTRY_FIELDS } from "../components/MultiSelectInput";
 import CustomizeSettings from "../components/CustomizeSettings";
+import { SubTabBar } from "../components/EventSettingsShared";
 import { useToast } from "../components/Toast";
 import { PageContainer } from "../components/index";
 
-// Self-service account settings — its own page (not buried inside My Status)
-// so a company can edit their profile/attendance/login access/customization
-// without it competing for space with the Overview/Event Day tabs.
+// Self-service account settings. Redesigned into a sectioned layout: a company
+// header (avatar · name · attendance badge) plus a left section-nav (Profile ·
+// Attendance · Login Access · Appearance) so each area is focused instead of one
+// long scroll. All the underlying data/APIs are unchanged — only the layout and
+// affordances were reworked.
+
+const STATUS_STYLES = {
+    Confirmed: { badge: "bg-green-100 text-green-700 border-green-200", dot: "bg-green-500" },
+    Pending: { badge: "bg-amber-100 text-amber-700 border-amber-200", dot: "bg-amber-400" },
+    Canceled: { badge: "bg-red-100 text-red-600 border-red-200", dot: "bg-red-500" },
+};
+
+// ── Small building blocks ───────────────────────────────────────────────────
+const Card = ({ children, className = "" }) => (
+    <div className={`bg-white rounded-xl border border-gray-100 shadow-sm ${className}`}>{children}</div>
+);
+
+const CardHead = ({ title, desc, action }) => (
+    <div className="flex items-start justify-between gap-3 px-4 md:px-5 pt-4 pb-3 border-b border-gray-50">
+        <div className="min-w-0">
+            <h3 className="text-sm font-bold text-gray-800">{title}</h3>
+            {desc && <p className="text-xs text-gray-500 mt-0.5">{desc}</p>}
+        </div>
+        {action}
+    </div>
+);
+
+const Field = ({ label, value, mono = false }) => (
+    <div className="flex flex-col gap-0.5 min-w-0">
+        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</span>
+        <span className={`text-sm text-gray-700 truncate ${mono ? "font-mono" : ""}`}>{value || <span className="text-gray-300">—</span>}</span>
+    </div>
+);
+
+const inputCls = "border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 w-full";
+
+// Section tabs — same order the SubTabBar renders. Using the shared SubTabBar
+// (with its sliding-pill animation) keeps this page's tab motion identical to
+// the company Status tabs instead of a bespoke, differently-animated bar.
+const SECTIONS = ["Profile", "Attendance", "Login Access", "Appearance"];
+
 const CompanySettings = () => {
     const { user } = useAuthContext();
     const toast = useToast();
     const [companyData, setCompanyData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [section, setSection] = useState(0);
 
     const [editing, setEditing] = useState(false);
     const [form, setForm] = useState(null);
@@ -147,143 +186,197 @@ const CompanySettings = () => {
         </PageContainer>
     );
 
+    const status = companyData?.status || "Pending";
+    const st = STATUS_STYLES[status] || STATUS_STYLES.Pending;
+
     return (
         <PageContainer user={user} title="Company Settings">
-            <div className="flex flex-col gap-3 overflow-y-auto min-h-0">
-                <SectionCard title="Profile">
-                    {!editing ? (
-                        <div className="flex flex-col gap-3">
-                            <div className="flex items-center justify-end -mt-1">
-                                <button onClick={startEdit} className="text-xs font-semibold border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors shrink-0">
-                                    Edit profile
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <SectionCard title="Contact Information" noPad>
-                                    <div className="flex items-center gap-2 text-xs text-gray-700 p-3 md:p-4">
-                                        <svg className="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                        <a href={`mailto:${companyData?.email}`} className="text-blue-600 hover:underline truncate">{companyData?.email}</a>
-                                        {companyData?.phone && <span className="text-gray-400">· {companyData.phone}</span>}
-                                    </div>
-                                </SectionCard>
-                                <SectionCard title="Representatives" noPad>
-                                    <div className="flex flex-wrap gap-1.5 p-3 md:p-4">{reps.map((rep, i) => <TagPill key={i} label={rep.trim()} variant="blue" />)}</div>
-                                </SectionCard>
-                                <SectionCard title="Industry Fields" noPad>
-                                    <div className="flex flex-wrap gap-1.5 p-3 md:p-4">{fields.map((f, i) => <TagPill key={i} label={f} variant="cyan" />)}</div>
-                                </SectionCard>
-                                <SectionCard title="Opportunity Types" noPad>
-                                    <div className="flex flex-wrap gap-1.5 p-3 md:p-4">
-                                        {companyData?.opportunityTypes?.length > 0
-                                            ? companyData.opportunityTypes.map((t, i) => <TagPill key={i} label={t} variant="purple" />)
-                                            : <span className="text-xs text-gray-400">Not specified</span>}
-                                    </div>
-                                </SectionCard>
-                                {companyData?.preferredMajors?.length > 0 && (
-                                    <SectionCard title="Preferred Majors" className="md:col-span-2" noPad>
-                                        <div className="flex flex-wrap gap-1.5 p-3 md:p-4">{companyData.preferredMajors.map((m, i) => <TagPill key={i} label={m} variant="green" />)}</div>
-                                    </SectionCard>
-                                )}
-                                {companyData?.preferredQualities && (
-                                    <SectionCard title="Ideal Candidate Qualities" className="md:col-span-2" noPad>
-                                        <p className="text-xs text-gray-700 leading-relaxed p-3 md:p-4">{companyData.preferredQualities}</p>
-                                    </SectionCard>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-gray-500 font-medium">Login email</label>
-                                    <input type="email" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.email} onChange={F("email")} />
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-xs text-gray-500 font-medium">Phone number</label>
-                                    <input type="tel" className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" value={form.phone} onChange={F("phone")} placeholder="+971 5X XXX XXXX" />
-                                </div>
-                                <SelectInput Id="csCity" Name="City" options={["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Umm Al-Quwain", "AlFujairah"]} value={form.city} handleChange={F("city")} />
-                                <SelectInput Id="csSector" Name="Sector" options={["Local", "Private", "Semi", "Federal"]} value={form.sector} handleChange={F("sector")} />
-                                <SelectInput Id="csPositions" Name="Available Positions" options={["1-5", "5-10", "10-15", "15-20", ">20"]} value={form.noOfPositions} handleChange={F("noOfPositions")} />
-                            </div>
-                            <MultiSelectInput Id="csFields" Name="Industry Fields" options={INDUSTRY_FIELDS} value={form.fields ? form.fields.split(",").map((f) => f.trim()).filter(Boolean) : []} handleChange={(vals) => setForm((f) => ({ ...f, fields: vals.join(", ") }))} />
-                            <div className="flex flex-col gap-1">
-                                <label className="text-xs text-gray-500 font-medium">Ideal candidate qualities</label>
-                                <textarea className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" rows={2} value={form.preferredQualities} onChange={F("preferredQualities")} />
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <button onClick={() => setEditing(false)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
-                                <button onClick={saveProfile} disabled={saving} className="text-xs font-semibold text-white rounded-lg px-4 py-1.5 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-                                    {saving ? "Saving…" : "Save changes"}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </SectionCard>
+            <div className="flex flex-col gap-4 overflow-y-auto min-h-0 pb-4">
+                {/* Header */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5 flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0E7F41] to-[#0a5f31] flex items-center justify-center text-white text-xl font-bold shrink-0">
+                        {companyData?.companyName?.charAt(0)?.toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <h1 className="text-base md:text-lg font-bold text-gray-800 truncate">{companyData?.companyName}</h1>
+                        <p className="text-xs text-gray-500 truncate">{[companyData?.sector, companyData?.city].filter(Boolean).join(" · ") || "Manage your account"}</p>
+                    </div>
+                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold shrink-0 ${st.badge}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />{status}
+                    </span>
+                </div>
 
-                <SectionCard title="Attendance Status">
-                    <p className="text-xs text-gray-500 mb-2.5">
-                        Let CASTO know whether your company is attending this year's fair.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        {["Confirmed", "Pending", "Canceled"].map((s) => {
-                            const active = companyData?.status === s;
-                            return (
-                                <button
-                                    key={s}
-                                    onClick={() => changeStatus(s)}
-                                    disabled={savingStatus || active}
-                                    className={`flex items-center gap-1.5 text-xs font-semibold rounded-lg px-3 py-1.5 border transition-colors disabled:cursor-default ${
-                                        active
-                                            ? s === "Confirmed" ? "bg-green-50 border-green-300 text-green-700"
-                                            : s === "Pending" ? "bg-amber-50 border-amber-300 text-amber-700"
-                                            : "bg-red-50 border-red-300 text-red-600"
-                                            : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
-                                    }`}
-                                >
-                                    {active && (
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                {/* Body: top section nav + content — same SubTabBar (sliding
+                    pill) and fade-in the company Status tabs use, so tab motion
+                    is identical across both pages. */}
+                <div className="flex flex-col gap-4">
+                    <SubTabBar tabs={SECTIONS} active={section} onChange={setSection} />
+
+                    <div key={section} className="flex-1 min-w-0 flex flex-col gap-4 animate-panelIn">
+                        {/* ── Profile ── */}
+                        {section === 0 && (
+                            <Card>
+                                <CardHead
+                                    title="Company profile"
+                                    desc="Your public details, shown to CASTO and used to match applicants."
+                                    action={!editing && (
+                                        <button onClick={startEdit} className="text-xs font-semibold border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors shrink-0">
+                                            Edit
+                                        </button>
                                     )}
-                                    {s}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </SectionCard>
+                                />
+                                <div className="p-4 md:p-5">
+                                    {!editing ? (
+                                        <div className="flex flex-col gap-5">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <Field label="Login email" value={companyData?.email} />
+                                                <Field label="Phone" value={companyData?.phone} />
+                                                <Field label="City" value={companyData?.city} />
+                                                <Field label="Sector" value={companyData?.sector} />
+                                                <Field label="Open positions" value={companyData?.noOfPositions} />
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Representatives</span>
+                                                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                                                    {reps.length ? reps.map((rep, i) => <TagPill key={i} label={rep.trim()} variant="blue" />) : <span className="text-sm text-gray-300">—</span>}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Industry fields</span>
+                                                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                                                    {fields.length ? fields.map((f, i) => <TagPill key={i} label={f} variant="cyan" />) : <span className="text-sm text-gray-300">—</span>}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Opportunity types</span>
+                                                <div className="flex flex-wrap gap-1.5 mt-0.5">
+                                                    {companyData?.opportunityTypes?.length > 0
+                                                        ? companyData.opportunityTypes.map((t, i) => <TagPill key={i} label={t} variant="purple" />)
+                                                        : <span className="text-sm text-gray-300">Not specified</span>}
+                                                </div>
+                                            </div>
+                                            {companyData?.preferredMajors?.length > 0 && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Preferred majors</span>
+                                                    <div className="flex flex-wrap gap-1.5 mt-0.5">{companyData.preferredMajors.map((m, i) => <TagPill key={i} label={m} variant="green" />)}</div>
+                                                </div>
+                                            )}
+                                            {companyData?.preferredQualities && (
+                                                <div className="flex flex-col gap-1">
+                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Ideal candidate qualities</span>
+                                                    <p className="text-sm text-gray-700 leading-relaxed mt-0.5">{companyData.preferredQualities}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-xs text-gray-500 font-medium">Login email</label>
+                                                    <input type="email" className={inputCls} value={form.email} onChange={F("email")} />
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-xs text-gray-500 font-medium">Phone number</label>
+                                                    <input type="tel" className={inputCls} value={form.phone} onChange={F("phone")} placeholder="+971 5X XXX XXXX" />
+                                                </div>
+                                                <SelectInput Id="csCity" Name="City" options={["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Umm Al-Quwain", "AlFujairah"]} value={form.city} handleChange={F("city")} />
+                                                <SelectInput Id="csSector" Name="Sector" options={["Local", "Private", "Semi", "Federal"]} value={form.sector} handleChange={F("sector")} />
+                                                <SelectInput Id="csPositions" Name="Available Positions" options={["1-5", "5-10", "10-15", "15-20", ">20"]} value={form.noOfPositions} handleChange={F("noOfPositions")} />
+                                            </div>
+                                            <MultiSelectInput Id="csFields" Name="Industry Fields" options={INDUSTRY_FIELDS} value={form.fields ? form.fields.split(",").map((f) => f.trim()).filter(Boolean) : []} handleChange={(vals) => setForm((f) => ({ ...f, fields: vals.join(", ") }))} />
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-xs text-gray-500 font-medium">Ideal candidate qualities</label>
+                                                <textarea className={`${inputCls} resize-none`} rows={2} value={form.preferredQualities} onChange={F("preferredQualities")} />
+                                            </div>
+                                            <div className="flex justify-end gap-2 pt-1">
+                                                <button onClick={() => setEditing(false)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
+                                                <button onClick={saveProfile} disabled={saving} className="text-xs font-semibold text-white rounded-lg px-4 py-1.5 disabled:opacity-50" style={{ background: "#0E7F41" }}>
+                                                    {saving ? "Saving…" : "Save changes"}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        )}
 
-                <SectionCard title="Manage Login Access">
-                    <p className="text-xs text-gray-500 mb-2">
-                        Anyone with an approved email below can log in using your company's password — useful if more than one person needs access.
-                    </p>
-                    <div className="flex flex-col gap-1.5 mb-3">
-                        <div className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                            <span className="font-medium text-gray-700">{companyData?.email}</span>
-                            <span className="text-[10px] text-gray-400">Primary</span>
-                        </div>
-                        {loginEmails.map((e) => (
-                            <div key={e.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                                <span className="text-gray-700">{e.email}</span>
-                                <button onClick={() => removeEmail(e)} className="text-red-500 hover:text-red-700 font-semibold text-xs">Remove</button>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex gap-2">
-                        <input
-                            type="email"
-                            value={newEmail}
-                            onChange={(ev) => setNewEmail(ev.target.value)}
-                            placeholder="colleague@company.com"
-                            className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
-                        />
-                        <button onClick={addEmail} disabled={addingEmail || !newEmail.trim()} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 disabled:opacity-50 shrink-0" style={{ background: "#0E7F41" }}>
-                            + Add email
-                        </button>
-                    </div>
-                </SectionCard>
+                        {/* ── Attendance ── */}
+                        {section === 1 && (
+                            <Card>
+                                <CardHead title="Attendance status" desc="Let CASTO know whether your company is attending this year's fair." />
+                                <div className="p-4 md:p-5 flex flex-col gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                        {["Confirmed", "Pending", "Canceled"].map((s) => {
+                                            const active = companyData?.status === s;
+                                            const style = STATUS_STYLES[s];
+                                            return (
+                                                <button
+                                                    key={s}
+                                                    onClick={() => changeStatus(s)}
+                                                    disabled={savingStatus || active}
+                                                    className={`flex items-center justify-center gap-2 text-sm font-semibold rounded-xl px-3 py-3 border transition-all disabled:cursor-default ${
+                                                        active ? `${style.badge} ring-1 ring-inset ring-current/20` : "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                                                    }`}
+                                                >
+                                                    {active && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                                                    {s}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <p className="text-[11px] text-gray-400">Changing this notifies CASTO. You can update it any time before the event.</p>
+                                </div>
+                            </Card>
+                        )}
 
-                <SectionCard title="Customize">
-                    <CustomizeSettings />
-                </SectionCard>
+                        {/* ── Login Access ── */}
+                        {section === 2 && (
+                            <Card>
+                                <CardHead title="Manage login access" desc="Anyone with an approved email can log in with your company's shared password." />
+                                <div className="p-4 md:p-5 flex flex-col gap-3">
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
+                                            <span className="font-medium text-gray-700 truncate">{companyData?.email}</span>
+                                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide shrink-0 ml-2">Primary</span>
+                                        </div>
+                                        {loginEmails.map((e) => (
+                                            <div key={e.id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
+                                                <span className="text-gray-700 truncate">{e.email}</span>
+                                                <button onClick={() => removeEmail(e)} className="text-red-500 hover:text-red-700 font-semibold text-xs shrink-0 ml-2">Remove</button>
+                                            </div>
+                                        ))}
+                                        {loginEmails.length === 0 && (
+                                            <p className="text-xs text-gray-400 px-1 py-1">No additional emails yet. Add colleagues who need access below.</p>
+                                        )}
+                                    </div>
+                                    <div className="flex gap-2 pt-1">
+                                        <input
+                                            type="email"
+                                            value={newEmail}
+                                            onChange={(ev) => setNewEmail(ev.target.value)}
+                                            onKeyDown={(ev) => ev.key === "Enter" && addEmail()}
+                                            placeholder="colleague@company.com"
+                                            className={`flex-1 ${inputCls}`}
+                                        />
+                                        <button onClick={addEmail} disabled={addingEmail || !newEmail.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50 shrink-0" style={{ background: "#0E7F41" }}>
+                                            + Add email
+                                        </button>
+                                    </div>
+                                </div>
+                            </Card>
+                        )}
+
+                        {/* ── Appearance ── */}
+                        {section === 3 && (
+                            <Card>
+                                <CardHead title="Appearance" desc="Font and text-size preferences, applied across your dashboard." />
+                                <div className="p-4 md:p-5">
+                                    <CustomizeSettings />
+                                </div>
+                            </Card>
+                        )}
+                    </div>
+                </div>
             </div>
         </PageContainer>
     );

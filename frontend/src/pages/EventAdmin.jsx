@@ -12,7 +12,7 @@ import CompanyStatus from "./CompanyStatus";
 import { API_URL } from "../config/api";
 import ImportCompaniesModal from "../components/ImportCompaniesModal";
 import CustomizeSettings from "../components/CustomizeSettings";
-import { Badge, StatCard, SubTabBar } from "../components/EventSettingsShared";
+import { Badge, StatCard, SubTabBar, PillTabs } from "../components/EventSettingsShared";
 
 // ─── Tab: Post-Event Report ───────────────────────────────────────────────────
 // Every number here is computed from real data — applicants/companies fetched
@@ -695,27 +695,14 @@ const EventAdmin = ({ link }) => {
     >
       <div className="flex flex-col gap-3 flex-1 min-h-0">
         <div className="flex items-center justify-between shrink-0">
-          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 w-fit">
-            {ADMIN_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
-                  activeTab === tab.id ? "text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
-                style={activeTab === tab.id ? { background: "#0E7F41" } : {}}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <PillTabs tabs={ADMIN_TABS} activeId={activeTab} onSelect={setActiveTab} />
           <a href="/event-settings" className="text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors">
             ← Operations
           </a>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
-          <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
+          <div key={activeTab} className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 animate-panelIn">
             {activeTab === "report" ? <PostEventReporting {...reportData} /> : <CustomizeSettings />}
           </div>
         </div>

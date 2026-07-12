@@ -4,11 +4,12 @@ import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useEventOps, formatWhen } from "../context/EventOpsContext";
+import { useNotifications } from "../context/NotificationsContext";
 import { useToast } from "../components/Toast";
 import CompactSelect from "../components/CompactSelect";
 import Modal from "../components/Modal";
 import { API_URL } from "../config/api";
-import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, TabIcon, Highlight } from "../components/EventSettingsShared";
+import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, PillTabs, TabIcon, Highlight } from "../components/EventSettingsShared";
 
 // ─── Booth floor map (circular hall, center island, hover info, hide toggle) ──
 
@@ -573,7 +574,7 @@ const EquipmentLogistics = () => {
     const entity = form.booth.trim() ? `${form.company} / ${form.booth.trim()}` : form.company;
     const qtyReq = Number(form.qtyReq) || 1;
     update("equipment", `Added ${form.item} request for ${entity}`, (prev, who) =>
-      [...prev, { id: Date.now(), entity, item: form.item.trim(), qtyReq, qtyFul: 0, status: "Pending", ...who }]);
+      [...prev, { id: Date.now(), entity, item: form.item.trim(), qtyReq, qtyFul: 0, status: "Pending", requestedBy: null, ...who }]);
     toast(`${form.item.trim()} request added for ${form.company}`, { type: "success" });
     setForm({ company: "", booth: "", item: "", qtyReq: "1" });
     setShowForm(false);
@@ -617,6 +618,20 @@ const EquipmentLogistics = () => {
     if (editingId === row.id) cancelEdit();
   };
 
+  // Company-requested rows (requestedBy set) await CASTO approval. Approving
+  // clears the requestedBy flag so it becomes a normal pending equipment row
+  // CASTO then fulfils; declining removes it.
+  const pendingRequests = allRows.filter((r) => r.requestedBy);
+  const approveRequest = (row) => {
+    update("equipment", `Approved ${row.item} requested by ${row.requestedBy}`, (prev, who) =>
+      prev.map((r) => (r.id === row.id ? { ...r, requestedBy: null, ...who } : r)));
+    toast(`Approved ${row.item} for ${row.requestedBy}`, { type: "success" });
+  };
+  const declineRequest = (row) => {
+    update("equipment", `Declined ${row.item} requested by ${row.requestedBy}`, (prev) => prev.filter((r) => r.id !== row.id));
+    toast(`Declined ${row.item} request`, { type: "warning" });
+  };
+
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -625,6 +640,31 @@ const EquipmentLogistics = () => {
         <StatCard label="Power / Cables" value={total(["power", "extension", "cable"])} sub="Strips & cables" color="#f59e0b" />
         <StatCard label="Screens" value={total(["screen", "monitor"])} sub="Monitors & displays" color="#8b5cf6" />
       </div>
+
+      {/* Company-submitted requests awaiting approval — surfaced at the top so
+          CASTO acts on them before they get lost in the full list. */}
+      {pendingRequests.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[11px] font-bold flex items-center justify-center">{pendingRequests.length}</span>
+            <p className="text-sm font-semibold text-amber-800">Equipment requests awaiting your approval</p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {pendingRequests.map((row) => (
+              <div key={row.id} className="flex items-center justify-between gap-3 bg-white rounded-lg border border-amber-100 px-3 py-2 flex-wrap">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-gray-800 truncate">{row.qtyReq} × {row.item}</p>
+                  <p className="text-[11px] text-gray-500">Requested by {row.requestedBy}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button onClick={() => approveRequest(row)} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>Approve</button>
+                  <button onClick={() => declineRequest(row)} className="text-xs font-medium border border-red-200 rounded-lg px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors">Decline</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="relative">
@@ -695,8 +735,11 @@ const EquipmentLogistics = () => {
                 </td>
               </tr>
             ) : (
-              <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                <td className="px-4 py-3 text-xs font-medium text-gray-600"><Highlight text={row.entity} query={search} /></td>
+              <tr key={row.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0 ${row.requestedBy ? "bg-amber-50/40" : ""}`}>
+                <td className="px-4 py-3 text-xs font-medium text-gray-600">
+                  <Highlight text={row.entity} query={search} />
+                  {row.requestedBy && <Badge label="Requested" color="yellow" />}
+                </td>
                 <td className="px-4 py-3 text-gray-800"><Highlight text={row.item} query={search} /></td>
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyReq}</td>
                 <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyFul}</td>
@@ -913,12 +956,37 @@ const AttendanceCheckin = () => {
   const toast = useToast();
   const [subTab, setSubTab] = useState(0);
   const students = data.attendanceStudents;
-  const companies = data.attendanceCompanies;
   const booths = data.booths.filter((b) => b.company);
   const qrRefs = useRef({});
 
-  const compCheckedIn = companies.reduce((a, c) => a + c.checkedIn, 0);
-  const compTotal = companies.reduce((a, c) => a + c.delegateCount, 0);
+  // Every company with an assigned booth is expected on the day, so all of
+  // them appear in the attendance list — not just the ones that already have
+  // an attendance record. Start from the assigned booths, then overlay any
+  // real attendance row (checked-in time/method/status), and finally include
+  // any attendance rows whose booth is no longer assigned so nothing is lost.
+  // delegateCount defaults to how many delegates the company has registered.
+  const companies = useMemo(() => {
+    const eq = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+    const attRows = data.attendanceCompanies || [];
+    const delegatesOf = (name) =>
+      (data.delegates || []).find((d) => eq(d.company, name))?.delegates.length || 0;
+
+    const rows = booths.map((b) => {
+      const existing = attRows.find((a) => eq(a.company, b.company) || a.booth === b.number);
+      return existing
+        ? { ...existing, booth: b.number, company: b.company }
+        : { booth: b.number, company: b.company, delegateCount: delegatesOf(b.company), checkedIn: 0, time: "—", method: "—", status: "Absent" };
+    });
+
+    // Attendance rows for companies whose booth assignment was cleared still
+    // shown at the end so a prior check-in never silently disappears.
+    const boothCompanies = new Set(booths.map((b) => (b.company || "").trim().toLowerCase()));
+    const orphans = attRows.filter((a) => !boothCompanies.has((a.company || "").trim().toLowerCase()));
+    return [...rows, ...orphans];
+  }, [booths, data.attendanceCompanies, data.delegates]);
+
+  const compCheckedIn = companies.reduce((a, c) => a + (c.checkedIn || 0), 0);
+  const compTotal = companies.reduce((a, c) => a + (c.delegateCount || 0), 0);
   const studCheckedIn = students.filter((s) => s.status === "Checked In").length;
 
   const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -926,9 +994,22 @@ const AttendanceCheckin = () => {
   const checkInStudent = (id) => update("attendanceStudents", `Checked in student ${id} (manual)`, (prev) =>
     prev.map((s) => s.id !== id ? s : { ...s, status: "Checked In", time: now(), method: "Manual" }));
 
+  // Upsert: a company that has no attendance row yet (only a booth) gets one
+  // created on check-in; an existing row is flipped to Present. Keyed by
+  // company name so it works whether or not the row already existed.
   const checkInCompany = (row, method) => {
-    update("attendanceCompanies", `Checked in ${row.company} at booth ${row.booth} (${method})`, (prev, who) =>
-      prev.map((c) => c.booth !== row.booth ? c : { ...c, checkedIn: c.delegateCount, time: now(), method, status: "Present", ...who }));
+    const eq = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+    update("attendanceCompanies", `Checked in ${row.company} at booth ${row.booth} (${method})`, (prev, who) => {
+      const rows = prev || [];
+      const idx = rows.findIndex((c) => eq(c.company, row.company));
+      const filled = {
+        booth: row.booth, company: row.company,
+        delegateCount: row.delegateCount || 0, checkedIn: row.delegateCount || 0,
+        time: now(), method, status: "Present", ...who,
+      };
+      if (idx === -1) return [...rows, filled];
+      return rows.map((c, i) => (i === idx ? { ...c, ...filled } : c));
+    });
     toast(`${row.company} checked in via ${method}`, { type: "success" });
   };
 
@@ -975,6 +1056,9 @@ const AttendanceCheckin = () => {
                   </td>
                 </tr>
               ))}
+              {companies.length === 0 && (
+                <tr><td colSpan={8} className="px-4 py-6 text-center text-xs text-gray-400">No booths assigned yet. Assign booths to companies in the Venue &amp; Booths tab and they'll appear here for check-in.</td></tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -1695,10 +1779,60 @@ const OPERATIONS_TABS = [
 
 const OPERATIONS_TAB_KEY = "event_ops_active_tab";
 
+const SEEN_REQUESTS_KEY = "event_ops_seen_company_requests";
+
 const EventOperations = () => {
   const { user } = useAuthContext();
-  const { employee, team, setActingAs } = useEventOps();
+  const { data, employee, team, setActingAs, onPersistError } = useEventOps();
+  const { notify } = useNotifications();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem(OPERATIONS_TAB_KEY) || OPERATIONS_TABS[0].id);
+
+  // Cross-account signal: notifications are per-account and client-side, so a
+  // company's notify() never reaches CASTO. Instead CASTO detects new company
+  // requests off the shared /event-ops data (which the provider polls every
+  // 15s): any equipment row with requestedBy, or any requirement whose notes
+  // say it was company-submitted, that we haven't recorded before fires a bell
+  // notification once. Seen IDs persist so a reload doesn't re-alert.
+  useEffect(() => {
+    if (!data) return;
+    const eqReqs = (data.equipment || []).filter((r) => r.requestedBy).map((r) => ({ key: `eq-${r.id}`, msg: `${r.requestedBy} requested ${r.qtyReq} × ${r.item}`, link: "equipment" }));
+    const reqReqs = (data.requirements || []).filter((r) => r.notes === "Submitted by company").map((r) => ({ key: `req-${r.id}`, msg: `${r.company} requested: ${(r.description || "").slice(0, 50)}`, link: "requirements" }));
+    const incoming = [...eqReqs, ...reqReqs];
+    if (incoming.length === 0) return;
+
+    let seen;
+    try { seen = new Set(JSON.parse(localStorage.getItem(SEEN_REQUESTS_KEY) || "[]")); }
+    catch { seen = new Set(); }
+
+    const fresh = incoming.filter((r) => !seen.has(r.key));
+    if (fresh.length === 0) return;
+
+    // On the very first load (nothing seen yet), record existing requests
+    // silently so old ones don't all alert at once — only alert on genuinely
+    // new arrivals after that.
+    const firstRun = seen.size === 0;
+    fresh.forEach((r) => {
+      if (!firstRun) notify(r.msg, { type: "info", detail: "New company request — review in Event Operations", dedupeKey: r.key });
+      seen.add(r.key);
+    });
+    try { localStorage.setItem(SEEN_REQUESTS_KEY, JSON.stringify([...seen])); } catch { /* quota */ }
+  }, [data, notify]);
+
+  // A save that looked instant (the edit applies optimistically to local
+  // state) can still fail to reach the server — a dropped connection, an
+  // expired session, a 403. Without this, that failure was invisible: the
+  // booth/pass/etc. showed as saved in this tab but was never actually
+  // written, so it silently reverted on the next reload or poll from
+  // another tab. EventOpsContext retries automatically; this only surfaces
+  // it if a save is still failing after that retry.
+  useEffect(() => {
+    onPersistError((err, sections) => {
+      const status = err?.response?.status;
+      const reason = status === 401 || status === 403 ? "you may need to sign back in" : "retrying…";
+      toast(`Couldn't save changes to ${sections.join(", ")} — ${reason}`, { type: "error" });
+    });
+  }, [onPersistError, toast]);
 
   // Rana (Event Lead) sees every module, matching her "final point of
   // contact" responsibility and the same employee.id === "rana" check the
@@ -1733,59 +1867,71 @@ const EventOperations = () => {
   return (
     <PageContainer user={user} title="Event Operations" collapsibleTopBar>
       <div className="flex flex-col gap-3 flex-1 min-h-0">
-        {/* Team view switcher — one CASTO account, one view per employee */}
-        <div className="flex items-center gap-2 flex-wrap shrink-0">
-          <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">Viewing as</span>
-          {team.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setActingAs(m.id)}
-              title={m.role}
-              className={`flex items-center gap-1.5 rounded-full pl-1 pr-3 py-1 text-xs font-semibold border transition-all ${
-                employee.id === m.id
-                  ? "bg-[#0E7F41] text-white border-[#0E7F41] shadow-sm"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${employee.id === m.id ? "bg-white/25 text-white" : "bg-gray-100 text-gray-500"}`}>
-                {m.name[0]}
-              </span>
-              {m.name}
-            </button>
-          ))}
-          <span className="text-[11px] text-gray-400 ml-1 hidden lg:inline">{employee.role} — changes are recorded under {employee.name}</span>
-          <a href="/event-admin" className="ml-auto text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors shrink-0">
+        {/* Team view switcher — one CASTO account, one view per employee.
+            Two stable zones: the member buttons wrap among themselves on the
+            left; the status text + Admin link stay pinned right. Previously the
+            variable-length status text ("<role> — changes recorded under
+            <name>") sat inline between the buttons and an ml-auto Admin link,
+            so switching to a member with a longer role reflowed the whole row
+            and the bar appeared to "jump" (most visibly toggling to/from Rana,
+            whose short role changed the wrap point). */}
+        <div className="flex items-start justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">Viewing as</span>
+            {team.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setActingAs(m.id)}
+                title={m.role}
+                className={`flex items-center gap-1.5 rounded-full pl-1 pr-3 py-1 text-xs font-semibold border transition-all ${
+                  employee.id === m.id
+                    ? "bg-[#0E7F41] text-white border-[#0E7F41] shadow-sm"
+                    : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
+                }`}
+              >
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${employee.id === m.id ? "bg-white/25 text-white" : "bg-gray-100 text-gray-500"}`}>
+                  {m.name[0]}
+                </span>
+                {m.name}
+              </button>
+            ))}
+          </div>
+          <a href="/event-admin" className="text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors shrink-0 mt-1">
             Admin →
           </a>
         </div>
+        {/* Status line on its own row so its variable length can never reflow
+            the member buttons above. */}
+        <p className="text-[11px] text-gray-400 -mt-1 shrink-0 hidden lg:block">
+          {employee.role} — changes are recorded under {employee.name}
+        </p>
 
-        {/* Tab bar — employee's modules first, marked with a dot */}
+        {/* Tab bar — employee's modules first, marked with a dot. Uses the
+            shared PillTabs (sliding-pill motion) so it matches every other tab
+            bar in the app instead of an instant background swap. */}
         <div className="shrink-0 overflow-x-auto pb-1">
-          <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
-            {orderedTabs.map((tab) => {
+          <PillTabs
+            tabs={orderedTabs}
+            activeId={activeTab}
+            onSelect={setActiveTab}
+            renderInner={(tab, active) => {
               const mine = employee.focus?.includes(tab.id);
-              const active = activeTab === tab.id;
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
-                    active ? "text-white" : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
-                  style={active ? { background: "#0E7F41" } : {}}
-                >
+                <>
                   <TabIcon id={tab.id} />
                   <span>{tab.label}</span>
                   {mine && <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white" : "bg-[#0E7F41]"}`} title={`Assigned to ${employee.name}`} />}
-                </button>
+                </>
               );
-            })}
-          </div>
+            }}
+          />
         </div>
 
-        {/* Content — its own scroll area so every tab is fully reachable */}
+        {/* Content — its own scroll area so every tab is fully reachable. Keyed
+            on activeTab so switching modules fades the panel in (matching the
+            company Status/Settings tab content transition). */}
         <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
-          <div className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100">
+          <div key={activeTab} className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 animate-panelIn">
             <ActiveComponent />
           </div>
         </div>

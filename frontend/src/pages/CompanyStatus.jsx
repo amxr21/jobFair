@@ -6,20 +6,36 @@ import { API_URL } from "../config/api";
 import SectionCard from "../components/SectionCard";
 import TagPill from "../components/TagPill";
 import StatCard from "../components/StatCard";
+import CompanyRequestForm from "../components/CompanyRequestForm";
 import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsContext";
 import { SubTabBar } from "../components/EventSettingsShared";
 import { useToast } from "../components/Toast";
 
 const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
 
-const MiniBadge = ({ label, tone = "gray" }) => {
-    const tones = {
-        green: "bg-green-100 text-green-700", yellow: "bg-amber-100 text-amber-700",
-        red: "bg-red-100 text-red-600", gray: "bg-gray-100 text-gray-500",
-        blue: "bg-blue-100 text-blue-700", purple: "bg-purple-100 text-purple-700",
-    };
-    return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${tones[tone] || tones.gray}`}>{label}</span>;
+const TONE_CLASSES = {
+    green: "bg-green-100 text-green-700", yellow: "bg-amber-100 text-amber-700",
+    red: "bg-red-100 text-red-600", gray: "bg-gray-100 text-gray-500",
+    blue: "bg-blue-100 text-blue-700", purple: "bg-purple-100 text-purple-700",
 };
+const toneClass = (tone) => TONE_CLASSES[tone] || TONE_CLASSES.gray;
+
+const MiniBadge = ({ label, tone = "gray" }) => (
+    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${toneClass(tone)}`}>{label}</span>
+);
+
+// Placeholder shown inside a section the company can see but CASTO hasn't set
+// up yet. The company always sees the full set of sections (booth, banners,
+// passes, parking, equipment) so they know what's coming and who owns it —
+// rather than the section silently disappearing until CASTO assigns something.
+// Everything on the company side is view-only; this never implies the company
+// can create it themselves — only CASTO can.
+const AwaitingCasto = ({ text }) => (
+    <div className="flex items-center gap-2 text-[11px] text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2.5">
+        <svg className="w-3.5 h-3.5 shrink-0 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <span>{text}</span>
+    </div>
+);
 
 // Parking map preview. Once a mapUrl (a Google Maps share/pin link) is set by
 // CASTO, the delegate gets a tappable "Open in Maps" and a placeholder preview
@@ -44,6 +60,39 @@ const ParkingMapPreview = ({ mapUrl }) => {
         </div>
     );
 };
+
+// Venue map for the company's booth — a styled Google Maps placeholder showing
+// roughly where the booth is on-site. Like ParkingMapPreview, the live embedded
+// map (Google Maps Embed <iframe>) needs an API key + billing, so this renders
+// a green-tinted map placeholder ready to swap for the real embed. `mapUrl`
+// (when CASTO provides one) powers the "Open in Maps" link; otherwise the link
+// is hidden and only the placeholder shows.
+const VenueMapPreview = ({ label, mapUrl }) => (
+    <div className="w-full">
+        {/* Replace with:
+            <iframe src={`https://www.google.com/maps/embed/v1/place?key=${KEY}&q=...`} />
+            once a Maps Embed API key is available. */}
+        <div className="relative h-28 rounded-xl overflow-hidden border border-green-200 bg-[repeating-linear-gradient(45deg,#ecfdf3,#ecfdf3_10px,#d1fae5_10px,#d1fae5_20px)]">
+            {/* faux streets */}
+            <div className="absolute inset-0 opacity-40">
+                <div className="absolute left-0 right-0 top-1/3 h-1.5 bg-white/70" />
+                <div className="absolute top-0 bottom-0 left-1/2 w-1.5 bg-white/70" />
+            </div>
+            {/* pin */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+                <span className="text-2xl" style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))" }}>📍</span>
+                {label && <span className="text-[10px] font-bold text-green-800 bg-white/85 rounded-full px-2 py-0.5">{label}</span>}
+            </div>
+            <span className="absolute top-1.5 left-2 text-[9px] font-semibold text-green-700/70 bg-white/70 rounded px-1.5 py-0.5">Venue map</span>
+        </div>
+        {mapUrl && (
+            <a href={mapUrl} target="_blank" rel="noopener noreferrer"
+                className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 hover:text-green-800 hover:underline">
+                📍 Open in Google Maps
+            </a>
+        )}
+    </div>
+);
 
 const statusTone = (s) => ({
     Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
@@ -72,23 +121,40 @@ const ContactCard = ({ moduleId, team }) => {
 // Everything CASTO manages for this company in Event Settings, mirrored live
 // here in full detail — its own tab so it doesn't get lost below the profile.
 const EventDaySection = ({ companyName, readOnly = false }) => {
-    const { companyView, team, data, update, companySelfCheckIn, isCompanyCheckedIn } = useEventOps();
+    const { companyView, team, data, companySelfCheckIn, isCompanyCheckedIn, refetchEventOps, onPersistError } = useEventOps();
     const toast = useToast();
     const view = companyView(companyName);
     const checkedIn = isCompanyCheckedIn(companyName);
+
+    // EventOpsProvider only fetches /event-ops once, on app mount, and never
+    // remounts on route changes — so without this, a company that logs in
+    // before CASTO assigns a booth / fulfills a requirement / issues a pass
+    // would never see it until the 15s background poll catches up (or a hard
+    // reload). Refetching on every mount of this tab makes switching into
+    // "Event Day" always show what CASTO has entered right now.
+    useEffect(() => {
+        refetchEventOps();
+    }, [refetchEventOps]);
+
+    // Surface a failed background save (self check-in, requirement request) to
+    // the company too — update() applies optimistically and the PUT is
+    // debounced, so a rejected save (dropped connection, expired session)
+    // would otherwise be silent on the company side. EventOperations registers
+    // its own handler; company and CASTO views are never mounted at once, so
+    // the last-registered-wins single handler is fine here.
+    useEffect(() => {
+        if (readOnly) return;
+        onPersistError((err) => {
+            const status = err?.response?.status;
+            const reason = status === 401 || status === 403 ? "please sign in again" : "we'll keep retrying";
+            toast(`Couldn't save your last change — ${reason}.`, { type: "error" });
+        });
+    }, [onPersistError, toast, readOnly]);
 
     const handleSelfCheckIn = () => {
         companySelfCheckIn(companyName);
         toast("You're checked in — welcome to the Job Fair!", { type: "success" });
     };
-
-    // Company-side special-requirements request form. Companies raise a request
-    // here; it lands in the same event-ops "requirements" section CASTO manages,
-    // tagged to this company and starting at "Open".
-    const [reqDesc, setReqDesc] = useState("");
-    const [reqCategory, setReqCategory] = useState("");
-    const [reqSubmitting, setReqSubmitting] = useState(false);
-    const [reqDone, setReqDone] = useState(false);
 
     if (!view) return null;
 
@@ -98,73 +164,82 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
     const parkingPasses = passes.filter((p) => p.type === "Parking");
     const entryPasses = passes.filter((p) => p.type !== "Parking");
 
-    const submitRequirement = async () => {
-        if (!reqDesc.trim() || readOnly || reqSubmitting) return;
-        setReqSubmitting(true);
-        try {
-            await update("requirements", `${companyName} requested: ${reqDesc.slice(0, 40)}`, (prev, who) =>
-                [...(prev || []), { id: Date.now(), company: companyName, description: reqDesc.trim(), category: reqCategory.trim() || "General", priority: "Medium", status: "Open", notes: "Submitted by company", ...who }]);
-            setReqDesc(""); setReqCategory(""); setReqDone(true);
-            toast("Request submitted — CASTO will follow up", { type: "success" });
-            setTimeout(() => setReqDone(false), 4000);
-        } catch (err) {
-            toast("Couldn't submit your request. Please try again.", { type: "error" });
-        } finally {
-            setReqSubmitting(false);
-        }
-    };
-
     return (
         <div className="flex flex-col gap-3">
             {!hasAnything && (
-                <div className="bg-white rounded-lg p-6 border border-gray-100 text-sm text-gray-400 text-center">
-                    No booth, branding, or passes assigned yet. They'll appear here once the CASTO office sets them up. In the meantime, you can view the event schedule and raise any special requirements below.
+                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-xs text-blue-700">
+                    <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <span>The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <strong>Requests</strong> tab to ask for equipment, raise a requirement, or send a parking note.</span>
                 </div>
             )}
-            {booth && (
-                <SectionCard title="My Booth">
-                    <div className="flex flex-col sm:flex-row items-start gap-4">
-                        <div className="bg-white border border-gray-200 rounded-lg p-2 shrink-0">
-                            <QRCodeSVG value={`jobfair:attendance:${booth.number}`} size={104} fgColor="#111827" />
-                        </div>
-                        <div className="flex flex-col gap-1.5 text-xs min-w-0 flex-1">
-                            <p className="text-lg font-bold text-gray-800">{booth.number} · Zone {booth.zone}</p>
-                            <p className="text-gray-500">{booth.type} booth · {booth.ring === "center" ? "Center island" : "Outer ring"}</p>
+
+            {/* My Booth — redesigned: a location panel (booth id, zone, venue
+                map placeholder, check-in) beside a framed check-in QR. Always
+                shown; placeholder until CASTO assigns one. */}
+            <SectionCard title="My Booth">
+                {booth ? (
+                    <div className="flex flex-col gap-3">
+                        {/* Header row — booth badge, zone/type, attendance */}
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <span className="inline-flex items-center justify-center rounded-xl bg-[#0E7F41] text-white font-bold text-lg px-3.5 py-1.5 shadow-sm">
+                                {booth.number}
+                            </span>
+                            <div className="min-w-0">
+                                <p className="text-sm font-bold text-gray-800">Zone {booth.zone}</p>
+                                <p className="text-xs text-gray-500">{booth.type} booth · {booth.ring === "center" ? "Center island" : "Outer ring"}</p>
+                            </div>
                             {attendance ? (
-                                <div className="flex items-center gap-1.5">
+                                <span className="flex items-center gap-1.5 ml-auto">
                                     <MiniBadge label={attendance.status} tone={statusTone(attendance.status)} />
-                                    {attendance.time !== "—" && <span className="text-gray-400">since {attendance.time}</span>}
-                                </div>
-                            ) : <MiniBadge label="Attendance pending" tone="gray" />}
-                            <p className="text-[10px] text-gray-400 leading-relaxed mt-1">
-                                This QR code is printed at your booth. Scan it on arrival to confirm your attendance — or tap the button below once you're here.
-                            </p>
-                            {!readOnly && (
-                                checkedIn ? (
-                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 mt-1 self-start">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                                        You're checked in — welcome!
-                                    </div>
-                                ) : (
-                                    <button
-                                        onClick={handleSelfCheckIn}
-                                        className="flex items-center gap-1.5 text-xs font-semibold text-white rounded-lg px-3.5 py-2 mt-1 self-start hover:opacity-90 transition-opacity"
-                                        style={{ background: "#0E7F41" }}
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h.01M4 16h.01" /></svg>
-                                        I've arrived — check in
-                                    </button>
-                                )
-                            )}
-                            <ContactCard moduleId="venue" team={team} />
+                                    {attendance.time !== "—" && <span className="text-[11px] text-gray-400">since {attendance.time}</span>}
+                                </span>
+                            ) : <span className="ml-auto"><MiniBadge label="Attendance pending" tone="gray" /></span>}
                         </div>
+
+                        {/* Map (wide) + QR (compact) side by side, equal height */}
+                        <div className="flex items-stretch gap-3">
+                            <div className="flex-1 min-w-0">
+                                <VenueMapPreview label={`${booth.number} · Zone ${booth.zone}`} mapUrl={booth.mapUrl} />
+                            </div>
+                            <div className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 rounded-xl border border-gray-100 p-2.5 shrink-0 w-[112px]">
+                                <div className="bg-white border border-gray-200 rounded-lg p-1.5">
+                                    <QRCodeSVG value={`jobfair:attendance:${booth.number}`} size={72} fgColor="#111827" />
+                                </div>
+                                <p className="text-[9px] text-gray-400 text-center leading-tight">Scan at your booth to confirm attendance.</p>
+                            </div>
+                        </div>
+
+                        {/* Check-in action — full width below */}
+                        {!readOnly && (
+                            checkedIn ? (
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 self-start">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                                    You're checked in — welcome!
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={handleSelfCheckIn}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-white rounded-lg px-3.5 py-2 self-start hover:opacity-90 transition-opacity"
+                                    style={{ background: "#0E7F41" }}
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                                    I've arrived — check in
+                                </button>
+                            )
+                        )}
+                        <ContactCard moduleId="venue" team={team} />
                     </div>
-                </SectionCard>
-            )}
+                ) : (
+                    <>
+                        <AwaitingCasto text="No booth assigned yet. Once the CASTO office assigns your booth, its number, zone, map location, and check-in QR code will appear here." />
+                        <ContactCard moduleId="venue" team={team} />
+                    </>
+                )}
+            </SectionCard>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {banners.length > 0 && (
-                    <SectionCard title="Banners & Branding">
+                <SectionCard title="Banners & Branding">
+                    {banners.length > 0 ? (
                         <div className="flex flex-col gap-3">
                             {banners.map((b) => {
                                 const si = BANNER_STEPS.indexOf(b.status);
@@ -199,11 +274,16 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                             })}
                             <ContactCard moduleId="banners" team={team} />
                         </div>
-                    </SectionCard>
-                )}
+                    ) : (
+                        <>
+                            <AwaitingCasto text="No banners or branding submitted yet. The CASTO branding officer will add your roll-ups, backdrops, and artwork here as they're processed." />
+                            <ContactCard moduleId="banners" team={team} />
+                        </>
+                    )}
+                </SectionCard>
 
-                {requirements.length > 0 && (
-                    <SectionCard title="Special Requirements">
+                <SectionCard title="Special Requirements">
+                    {requirements.length > 0 ? (
                         <div className="flex flex-col gap-2">
                             {requirements.map((r) => (
                                 <div key={r.id} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 last:border-0 last:pb-0">
@@ -217,11 +297,16 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                             ))}
                             <ContactCard moduleId="requirements" team={team} />
                         </div>
-                    </SectionCard>
-                )}
+                    ) : (
+                        <>
+                            <AwaitingCasto text="No requirements yet. Use the Requests tab to raise one — it appears here with its status once the CASTO logistics officer picks it up." />
+                            <ContactCard moduleId="requirements" team={team} />
+                        </>
+                    )}
+                </SectionCard>
 
-                {equipment.length > 0 && (
-                    <SectionCard title="Logistics & Equipment">
+                <SectionCard title="Logistics & Equipment">
+                    {equipment.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                             {equipment.map((r) => (
                                 <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
@@ -234,11 +319,16 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                             ))}
                             <ContactCard moduleId="equipment" team={team} />
                         </div>
-                    </SectionCard>
-                )}
+                    ) : (
+                        <>
+                            <AwaitingCasto text="No equipment allocated yet. Tables, chairs, power, and screens the CASTO office assigns to your booth will be listed here." />
+                            <ContactCard moduleId="equipment" team={team} />
+                        </>
+                    )}
+                </SectionCard>
 
-                {entryPasses.length > 0 && (
-                    <SectionCard title="Entry Passes">
+                <SectionCard title="Entry Passes">
+                    {entryPasses.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {entryPasses.map((p) => (
                                 <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
@@ -252,12 +342,18 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                                     <MiniBadge label={p.status} tone={statusTone(p.status)} />
                                 </div>
                             ))}
+                            <div className="sm:col-span-2"><ContactCard moduleId="passes" team={team} /></div>
                         </div>
-                    </SectionCard>
-                )}
+                    ) : (
+                        <>
+                            <AwaitingCasto text="No entry passes issued yet. Once the CASTO access officer issues them, each delegate's entry QR code will appear here." />
+                            <ContactCard moduleId="passes" team={team} />
+                        </>
+                    )}
+                </SectionCard>
 
-                {parkingPasses.length > 0 && (
-                    <SectionCard title="Parking" className={entryPasses.length === 0 ? "md:col-span-2" : ""}>
+                <SectionCard title="Parking">
+                    {parkingPasses.length > 0 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {parkingPasses.map((p) => (
                                 <div key={p.id} className="flex items-center gap-3 bg-amber-50 border border-amber-100 rounded-lg p-2.5">
@@ -274,8 +370,13 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                                 </div>
                             ))}
                         </div>
-                    </SectionCard>
-                )}
+                    ) : (
+                        <>
+                            <AwaitingCasto text="No parking assigned yet. When the CASTO office allocates a parking slot, your slot number, exact location, and a map link will show here." />
+                            <ContactCard moduleId="passes" team={team} />
+                        </>
+                    )}
+                </SectionCard>
             </div>
 
             {/* Event schedule — mirrored live from what CASTO builds in Event Settings */}
@@ -304,51 +405,6 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                 </SectionCard>
             )}
 
-            {/* Company-raised special requirements — feeds the same list CASTO manages */}
-            {!readOnly && (
-                <SectionCard title="Request a Special Requirement">
-                    <p className="text-xs text-gray-500 mb-2.5">
-                        Need something for your booth — extra power, AV, accessibility, a custom setup? Submit it here and the CASTO logistics officer will pick it up.
-                    </p>
-                    {requirements.length > 0 && (
-                        <div className="flex flex-col gap-1.5 mb-3">
-                            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Your current requests</p>
-                            {requirements.map((r) => (
-                                <div key={r.id} className="flex items-center justify-between gap-2 text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
-                                    <span className="text-gray-700 truncate">{r.description}</span>
-                                    <MiniBadge label={r.status} tone={statusTone(r.status)} />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <input
-                            value={reqCategory}
-                            onChange={(e) => setReqCategory(e.target.value)}
-                            placeholder="Category (e.g. Power)"
-                            className="border border-gray-200 rounded-lg px-3 py-2 text-xs sm:w-40 focus:outline-none focus:ring-1 focus:ring-green-500"
-                        />
-                        <input
-                            value={reqDesc}
-                            onChange={(e) => setReqDesc(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && submitRequirement()}
-                            placeholder="Describe what you need…"
-                            className="border border-gray-200 rounded-lg px-3 py-2 text-xs flex-1 focus:outline-none focus:ring-1 focus:ring-green-500"
-                        />
-                        <button
-                            onClick={submitRequirement}
-                            disabled={!reqDesc.trim() || reqSubmitting}
-                            className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50 shrink-0"
-                            style={{ background: "#0E7F41" }}
-                        >
-                            {reqSubmitting ? "Sending…" : "Submit"}
-                        </button>
-                    </div>
-                    {reqDone && <p className="text-xs text-green-600 mt-2">Request submitted — CASTO will follow up. Thank you!</p>}
-                    <ContactCard moduleId="requirements" team={team} />
-                </SectionCard>
-            )}
-
             <SectionCard title="Need help?">
                 <p className="text-xs text-gray-500 mb-2">Each area below is owned by a CASTO officer — reach out directly if something needs attention.</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -367,6 +423,52 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                     })}
                 </div>
             </SectionCard>
+        </div>
+    );
+};
+
+// Requests tab — the company's self-service request form plus a recap of what
+// they've already asked for and its approval status. Its own tab (beside
+// Overview / Event Day) so requesting equipment/logistics/parking is a
+// first-class action, not buried at the bottom of Event Day.
+const RequestsSection = ({ companyName, readOnly = false }) => {
+    const { companyView, refetchEventOps } = useEventOps();
+
+    // Always show CASTO the freshest view of what's been requested/approved.
+    useEffect(() => { refetchEventOps(); }, [refetchEventOps]);
+
+    const view = companyView(companyName);
+    if (!view) return null;
+    const { requirements, equipment } = view;
+
+    const existingRequests = [
+        ...requirements.map((r) => ({ id: `req-${r.id}`, label: `${r.category ? `[${r.category}] ` : ""}${r.description}`, status: r.status, tone: toneClass(statusTone(r.status)) })),
+        ...equipment.filter((e) => e.requestedBy).map((e) => ({ id: `eq-${e.id}`, label: `${e.qtyReq} × ${e.item}`, status: e.status === "Fulfilled" ? "Approved" : "Awaiting approval", tone: toneClass(e.status === "Fulfilled" ? "green" : "yellow") })),
+    ];
+
+    if (readOnly) {
+        // CASTO preview of a company: show what they've requested, no form.
+        return (
+            <div className="flex flex-col gap-3">
+                <SectionCard title="Requests submitted by this company">
+                    {existingRequests.length > 0 ? (
+                        <div className="flex flex-col gap-1.5">
+                            {existingRequests.map((r) => (
+                                <div key={r.id} className="flex items-center justify-between gap-2 text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
+                                    <span className="text-gray-700 truncate">{r.label}</span>
+                                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${r.tone}`}>{r.status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ) : <p className="text-xs text-gray-400">No requests submitted yet.</p>}
+                </SectionCard>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-3">
+            <CompanyRequestForm existingRequests={existingRequests} />
         </div>
     );
 };
@@ -396,7 +498,7 @@ const STATUS_CONFIG = {
 // read-only (used by Event Settings > View As) without touching the real
 // logged-in session — defaults to the current user's own company/status
 // page when omitted, which is the normal, unchanged behavior.
-const STATUS_TABS = ["Overview", "Event Day"];
+const STATUS_TABS = ["Overview", "Event Day", "Requests"];
 
 const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
     const { user } = useAuthContext();
@@ -532,6 +634,9 @@ const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
 
             <SubTabBar tabs={STATUS_TABS} active={activeTab} onChange={setActiveTab} />
 
+            {/* Keyed so switching tabs fades the panel in — matches the pill
+                slide, and the Settings/Operations tab-content transition. */}
+            <div key={activeTab} className="flex flex-col gap-3 md:gap-4 animate-panelIn">
             {activeTab === 0 && (
                 <>
                     <div className="grid grid-cols-3 gap-3">
@@ -601,6 +706,11 @@ const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
             {activeTab === 1 && (
                 <EventDaySection companyName={companyData?.companyName} readOnly={readOnly} />
             )}
+
+            {activeTab === 2 && (
+                <RequestsSection companyName={companyData?.companyName} readOnly={readOnly} />
+            )}
+            </div>
 
             {companyData?.surveyResult?.length > 0 && (
                 <div className="bg-green-50 rounded-lg p-3 border border-green-200 flex items-center gap-3">

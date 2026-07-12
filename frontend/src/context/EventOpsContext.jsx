@@ -31,133 +31,43 @@ const DEFAULT_TEAM = [
 
 const TEAM_STORAGE_KEY = "event_ops_team_v1";
 
-// ─── Seed data ─────────────────────────────────────────────────────────────────
+// ─── Empty initial state ────────────────────────────────────────────────────────
+// Every section starts EMPTY. Real data is loaded from the backend
+// (GET /event-ops) on mount and by the periodic poll; the company dropdowns
+// are populated purely from the real registered companies (GET /companies).
+// There is intentionally NO demo/sample data here — an unreachable backend
+// simply shows empty sections rather than fabricated companies. This shape
+// mirrors exactly what loadEventOps() returns in the backend, so components
+// that read data.booths / data.passes / etc. never see an undefined section.
 
-const SEED_COMPANIES = ["Emirates NBD", "Etisalat", "Dubai Police", "DP World", "ADNOC"];
-
-const t = (d, h, m) => new Date(2026, 5, d, h, m).toISOString(); // June 2026
-
-const stamp = (by, at) => ({ updatedBy: by, updatedAt: at });
-
+// All sections empty. The backend (loadEventOps) is the sole source of real
+// data; every key here exists only so components can safely read data.<section>
+// before the first fetch resolves. Keep this shape in sync with the object
+// returned by loadEventOps() in backend/controllers/applicantsControllers.js.
 const SEED = {
-    booths: [
-        { id: 1,  number: "B01", zone: "A", ring: "outer",  company: "Emirates NBD", type: "Premium",  status: "Assigned",  ...stamp("Rana", t(28, 10, 12)) },
-        { id: 2,  number: "B02", zone: "A", ring: "outer",  company: "Etisalat",     type: "Standard", status: "Assigned",  ...stamp("Rana", t(28, 10, 20)) },
-        { id: 3,  number: "B03", zone: "A", ring: "outer",  company: null,           type: "Standard", status: "Available", ...stamp("Rana", t(25, 9, 0)) },
-        { id: 4,  number: "B04", zone: "A", ring: "outer",  company: null,           type: "Corner",   status: "Available", ...stamp("Rana", t(25, 9, 0)) },
-        { id: 5,  number: "B05", zone: "B", ring: "outer",  company: "Dubai Police", type: "Premium",  status: "Assigned",  ...stamp("Prithba", t(29, 14, 5)) },
-        { id: 6,  number: "B06", zone: "B", ring: "outer",  company: null,           type: "Standard", status: "Reserved",  ...stamp("Rana", t(29, 15, 40)) },
-        { id: 7,  number: "B07", zone: "B", ring: "outer",  company: "DP World",     type: "Corner",   status: "Assigned",  ...stamp("Rana", t(29, 16, 22)) },
-        { id: 8,  number: "B08", zone: "B", ring: "outer",  company: null,           type: "Standard", status: "Available", ...stamp("Rana", t(25, 9, 0)) },
-        { id: 9,  number: "B09", zone: "C", ring: "center", company: null,           type: "Standard", status: "Reserved",  ...stamp("Prithba", t(30, 11, 8)) },
-        { id: 10, number: "B10", zone: "C", ring: "center", company: null,           type: "Standard", status: "Available", ...stamp("Rana", t(25, 9, 0)) },
-        { id: 11, number: "B11", zone: "C", ring: "center", company: "ADNOC",        type: "Premium",  status: "Assigned",  ...stamp("Rana", t(30, 12, 45)) },
-        { id: 12, number: "B12", zone: "C", ring: "center", company: null,           type: "Corner",   status: "Available", ...stamp("Rana", t(25, 9, 0)) },
-    ],
-    banners: [
-        { id: 1, company: "Emirates NBD", material: "Roll-up Banner",         size: "85 × 200 cm", quantity: 2, artwork: "enbd-rollup-v3.pdf",   contact: "Sara Al Mansouri", deadline: "2026-07-05", status: "Placed",        notes: "2 roll-ups, logo updated", ...stamp("Aseel", t(30, 9, 30)) },
-        { id: 2, company: "Etisalat",     material: "Backdrop",               size: "300 × 200 cm", quantity: 1, artwork: "etisalat-backdrop.ai", contact: "Aisha Noor",       deadline: "2026-07-05", status: "Printed",       notes: "Awaiting delivery",        ...stamp("Aseel", t(30, 13, 15)) },
-        { id: 3, company: "Dubai Police", material: "Table Skirt",            size: "180 × 75 cm",  quantity: 3, artwork: "dxb-police-skirt.pdf", contact: "Lt. Hessa Al Zaabi", deadline: "2026-07-06", status: "Approved",    notes: "Standard green theme",     ...stamp("Aseel", t(29, 16, 40)) },
-        { id: 4, company: "DP World",     material: "Digital Screen Graphic", size: "1920 × 1080 px", quantity: 1, artwork: "dpworld-screen.mp4", contact: "HR Director",      deadline: "2026-07-04", status: "Submitted",     notes: "HD resolution required",   ...stamp("Aseel", t(30, 10, 5)) },
-        { id: 5, company: "ADNOC",        material: "Roll-up Banner",         size: "85 × 200 cm",  quantity: 2, artwork: null,                   contact: "—",                deadline: "2026-07-05", status: "Not Submitted", notes: "Follow up needed",         ...stamp("Aseel", t(28, 11, 0)) },
-    ],
-    requirements: [
-        { id: 1, company: "Emirates NBD", description: "Extra monitor for presentations",         category: "AV Equipment",  priority: "High",     status: "In Progress", notes: "32\" screen requested",      ...stamp("Prithba", t(30, 9, 10)) },
-        { id: 2, company: "Etisalat",     description: "Wheelchair accessible booth positioning", category: "Accessibility", priority: "Critical", status: "Fulfilled",   notes: "Booth B02 repositioned",     ...stamp("Prithba", t(29, 15, 30)) },
-        { id: 3, company: "Dubai Police", description: "Uniform mannequin display",               category: "Display",       priority: "Medium",   status: "Open",        notes: "Needs stand and lighting",   ...stamp("Prithba", t(29, 10, 0)) },
-        { id: 4, company: "DP World",     description: "VIP lounge seating nearby",               category: "Comfort",       priority: "Low",      status: "Open",        notes: "Pending space review",       ...stamp("Rana", t(28, 14, 20)) },
-        { id: 5, company: "ADNOC",        description: "Dedicated power line 30A",                category: "Power",         priority: "Critical", status: "In Progress", notes: "Electrician scheduled",      ...stamp("Prithba", t(30, 16, 55)) },
-    ],
-    equipment: [
-        { id: 1, entity: "Emirates NBD / B01", item: "Folding Table",        qtyReq: 2, qtyFul: 2, status: "Fulfilled", ...stamp("Prithba", t(29, 9, 0)) },
-        { id: 2, entity: "Emirates NBD / B01", item: "Chair",                qtyReq: 4, qtyFul: 4, status: "Fulfilled", ...stamp("Prithba", t(29, 9, 5)) },
-        { id: 3, entity: "Etisalat / B02",     item: "Power Strip (6-way)",  qtyReq: 2, qtyFul: 1, status: "Partial",   ...stamp("Prithba", t(30, 11, 30)) },
-        { id: 4, entity: "Etisalat / B02",     item: "Monitor Stand",        qtyReq: 1, qtyFul: 0, status: "Pending",   ...stamp("Prithba", t(30, 11, 32)) },
-        { id: 5, entity: "Dubai Police / B05", item: "Folding Table",        qtyReq: 3, qtyFul: 3, status: "Fulfilled", ...stamp("Prithba", t(29, 13, 45)) },
-        { id: 6, entity: "Dubai Police / B05", item: "Display Screen 43\"",  qtyReq: 1, qtyFul: 1, status: "Fulfilled", ...stamp("Prithba", t(29, 13, 50)) },
-        { id: 7, entity: "DP World / B07",     item: "Chair",                qtyReq: 6, qtyFul: 4, status: "Partial",   ...stamp("Prithba", t(30, 15, 10)) },
-        { id: 8, entity: "DP World / B07",     item: "Extension Cable 10m",  qtyReq: 2, qtyFul: 2, status: "Fulfilled", ...stamp("Prithba", t(30, 15, 12)) },
-    ],
-    delegates: [
-        { company: "Emirates NBD", delegates: [
-            { name: "Sara Al Mansouri", role: "HR Manager",          email: "sara.m@enbd.ae",                  phone: "+971 50 111 2233", badge: "Printed" },
-            { name: "Khalid Rashid",    role: "Recruiter",           email: "k.rashid@enbd.ae",                phone: "+971 55 444 5566", badge: "Pending" },
-        ]},
-        { company: "Etisalat", delegates: [
-            { name: "Aisha Noor",       role: "Talent Acquisition",  email: "aisha.n@etisalat.ae",             phone: "+971 52 777 8899", badge: "Printed" },
-            { name: "Mohammed Al Ali",  role: "Campus Relations",    email: "m.alali@etisalat.ae",             phone: "+971 56 223 3445", badge: "Printed" },
-            { name: "Fatima Hamdan",    role: "HR Coordinator",      email: "f.hamdan@etisalat.ae",            phone: "+971 50 998 1122", badge: "Pending" },
-        ]},
-        { company: "Dubai Police", delegates: [
-            { name: "Maj. Ahmed Karimi", role: "Recruitment Officer", email: "a.karimi@dubaipolice.gov.ae",    phone: "+971 4 999 0011", badge: "Printed" },
-            { name: "Lt. Hessa Al Zaabi", role: "HR Specialist",      email: "h.alzaabi@dubaipolice.gov.ae",   phone: "+971 4 999 0022", badge: "Pending" },
-        ]},
-    ],
-    attendanceCompanies: [
-        { booth: "B01", company: "Emirates NBD", delegateCount: 2, checkedIn: 2, time: "08:45", method: "QR",  status: "Present", ...stamp("Maha", t(30, 8, 45)) },
-        { booth: "B02", company: "Etisalat",     delegateCount: 3, checkedIn: 2, time: "09:10", method: "QR",  status: "Partial", ...stamp("Maha", t(30, 9, 10)) },
-        { booth: "B05", company: "Dubai Police", delegateCount: 2, checkedIn: 0, time: "—",     method: "—",   status: "Absent",  ...stamp("Maha", t(30, 8, 0)) },
-        { booth: "B07", company: "DP World",     delegateCount: 2, checkedIn: 2, time: "08:55", method: "QR",  status: "Present", ...stamp("Maha", t(30, 8, 55)) },
-        { booth: "B11", company: "ADNOC",        delegateCount: 2, checkedIn: 0, time: "—",     method: "—",   status: "Absent",  ...stamp("Maha", t(30, 8, 0)) },
-    ],
-    attendanceStudents: [
-        { id: "202110001", name: "Layla Hassan",  time: "09:05", method: "QR",     status: "Checked In" },
-        { id: "202110045", name: "Omar Al Farsi", time: "09:12", method: "QR",     status: "Checked In" },
-        { id: "202110089", name: "Nour Ibrahim",  time: "09:30", method: "Manual", status: "Checked In" },
-        { id: "202110120", name: "Reem Sultan",   time: "09:44", method: "QR",     status: "Checked In" },
-        { id: "202110200", name: "Faisal Ahmed",  time: "—",     method: "—",      status: "Pending" },
-        { id: "202110234", name: "Amira Khalil",  time: "10:05", method: "QR",     status: "Checked In" },
-    ],
-    schedule: [
-        { id: 1, start: "08:30", end: "09:00", title: "Registration & Venue Setup",            host: "Event Team",           location: "Main Entrance",    capacity: 300,  registered: 280, status: "Ended",    ...stamp("Rana", t(20, 10, 0)) },
-        { id: 2, start: "09:00", end: "09:30", title: "Opening Ceremony & Welcome Address",    host: "University President", location: "Main Hall",        capacity: 500,  registered: 420, status: "Ended",    ...stamp("Rana", t(20, 10, 5)) },
-        { id: 3, start: "09:30", end: "12:00", title: "Open Networking — Booth Visits",        host: "All Companies",        location: "Exhibition Floor", capacity: 1000, registered: 850, status: "Live",     ...stamp("Rana", t(20, 10, 10)) },
-        { id: 4, start: "12:00", end: "13:00", title: "Lunch Break",                           host: "Catering Team",        location: "Cafeteria",        capacity: 400,  registered: 370, status: "Upcoming", ...stamp("Rana", t(20, 10, 15)) },
-        { id: 5, start: "13:00", end: "15:30", title: "Resume Drop & Interview Sessions",      host: "All Companies",        location: "Exhibition Floor", capacity: 1000, registered: 760, status: "Upcoming", ...stamp("Rana", t(20, 10, 20)) },
-        { id: 6, start: "15:30", end: "16:00", title: "Closing & Prize Distribution",          host: "Event Coordinator",    location: "Main Stage",       capacity: 300,  registered: 210, status: "Upcoming", ...stamp("Rana", t(20, 10, 25)) },
-    ],
-    // Parking passes carry an exact slot + location so a company knows precisely
-    // where to park instead of a generic "Parking" perk. VIP was removed — it had
-    // no distinct function beyond Entry.
-    passes: [
-        { id: 1, company: "Emirates NBD", delegate: "Sara Al Mansouri",  type: "Entry",   code: "ENT-ENB-001", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 0)) },
-        { id: 2, company: "Emirates NBD", delegate: "Khalid Rashid",     type: "Entry",   code: "ENT-ENB-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 2)) },
-        { id: 3, company: "Etisalat",     delegate: "Aisha Noor",        type: "Entry",   code: "ENT-ETS-001", issued: "2026-06-18", status: "Used",    ...stamp("Yousef", t(18, 9, 4)) },
-        { id: 4, company: "Etisalat",     delegate: "Mohammed Al Ali",   type: "Parking", code: "PRK-ETS-002", issued: "2026-06-18", status: "Active",  slot: "P1-14", location: "Level 1, North Lot, near Gate B", ...stamp("Yousef", t(18, 9, 6)) },
-        { id: 5, company: "Etisalat",     delegate: "Fatima Hamdan",     type: "Entry",   code: "ENT-ETS-003", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 8)) },
-        { id: 6, company: "Dubai Police", delegate: "Maj. Ahmed Karimi", type: "Entry",   code: "ENT-DXB-001", issued: "2026-06-18", status: "Revoked", ...stamp("Yousef", t(19, 14, 30)) },
-        { id: 7, company: "DP World",     delegate: "Logistics Lead",    type: "Parking", code: "PRK-DPW-001", issued: "2026-06-18", status: "Active",  slot: "P2-03", location: "Level 2, South Lot, ramp entrance", ...stamp("Yousef", t(18, 9, 10)) },
-        { id: 8, company: "DP World",     delegate: "HR Director",       type: "Entry",   code: "ENT-DPW-002", issued: "2026-06-18", status: "Active",  ...stamp("Yousef", t(18, 9, 12)) },
-    ],
-    // Attendance staff: helpers who check students in at the door without a
-    // full CASTO account. Rana creates the record with just name + email;
-    // the access code is their only credential (no password) and doubles as
-    // the "invite" — a staffer is 'active' once they've logged in with it at
-    // least once. checkinLog records who they scanned, so each staffer sees
-    // only their own list.
-    attendanceStaff: [
-        { id: 1, name: "Volunteer Desk 1", email: "volunteer1@example.com", code: "DESK1", status: "active", ...stamp("Maha", t(28, 9, 0)) },
-        { id: 2, name: "Volunteer Desk 2", email: "volunteer2@example.com", code: "DESK2", status: "invited", ...stamp("Maha", t(28, 9, 1)) },
-    ],
-    // Support / services staff — known helpers CASTO manages directly (printing,
-    // supplies, setup, runners), each with a task list. Distinct from the
-    // code-gated door volunteers in attendanceStaff above.
-    supportStaff: [
-        { id: 101, name: "Yousef (Services)", role: "Printing & Supplies", phone: "+971 50 000 1111", email: "services@example.com", tasks: [
-            { id: 1001, title: "Print 200 delegate badges", status: "In Progress", linkedTo: null },
-            { id: 1002, title: "Bring 10 extra chairs to Zone B", status: "Pending", linkedTo: null },
-        ], ...stamp("Rana", t(29, 10, 0)) },
-    ],
+    booths: [],
+    banners: [],
+    requirements: [],
+    equipment: [],
+    delegates: [],
+    attendanceCompanies: [],
+    attendanceStudents: [],
+    schedule: [],
+    passes: [],
+    attendanceStaff: [],
+    supportStaff: [],
     checkinLog: [],
-    audit: [
-        { id: 1, at: t(30, 12, 45), by: "Rana",    section: "Venue & Booths",   message: "Assigned booth B11 to ADNOC" },
-        { id: 2, at: t(30, 13, 15), by: "Aseel",   section: "Banners",          message: "Marked Etisalat backdrop as Printed" },
-        { id: 3, at: t(30, 15, 10), by: "Prithba", section: "Equipment",        message: "Updated DP World chair delivery (4 of 6)" },
-        { id: 4, at: t(30, 16, 55), by: "Prithba", section: "Requirements",     message: "Started ADNOC dedicated power line request" },
-    ],
+    audit: [],
 };
 
-const STORAGE_KEY = "event_ops_v2";
+// Bumped v2 → v3 when the demo seed was removed: browsers that used the app
+// before still hold the old fake companies (Emirates NBD, Etisalat, …) in
+// localStorage["event_ops_v2"], and the init below reads whatever key this is.
+// A new key guarantees those stale seed rows are ignored so everyone starts
+// from the real (empty) backend state instead of the cached demo — this also
+// fixes the "page looks out of order on first load, fine after a refresh"
+// report, which was the cached seed rendering before the real fetch landed.
+const STORAGE_KEY = "event_ops_v3";
 const ACTING_KEY = "event_ops_acting";
 
 // ─── Context ───────────────────────────────────────────────────────────────────
@@ -168,8 +78,12 @@ export const EventOpsProvider = ({ children }) => {
     const [data, setData] = useState(() => {
         try {
             const cached = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            if (cached && cached.booths) return { ...SEED, ...cached };
-        } catch { /* corrupted cache — fall back to seed */ }
+            // Layer any cached sections over the empty shape so a section the
+            // cache is missing still reads as [] rather than undefined. The
+            // backend refetch on mount immediately overwrites non-dirty
+            // sections with the real server copy.
+            if (cached && typeof cached === "object") return { ...SEED, ...cached };
+        } catch { /* corrupted cache — fall back to empty */ }
         return SEED;
     });
     const [team, setTeam] = useState(() => {
@@ -206,21 +120,29 @@ export const EventOpsProvider = ({ children }) => {
         return u?.token ? { Authorization: `Bearer ${u.token}` } : {};
     };
 
+    // Fetches /event-ops and merges every non-dirty section into local state.
+    // Shared by the initial hydration below, the periodic poll, and an
+    // on-demand refetch a page can call (e.g. the company's Event Day tab, so
+    // switching into it always shows what CASTO has entered instead of
+    // waiting for the next poll tick or a hard reload).
+    const refetchEventOps = useCallback(async () => {
+        try {
+            const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
+            if (res?.data) setData((prev) => {
+                const merged = { ...prev };
+                for (const [key, value] of Object.entries(res.data)) {
+                    if (!dirtySectionsRef.current.has(key)) merged[key] = value;
+                }
+                return merged;
+            });
+        } catch { /* backend unavailable — localStorage/seed keeps working */ }
+    }, []);
+
     // Hydrate from backend (authoritative when present) + fetch real company names
     useEffect(() => {
         (async () => {
-            try {
-                const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
-                if (res?.data?.booths) setData((prev) => {
-                    const merged = { ...prev };
-                    for (const [key, value] of Object.entries(res.data)) {
-                        if (!dirtySectionsRef.current.has(key)) merged[key] = value;
-                    }
-                    return merged;
-                });
-            } catch { /* backend unavailable — localStorage/seed keeps working */ } finally {
-                hydratedRef.current = true;
-            }
+            await refetchEventOps();
+            hydratedRef.current = true;
             try {
                 const res = await axios.get(`${API_URL}/companies`);
                 if (Array.isArray(res?.data)) {
@@ -256,20 +178,47 @@ export const EventOpsProvider = ({ children }) => {
     // sections (booth assigned, then anything else within 800ms) silently
     // dropped the first section's PUT — the booth looked assigned locally but
     // the server never heard about it, and the next refresh reverted it.
+    // Surfaces a PUT failure to whichever page is mounted, so a rejected save
+    // (e.g. a 403 from a stale/wrong session) shows up as a visible error
+    // instead of silently staying queued forever — see persist() below.
+    const persistErrorRef = useRef(null);
+    const onPersistError = useCallback((fn) => { persistErrorRef.current = fn; }, []);
+
     const pendingPatchRef = useRef({});
+    const flushPatch = useCallback(() => {
+        const body = pendingPatchRef.current;
+        if (Object.keys(body).length === 0) return;
+        pendingPatchRef.current = {};
+        axios.put(`${API_URL}/event-ops`, body, { headers: authHeaders() })
+            .then(() => {
+                // Once this tab's own edit has actually reached the server,
+                // it's safe to accept server copies of these sections again —
+                // otherwise the periodic poll above would skip them forever,
+                // and this tab would never see anyone else's later changes to
+                // a section it once touched.
+                for (const key of Object.keys(body)) dirtySectionsRef.current.delete(key);
+            })
+            .catch((err) => {
+                // Put the patch back so it isn't lost, and re-arm a retry —
+                // previously the patch just sat in pendingPatchRef until some
+                // unrelated edit happened to call persist() again, so a failed
+                // save (e.g. a dropped connection or a 403) could go unretried
+                // indefinitely: the edit looked successful locally (setData
+                // already applied it optimistically) but silently never reached
+                // the server, and reloading or the next poll from another tab
+                // would revert it.
+                pendingPatchRef.current = { ...body, ...pendingPatchRef.current };
+                clearTimeout(saveTimer.current);
+                saveTimer.current = setTimeout(flushPatch, 4000);
+                persistErrorRef.current?.(err, Object.keys(body));
+            });
+    }, []);
     const persist = useCallback((next, patch) => {
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* quota */ }
         pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
         clearTimeout(saveTimer.current);
-        saveTimer.current = setTimeout(() => {
-            const body = pendingPatchRef.current;
-            pendingPatchRef.current = {};
-            axios.put(`${API_URL}/event-ops`, body, { headers: authHeaders() })
-                // On failure, put the patch back so the next edit retries it
-                // instead of losing it forever.
-                .catch(() => { pendingPatchRef.current = { ...body, ...pendingPatchRef.current }; });
-        }, 800);
-    }, []);
+        saveTimer.current = setTimeout(flushPatch, 800);
+    }, [flushPatch]);
 
     const employee = team.find((e) => e.id === actingAs) || team[0];
 
@@ -416,31 +365,52 @@ export const EventOpsProvider = ({ children }) => {
                 : s)));
     }, [update]);
 
-    // Refresh checkinLog periodically — staffers write to it through a public
-    // endpoint the CASTO session never calls, so polling is how it shows up here
+    // Refresh the whole document periodically. This is the only re-fetch
+    // after the initial mount — EventOpsProvider lives above the router, so
+    // navigating to /company-status never remounts it and never re-runs the
+    // hydration effect above. Without this poll, a company whose session
+    // started before CASTO assigned a booth / fulfilled a requirement /
+    // issued a pass would never see it without a hard page reload, since
+    // companyView() only ever reads from this same `data` state.
     useEffect(() => {
-        const poll = setInterval(async () => {
-            try {
-                const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
-                if (res?.data?.checkinLog) setData((prev) => ({ ...prev, checkinLog: res.data.checkinLog }));
-            } catch { /* ignore — next tick retries */ }
-        }, 15000);
+        const poll = setInterval(refetchEventOps, 15000);
         return () => clearInterval(poll);
-    }, []);
+    }, [refetchEventOps]);
+
+    // Company self-service request (equipment / special requirement / parking
+    // note). Hits the dedicated insert-only backend endpoint — NOT the bulk
+    // event-ops PUT — so a company can only ever append its own rows and never
+    // touch another company's data (the bulk writers delete-and-recreate whole
+    // sections). Refetches afterward so the company sees their request appear
+    // immediately in their own "current requests" list. Throws on failure so
+    // the caller can show an error toast.
+    const submitCompanyRequest = useCallback(async (payload) => {
+        await axios.post(`${API_URL}/event-ops/company-request`, payload, { headers: authHeaders() });
+        await refetchEventOps();
+    }, [refetchEventOps]);
 
     // A company checks itself in by scanning its own booth QR on arrival —
-    // flips its attendance row to Present. Keyed by company name so it works
-    // whether or not this tab created the row. No-op if the company has no
-    // booth/attendance record yet.
+    // flips its attendance row to Present. UPSERTS: if the company has a booth
+    // but no attendance row yet, one is created so the check-in always sticks
+    // (previously this was a no-op when no row existed, so the "I've arrived"
+    // button appeared to do nothing). Keyed by company name.
     const companySelfCheckIn = useCallback((companyName) => {
         if (!companyName) return;
         const eq = (a, b) => a?.trim().toLowerCase() === b?.trim().toLowerCase();
         const time = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        update("attendanceCompanies", `${companyName} self-checked in via booth QR`, (prev, who) =>
-            (prev || []).map((c) => eq(c.company, companyName)
-                ? { ...c, checkedIn: c.delegateCount, time, method: "QR", status: "Present", ...who }
-                : c));
-    }, [update]);
+        const booth = data.booths.find((b) => eq(b.company, companyName));
+        const delegateCount = data.delegates.find((d) => eq(d.company, companyName))?.delegates.length || 0;
+        update("attendanceCompanies", `${companyName} self-checked in via booth QR`, (prev, who) => {
+            const rows = prev || [];
+            const present = { checkedIn: delegateCount, delegateCount, time, method: "QR", status: "Present", ...who };
+            if (rows.some((c) => eq(c.company, companyName))) {
+                return rows.map((c) => eq(c.company, companyName)
+                    ? { ...c, ...present, checkedIn: c.delegateCount ?? delegateCount }
+                    : c);
+            }
+            return [...rows, { booth: booth?.number || "—", company: companyName, ...present }];
+        });
+    }, [update, data.booths, data.delegates]);
 
     // Whether a given company is already marked present — powers the company-side
     // "you're checked in" state and silences the hourly reminder once done.
@@ -451,8 +421,9 @@ export const EventOpsProvider = ({ children }) => {
         return row?.status === "Present";
     }, [data.attendanceCompanies]);
 
-    // All assignable company names: seeds + real registered companies
-    const companies = [...new Set([...SEED_COMPANIES, ...realCompanies])];
+    // All assignable company names come purely from the real registered
+    // companies (GET /companies). No demo names are injected.
+    const companies = [...new Set(realCompanies)];
 
     // Everything the event holds for one company — powers the company-side view
     const companyView = useCallback((name) => {
@@ -469,8 +440,17 @@ export const EventOpsProvider = ({ children }) => {
         };
     }, [data]);
 
+    // Rana (the Event Lead / final point of contact) is always shown first in
+    // the team — in the "Viewing as" switcher and anywhere else team is
+    // consumed — regardless of DB insertion order. Match by her stable id, with
+    // an Event Lead role fallback in case the id ever differs.
+    const orderedTeam = [...team].sort((a, b) => {
+        const rank = (m) => (m.id === "rana" || m.role === "Event Lead" ? 0 : 1);
+        return rank(a) - rank(b);
+    });
+
     return (
-        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team, updateTeamFocus, inviteTeamMember, removeTeamMember, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile, addSupportStaff, updateSupportStaff, removeSupportStaff, addSupportTask, setSupportTaskStatus, removeSupportTask, companySelfCheckIn, isCompanyCheckedIn }}>
+        <EventOpsContext.Provider value={{ data, update, actingAs, setActingAs, employee, team: orderedTeam, updateTeamFocus, inviteTeamMember, removeTeamMember, companies, companyIds, companyView, addStaffer, removeStaffer, updateStafferProfile, addSupportStaff, updateSupportStaff, removeSupportStaff, addSupportTask, setSupportTaskStatus, removeSupportTask, companySelfCheckIn, isCompanyCheckedIn, refetchEventOps, onPersistError, submitCompanyRequest }}>
             {children}
         </EventOpsContext.Provider>
     );

@@ -334,6 +334,11 @@ model EquipmentRequest {
   qtyRequested  Int?            @map("qty_requested")
   qtyFulfilled  Int?            @map("qty_fulfilled")
   status        EquipmentStatus @default(Pending)
+  // Company name when the row was raised by a company from their own portal
+  // and is awaiting CASTO approval; NULL means CASTO created it directly.
+  // Avoids a new enum value — an awaiting-approval row is simply
+  // requestedBy != null with status Pending / qtyFulfilled 0.
+  requestedBy   String?         @map("requested_by") @db.VarChar(255)
   updatedBy     String?         @map("updated_by") @db.VarChar(255)
   updatedAt     DateTime?       @map("updated_at")
 

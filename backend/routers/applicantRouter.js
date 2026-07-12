@@ -27,7 +27,7 @@ const {
     rejectApplicant, unshortlistApplicant, unrejectApplicant, unflagApplicant,
     submitSurvey, deleteApplicant, sendCompanyReminders,
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
-    getSettings, updateSettings, getEventOps, updateEventOps,
+    getSettings, updateSettings, getEventOps, updateEventOps, submitCompanyRequest,
     verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile,
     bulkImportCompanies, lookupApplicantByUniId, getMyCheckins,
     getCompanyLoginEmails, addCompanyLoginEmail, removeCompanyLoginEmail, updateCompanyProfile,
@@ -79,6 +79,10 @@ router.use(requireAuth);
 router.patch("/settings", updateSettings);
 router.get("/event-ops", getEventOps);
 router.put("/event-ops", updateEventOps);
+// Company self-service requests (insert-only; scoped to caller's own company)
+if (submitCompanyRequest) {
+    router.post("/event-ops/company-request", submitCompanyRequest);
+}
 router.post("/companies/send-reminders", sendCompanyReminders);
 router.patch("/companies/:id/status", updateCompanyStatus);
 router.delete("/companies/:id", deleteCompany);

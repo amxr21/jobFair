@@ -737,6 +737,10 @@ const generateConfirmationToken = () => {
 // Send confirmation reminder email to companies
 const sendCompanyReminders = async (req, res) => {
     try {
+        if (!isCastoAccount(req)) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+
         const { companyIds, frontendUrl } = req.body;
 
         if (!companyIds || !Array.isArray(companyIds) || companyIds.length === 0) {
@@ -881,6 +885,10 @@ function generateStrongTempPassword() {
 // sizes, matching the per-row success/failure UX the UI needs.
 const bulkImportCompanies = async (req, res) => {
     try {
+        if (!isCastoAccount(req)) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+
         const { rows } = req.body;
         if (!Array.isArray(rows) || rows.length === 0) {
             return res.status(400).json({ error: "No rows to import" });
@@ -1273,6 +1281,10 @@ const deleteCompany = async (req, res) => {
     try {
         const { id } = req.params;
 
+        if (!isCastoAccount(req)) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+
         if (!isValidId(id)) {
             return res.status(400).json({ error: "Invalid company ID" });
         }
@@ -1316,6 +1328,10 @@ const getSettings = async (req, res) => {
 // Update app settings (admin only)
 const updateSettings = async (req, res) => {
     try {
+        if (!isCastoAccount(req)) {
+            return res.status(403).json({ error: "Not authorized" });
+        }
+
         const { key, value } = req.body;
         const userEmail = req.user?.email;
 
@@ -1372,7 +1388,8 @@ const requirementRowToJson = (r) => ({
 const equipmentRowToJson = (e) => ({
     id: e.legacyId !== null ? Number(e.legacyId) : e.id,
     entity: e.entityLabel, item: e.item, qtyReq: e.qtyRequested, qtyFul: e.qtyFulfilled,
-    status: e.status, updatedBy: e.updatedBy, updatedAt: e.updatedAt,
+    status: e.status, requestedBy: e.requestedBy ?? null,
+    updatedBy: e.updatedBy, updatedAt: e.updatedAt,
 });
 
 const delegateRowToJson = (d) => ({
@@ -1537,6 +1554,7 @@ const SECTION_WRITERS = {
             await tx.equipmentRequest.create({ data: {
                 legacyId: e.id ?? null, entityLabel: e.entity ?? null, item: e.item ?? null,
                 qtyRequested: e.qtyReq ?? null, qtyFulfilled: e.qtyFul ?? null, status: e.status ?? "Pending",
+                requestedBy: e.requestedBy ?? null,
                 updatedBy: e.updatedBy ?? null, updatedAt: e.updatedAt ? new Date(e.updatedAt) : null,
             }});
         }
@@ -1653,9 +1671,27 @@ const SECTION_WRITERS = {
     },
 };
 
+// Companies self-serve exactly two sections: submitting a special
+// requirement, and self-check-in via their own booth QR (both send back the
+// FULL section array with only their own row changed, per EventOpsContext's
+// update()) — "audit" always rides along since every update() call appends
+// to it. Every other section (booths, banners, equipment, delegates, passes,
+// schedule, staff rosters) is CASTO-only: there is no legitimate company
+// write path for them, and each writer deletes-and-recreates the whole
+// table, so a non-CASTO caller could otherwise wipe every other company's
+// rows in that section.
+const COMPANY_WRITABLE_SECTIONS = new Set(["requirements", "attendanceCompanies", "audit"]);
+
 const updateEventOps = async (req, res) => {
     try {
         const sections = Object.keys(req.body).filter((k) => SECTION_WRITERS[k]);
+
+        if (!isCastoAccount(req)) {
+            const forbidden = sections.filter((s) => !COMPANY_WRITABLE_SECTIONS.has(s));
+            if (forbidden.length > 0) {
+                return res.status(403).json({ error: "Not authorized to update: " + forbidden.join(", ") });
+            }
+        }
 
         await prisma.$transaction(async (tx) => {
             for (const section of sections) {
@@ -1665,6 +1701,88 @@ const updateEventOps = async (req, res) => {
 
         const value = await loadEventOps();
         res.status(200).json(value);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Company self-service requests (equipment/logistics, special requirement, or a
+// parking note). Deliberately a SEPARATE, INSERT-ONLY endpoint rather than
+// widening the bulk event-ops writer to companies: those writers delete-and-
+// recreate the whole section, so letting a company PUT the equipment array
+// could wipe every other company's rows. Here we only ever append rows tied to
+// the authenticated caller's own company, so there is no way to touch anyone
+// else's data. CASTO then approves/fulfils via the normal event-ops path.
+//
+// Notifies the owning CASTO officer by email (sendEmail is a graceful no-op
+// while outbound email is disabled — it just logs — so this is safe to call
+// now and starts working the moment the mailer is turned on). The cross-account
+// in-app bell is driven client-side off CASTO's existing /event-ops poll
+// detecting the new requestedBy rows, since notifications are per-account.
+const MODULE_OWNER_EMAIL = async (moduleId) => {
+    try {
+        // focusModules is a JSON column; JSON filtering across the MariaDB
+        // adapter is finicky, so fetch the small team and match in JS.
+        const team = await prisma.castoTeamMember.findMany({ select: { email: true, focusModules: true } });
+        const owner = team.find((m) => Array.isArray(m.focusModules) && m.focusModules.includes(moduleId));
+        return owner?.email || null;
+    } catch { return null; }
+};
+
+const submitCompanyRequest = async (req, res) => {
+    try {
+        // Resolve the caller's own company — never trust a company name from the body
+        const company = await prisma.company.findUnique({
+            where: { id: req.user?._id || "" },
+            select: { companyName: true },
+        });
+        if (!company?.companyName) return res.status(403).json({ error: "Only a company account can submit requests" });
+        const companyName = company.companyName;
+
+        const { kind } = req.body;
+        const now = new Date();
+
+        if (kind === "equipment") {
+            const items = Array.isArray(req.body.items) ? req.body.items : [];
+            const clean = items
+                .map((i) => ({ item: String(i.item || "").trim(), qty: Math.max(1, Number(i.qty) || 1) }))
+                .filter((i) => i.item);
+            if (clean.length === 0) return res.status(400).json({ error: "Add at least one item" });
+
+            await prisma.$transaction(
+                clean.map((i) => prisma.equipmentRequest.create({ data: {
+                    entityLabel: companyName, item: i.item, qtyRequested: i.qty, qtyFulfilled: 0,
+                    status: "Pending", requestedBy: companyName, updatedBy: companyName, updatedAt: now,
+                }}))
+            );
+            const to = await MODULE_OWNER_EMAIL("equipment");
+            if (to) sendEmail(
+                `New equipment request from ${companyName}`,
+                `<p>${companyName} requested equipment for the Job Fair:</p><ul>${clean.map((i) => `<li>${i.qty} × ${i.item}</li>`).join("")}</ul><p>Review and approve it in Event Operations → Equipment & Logistics.</p>`,
+                to, process.env.EMAIL_USER,
+            );
+            return res.status(200).json({ ok: true, created: clean.length });
+        }
+
+        if (kind === "requirement" || kind === "parking") {
+            const description = String(req.body.description || "").trim();
+            if (!description) return res.status(400).json({ error: "Describe your request" });
+            const category = kind === "parking" ? "Parking" : (String(req.body.category || "").trim() || "General");
+
+            await prisma.specialRequirement.create({ data: {
+                companyName, description, category, priority: "Medium",
+                status: "Open", notes: "Submitted by company", updatedBy: companyName, updatedAt: now,
+            }});
+            const to = await MODULE_OWNER_EMAIL(kind === "parking" ? "passes" : "requirements");
+            if (to) sendEmail(
+                `New ${kind === "parking" ? "parking" : "special"} request from ${companyName}`,
+                `<p>${companyName} submitted a ${kind === "parking" ? "parking" : "special"} request:</p><p><strong>${category}:</strong> ${description}</p><p>Review it in Event Operations.</p>`,
+                to, process.env.EMAIL_USER,
+            );
+            return res.status(200).json({ ok: true, created: 1 });
+        }
+
+        return res.status(400).json({ error: "Unknown request type" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -1853,5 +1971,5 @@ module.exports = {
     checkinByStaff, updateAttendanceStaffProfile, bulkImportCompanies, lookupApplicantByUniId, getMyCheckins,
     getCompanyLoginEmails, addCompanyLoginEmail, removeCompanyLoginEmail, updateCompanyProfile,
     getCastoTeam, inviteCastoTeamMember, updateCastoTeamMember, removeCastoTeamMember,
-    uploadBannerArtwork,
+    uploadBannerArtwork, submitCompanyRequest,
 };
