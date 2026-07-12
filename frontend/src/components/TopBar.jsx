@@ -63,7 +63,7 @@ const TopBar = ({user}) => {
     return (
         <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-1.5 md:py-2 rounded-md transition-all duration-300">
             <div className="user flex flex-row gap-2 items-center">
-                <div className="avatar flex items-center justify-center w-8 h-8 border rounded-md shrink-0">
+                <div className="avatar flex items-center justify-center w-8 h-8 rounded-md shrink-0">
                     {
                         user?.email.split('@')[0] == 'casto'
                         ? <CastoIcon />

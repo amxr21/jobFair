@@ -48,7 +48,7 @@ const NotificationBell = () => {
         <div ref={wrapRef} className="relative">
             <button
                 onClick={toggle}
-                className="relative flex items-center justify-center w-9 h-9 rounded-xl text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+                className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 text-gray-500 hover:text-gray-800 hover:border-gray-300 hover:bg-gray-100 transition-colors"
                 aria-label="Notifications"
                 title="Notifications"
             >
