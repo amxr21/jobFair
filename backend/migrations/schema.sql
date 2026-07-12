@@ -288,6 +288,8 @@ CREATE TABLE equipment_requests (
     qty_requested  INT NULL,
     qty_fulfilled  INT NULL,
     status         ENUM('Pending', 'Partial', 'Fulfilled') NOT NULL DEFAULT 'Pending',
+    -- Company name when raised by a company awaiting CASTO approval; NULL = CASTO-created
+    requested_by   VARCHAR(255) NULL,
     updated_by     VARCHAR(255) NULL,
     updated_at     DATETIME NULL,
 

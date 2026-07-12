@@ -691,12 +691,22 @@ const Managers = ({link}) => {
     useEffect(() => {
         if (user) {
             fetchData();
-            if (!localStorage.getItem(MANAGERS_TOUR_KEY)) {
-                setTimeout(() => setShowTour(true), 800);
-            }
         }
-
     }, [user, link, fetchData]);
+
+    // Start the first-run tour only AFTER the data has loaded and the table has
+    // painted — not on a blind 800ms timer. On a cold load the fetch can take
+    // longer than 800ms, so the old timer fired while the page was still
+    // half-built: the tour measured a mid-render layout and the header looked
+    // "out of order" until a refresh (which hit a warm fetch). Gating on
+    // !isLoading means the tour's targets (search, filters, first row) are all
+    // in place before it appears. The extra frame lets layout settle first.
+    useEffect(() => {
+        if (!user || isLoading) return;
+        if (localStorage.getItem(MANAGERS_TOUR_KEY)) return;
+        const id = setTimeout(() => setShowTour(true), 400);
+        return () => clearTimeout(id);
+    }, [user, isLoading]);
     
 
 
