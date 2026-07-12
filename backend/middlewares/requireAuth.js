@@ -18,7 +18,18 @@ const requireAuth = async (req, res, next) => {
     try {
         const { _id } = jwt.verify(token, process.env.TOKEN_SIGN);
         const company = await prisma.company.findUnique({ where: { id: _id }, select: { id: true, email: true } });
-        req.user = company ? { _id: company.id, email: company.email } : null;
+        // A validly-signed token whose company row no longer exists (deleted
+        // account, stale token from a wiped dev DB) must not fall through as
+        // an authenticated-but-anonymous request — req.user ending up `null`
+        // here previously let the request past requireAuth and into route
+        // handlers, where role checks like isCastoAccount(req) (req.user?.email)
+        // just evaluate to false instead of the 401 this actually is. That
+        // masqueraded as a 403 "not authorized" on CASTO-only writes (e.g.
+        // event-ops booths) instead of the real "please sign in again".
+        if (!company) {
+            return res.status(401).json({ error: "Authorization token is invalid or missing" });
+        }
+        req.user = { _id: company.id, email: company.email };
         next();
     } catch (error) {
         res.status(401).json({ error: "Authorization token is invalid or missing" })
