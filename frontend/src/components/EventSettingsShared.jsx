@@ -111,8 +111,8 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
     <div ref={wrapRef} className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto shrink-0">
       <div
         ref={pillRef}
-        className="absolute top-1 bottom-1 rounded-lg pointer-events-none"
-        style={{ background: "#0E7F41", left: 0, width: 0, transition: "left 0.2s cubic-bezier(0.4,0,0.2,1), width 0.2s cubic-bezier(0.4,0,0.2,1)" }}
+        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none"
+        style={{ background: "#0E7F41", left: 0, width: 0 }}
       />
       {tabs.map((t, i) => (
         <button
@@ -122,6 +122,68 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
           className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
         >{t}</button>
       ))}
+    </div>
+  );
+};
+
+// PillTabs — the same sliding-pill motion as SubTabBar, but for the "main"
+// tab bars (Event Operations, Event Admin) that need per-tab icons/dots and a
+// white-card background instead of the gray sub-tab chrome. Both bars used to
+// hand-roll an instant background swap, which read differently from every
+// SubTabBar in the app; routing them through this one component gives every
+// tab bar a single motion vocabulary (the pill slides between tabs).
+//
+// `tabs`: [{ id, label }]; `activeId`; `onSelect(id)`; optional `renderInner`
+// to add an icon/dot around the label.
+export const PillTabs = ({ tabs, activeId, onSelect, renderInner }) => {
+  const btnRefs = useRef({});
+  const pillRef = useRef(null);
+  const wrapRef = useRef(null);
+
+  const positionPill = useCallback(() => {
+    const btn = btnRefs.current[activeId];
+    const pill = pillRef.current;
+    if (!btn || !pill) { if (pill) pill.style.opacity = "0"; return; }
+    pill.style.opacity = "1";
+    pill.style.left = `${btn.offsetLeft}px`;
+    pill.style.width = `${btn.offsetWidth}px`;
+  }, [activeId]);
+
+  useLayoutEffect(() => {
+    positionPill();
+    const raf = requestAnimationFrame(positionPill);
+    return () => cancelAnimationFrame(raf);
+  }, [positionPill, tabs]);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === "undefined" || !wrapRef.current) return;
+    const ro = new ResizeObserver(() => positionPill());
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, [positionPill]);
+
+  return (
+    <div ref={wrapRef} className="relative flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
+      <div
+        ref={pillRef}
+        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none"
+        style={{ background: "#0E7F41", left: 0, width: 0, opacity: 0 }}
+      />
+      {tabs.map((tab) => {
+        const active = activeId === tab.id;
+        return (
+          <button
+            key={tab.id}
+            ref={(el) => (btnRefs.current[tab.id] = el)}
+            onClick={() => onSelect(tab.id)}
+            className={`relative z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
+              active ? "text-white" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {renderInner ? renderInner(tab, active) : <span>{tab.label}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 };

@@ -525,14 +525,15 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
         <div className="bg-[#F3F6FF] rounded-xl p-4 h-full overflow-hidden flex flex-col">
             {/* Tab Navigation — sliding pill */}
             <div className="relative flex gap-1 mb-4 overflow-x-auto pb-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
-                {/* Sliding pill */}
+                {/* Sliding pill — shared .tab-pill motion (see style.css) plus
+                    an opacity fade for its initial appearance. */}
                 <div
-                    className="absolute top-1 bottom-1 rounded-lg bg-[#0E7F41] shadow-md pointer-events-none"
+                    className="tab-pill absolute top-1 bottom-1 rounded-lg bg-[#0E7F41] shadow-md pointer-events-none"
                     style={{
                         width: pillStyle.width,
                         left: pillStyle.left + 4,
                         opacity: pillStyle.opacity,
-                        transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1), width 0.22s cubic-bezier(0.4,0,0.2,1), opacity 0.15s ease',
+                        transitionProperty: 'left, width, opacity',
                     }}
                 />
                 {tabs.map(tab => (
