@@ -1,6 +1,6 @@
 # Job Fair Portal — Dashboard & Event Operations
 
-A full-stack web application that digitizes and runs a university career fair end to end — applicant registration, company coordination, shortlisting workflows, live analytics, event-day operations (booths, banners, passes, attendance), and a paperless check-in flow.
+A full-stack web application that digitizes and runs a university career fair end to end — applicant registration, company coordination, shortlisting workflows, live analytics, event-day operations (booths, banners, passes, attendance), and a paperless check-in flow. Fully bilingual (English / Arabic with true RTL mirroring) with a designed two-tier dark mode.
 
 🔗 **Live:** [job-fair-control.vercel.app](https://job-fair-control.vercel.app)
 
@@ -126,7 +126,9 @@ A tabbed console covering everything CASTO manages on event day. Each tab is sea
 | **Attribution & audit** | Every operations change records who made it and when, surfaced in the Activity Log. |
 | **Email safety** | Outbound email **off by default** (`EMAIL_ENABLED`); intended sends are logged and auditable at `/dev`. |
 | **Demo mode** | Runs fully in-memory — no database, Cloudinary, or email needed. |
-| **Collapsible top bar** | On the operations page the clock/avatar bar hides by default and reveals on hover, without shifting page content. |
+| **Collapsible top bar** | On the operations pages the clock/avatar bar is visible by default with a small persistent toggle to collapse it back for extra vertical space; the choice is remembered per browser. |
+| **Bilingual (EN/AR) + RTL** | Full English/Arabic translation with a language toggle; Arabic renders true right-to-left — logical layout direction, mirrored icons/animations, correct ICU plural forms, and bidi-safe handling of LTR content (emails, IDs, URLs) embedded in RTL text. |
+| **Dark mode** | A designed two-tier light/dark palette (not a blanket color inversion) with a theme toggle; the choice is user-controlled and remembered per browser. |
 
 ---
 
@@ -151,7 +153,7 @@ All routes are served by the Express backend. Public routes are open; everything
 
 | Layer | Technologies |
 |---|---|
-| Frontend | React, Vite, Tailwind CSS, MUI X-Charts, React Router, Axios |
+| Frontend | React, Vite, Tailwind CSS, MUI X-Charts, React Router, Axios, react-i18next |
 | Backend | Node.js, Express, **Prisma (MySQL / MariaDB)**, JWT, Cloudinary, Nodemailer |
 | Demo data | In-memory store — no database required |
 | Hosting | Vercel (frontend) · Render (backend) |
@@ -237,7 +239,8 @@ jobFair/
 │   ├── src/
 │   │   ├── components/  # Reusable UI (NavBar, Modal, NotificationBell, PageHelp, …)
 │   │   ├── pages/       # Route-level pages (Applicants, Companies, EventOperations, EventAdmin, ViewAs, …)
-│   │   ├── context/     # Auth, EventOps, Notifications
+│   │   ├── context/     # Auth, EventOps, Notifications, Theme
+│   │   ├── i18n/        # en/ar locale files, enum + plural translation helpers
 │   │   └── hooks/
 │   └── .env.example
 │
