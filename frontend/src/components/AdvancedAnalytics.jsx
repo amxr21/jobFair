@@ -1,6 +1,24 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { PieChart } from '@mui/x-charts/PieChart';
 import { BarChart } from '@mui/x-charts/BarChart';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
+
+// A hardcoded light-tier hex used as a chart series/default color throughout
+// this file; call sites read the current theme and pick this file's dark-tier
+// counterpart instead of using the hex directly. Keeps one source of truth
+// for "the brand green as used in a chart series" across every chart here.
+const seriesColor = (hex, isDark) => {
+    const DARK_TIER = {
+        '#0E7F41': '#34C775', // brand green
+        '#0066CC': '#66AAEE', // brand blue
+        '#9333EA': '#c084fc', // purple
+        '#CC0000': '#f87171', // red
+        '#EBC600': '#fcd34d', // yellow
+        '#14B8A6': '#5eead4', // teal
+    };
+    return isDark ? (DARK_TIER[hex] || hex) : hex;
+};
 
 // Hook to get container width
 const useContainerWidth = (ref) => {
@@ -35,6 +53,9 @@ const integerAxis = {
 const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', height = 200 }) => {
     const containerRef = useRef(null);
     const width = useContainerWidth(containerRef);
+    const { isDark } = useTheme();
+    const tickColor = isDark ? '#cbd5e1' : '#374151';
+    const seriesC = seriesColor(color, isDark);
 
     if (layout === 'horizontal') {
         return (
@@ -45,12 +66,12 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
                         yAxis={[{
                             scaleType: 'band',
                             data: data.map(d => d[0]),
-                            tickLabelStyle: { fontSize: 11 }
+                            tickLabelStyle: { fontSize: 11, fill: tickColor }
                         }]}
-                        xAxis={[integerAxis]}
+                        xAxis={[{ ...integerAxis, tickLabelStyle: { fontSize: 11, fill: tickColor } }]}
                         series={[{
                             data: data.map(d => d[1]),
-                            color: color,
+                            color: seriesC,
                             valueFormatter: (v) => `${v}`
                         }]}
                         width={width}
@@ -70,12 +91,12 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
                     xAxis={[{
                         scaleType: 'band',
                         data: data.map(d => d[0]),
-                        tickLabelStyle: { fontSize: 11 }
+                        tickLabelStyle: { fontSize: 11, fill: tickColor }
                     }]}
-                    yAxis={[integerAxis]}
+                    yAxis={[{ ...integerAxis, tickLabelStyle: { fontSize: 11, fill: tickColor } }]}
                     series={[{
                         data: data.map(d => d[1]),
-                        color: color,
+                        color: seriesC,
                         valueFormatter: (v) => `${v}`
                     }]}
                     width={width}
@@ -89,6 +110,8 @@ const ResponsiveBarChart = ({ data, layout = 'vertical', color = '#0E7F41', heig
 };
 
 const AdvancedAnalytics = ({ applicants, companies }) => {
+    const { t } = useTranslation();
+    const { isDark } = useTheme();
     const [activeTab, setActiveTab] = useState('demographics');
     const tabRefs = useRef({});
     const [pillStyle, setPillStyle] = useState({ width: 0, left: 0, opacity: 0 });
@@ -120,7 +143,9 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
     }, [applicants]);
 
     // Color palette matching the theme
-    const colors = ['#0E7F41', '#0066CC', '#CC0000', '#EBC600', '#00B4D8', '#9333EA', '#F97316', '#14B8A6', '#EC4899', '#6366F1'];
+    const colors = (isDark
+        ? ['#34C775', '#66AAEE', '#f87171', '#fcd34d', '#5ce1e6', '#c084fc', '#fb923c', '#5eead4', '#f472b6', '#818cf8']
+        : ['#0E7F41', '#0066CC', '#CC0000', '#EBC600', '#00B4D8', '#9333EA', '#F97316', '#14B8A6', '#EC4899', '#6366F1']);
 
     // ===== DEMOGRAPHICS TAB DATA =====
 
@@ -467,25 +492,25 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
 
     // Tabs without icons
     const tabs = [
-        { id: 'demographics', label: 'Demographics' },
-        { id: 'education', label: 'Education' },
-        { id: 'companies', label: 'Companies' },
-        { id: 'skills', label: 'Skills' },
-        { id: 'recruitment', label: 'Recruitment' },
-        { id: 'profiles', label: 'Profiles' }
+        { id: 'demographics', label: t('advancedAnalytics.tabs.demographics') },
+        { id: 'education', label: t('advancedAnalytics.tabs.education') },
+        { id: 'companies', label: t('advancedAnalytics.tabs.companies') },
+        { id: 'skills', label: t('advancedAnalytics.tabs.skills') },
+        { id: 'recruitment', label: t('advancedAnalytics.tabs.recruitment') },
+        { id: 'profiles', label: t('advancedAnalytics.tabs.profiles') }
     ];
 
-    const StatCard = ({ title, value, subtitle, color = '#0E7F41' }) => (
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500 uppercase tracking-wide">{title}</p>
-            <p className="text-2xl font-bold mt-1" style={{ color }}>{value}</p>
-            {subtitle && <p className="text-xs text-gray-400 mt-1">{subtitle}</p>}
+    const StatCard = ({ title, value, subtitle, color }) => (
+        <div className="bg-surface-card rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{title}</p>
+            <p className={`text-2xl font-bold mt-1 ${color ? "" : "text-primary"}`} style={color ? { color } : undefined}>{value}</p>
+            {subtitle && <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{subtitle}</p>}
         </div>
     );
 
     const ChartContainer = ({ title, children, className = '' }) => (
-        <div className={`bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col ${className}`}>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">{title}</h3>
+        <div className={`bg-surface-card rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col ${className}`}>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{title}</h3>
             <div className="flex-1 min-h-0 w-full">{children}</div>
         </div>
     );
@@ -514,7 +539,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                             className="w-3 h-3 rounded-sm flex-shrink-0"
                             style={{ backgroundColor: item.color || colors[idx % colors.length] }}
                         />
-                        <span className="text-xs text-gray-700">{item.label}: <strong>{item.value}</strong></span>
+                        <span className="text-xs text-gray-700 dark:text-gray-300">{item.label}: <strong>{item.value}</strong></span>
                     </div>
                 ))}
             </div>
@@ -522,18 +547,18 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
     );
 
     return (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 h-full overflow-hidden flex flex-col">
+        <div className="bg-surface rounded-xl p-4 h-full overflow-hidden flex flex-col">
             {/* Tab Navigation — sliding pill */}
-            <div className="relative flex gap-1 mb-4 overflow-x-auto pb-1 bg-white rounded-xl p-1 border border-gray-200 shadow-sm">
+            <div className="relative flex gap-1 mb-4 overflow-x-auto pb-1 bg-surface-card rounded-xl p-1 border border-gray-200 dark:border-gray-700 shadow-sm">
                 {/* Sliding pill — shared .tab-pill motion (see style.css) plus
                     an opacity fade for its initial appearance. */}
                 <div
-                    className="tab-pill absolute top-1 bottom-1 rounded-lg bg-[#0E7F41] shadow-md pointer-events-none"
+                    className="tab-pill absolute top-1 bottom-1 rounded-lg bg-primary shadow-md pointer-events-none"
                     style={{
                         width: pillStyle.width,
-                        left: pillStyle.left + 4,
+                        insetInlineStart: pillStyle.left + 4,
                         opacity: pillStyle.opacity,
-                        transitionProperty: 'left, width, opacity',
+                        transitionProperty: 'inset-inline-start, width, opacity',
                     }}
                 />
                 {tabs.map(tab => (
@@ -542,7 +567,7 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         ref={el => tabRefs.current[tab.id] = el}
                         onClick={() => setActiveTab(tab.id)}
                         className={`relative z-10 px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200 ${
-                            activeTab === tab.id ? 'text-white' : 'text-gray-600 hover:text-gray-900'
+                            activeTab === tab.id ? 'text-primary-contrast' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                         }`}
                     >
                         {tab.label}
@@ -551,30 +576,30 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto pr-1.5 pb-1">
+            <div className="flex-1 min-h-0 overflow-y-auto pe-1.5 pb-1">
                 {/* Demographics Tab */}
                 {activeTab === 'demographics' && (
                     <div className="grid grid-cols-12 gap-4">
                         {/* Gender Distribution - Pie with side legend */}
-                        <ChartContainer title="Gender Distribution" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.genderDistribution')} className="col-span-4">
                             <PieWithLegend data={genderData} />
                         </ChartContainer>
 
                         {/* Nationality Breakdown - Side by side with City */}
-                        <ChartContainer title="Top 10 Nationalities" className="col-span-8 row-span-2">
+                        <ChartContainer title={t('advancedAnalytics.top10Nationalities')} className="col-span-8 row-span-2">
                             <ResponsiveBarChart data={nationalityData} layout="horizontal" color="#0E7F41" />
                         </ChartContainer>
 
                         {/* Attendance Status - Below Gender */}
-                        <ChartContainer title="Attendance Status" className="col-span-4">
+                        <ChartContainer title={t('applicants.columns.status')} className="col-span-4">
                             <PieWithLegend data={[
-                                { id: 0, value: uniqueApplicants.filter(a => a.attended).length, label: 'Attended', color: '#0E7F41' },
-                                { id: 1, value: uniqueApplicants.filter(a => !a.attended).length, label: 'Registered', color: '#E5E7EB' }
+                                { id: 0, value: uniqueApplicants.filter(a => a.attended).length, label: t('advancedAnalytics.attended'), color: '#0E7F41' },
+                                { id: 1, value: uniqueApplicants.filter(a => !a.attended).length, label: t('enums.status.Registered'), color: '#E5E7EB' }
                             ]} />
                         </ChartContainer>
 
                         {/* City Distribution - Full width */}
-                        <ChartContainer title="Applicants by City" className="col-span-12">
+                        <ChartContainer title={t('advancedAnalytics.applicantsByCity')} className="col-span-12">
                             <ResponsiveBarChart data={cityData} layout="horizontal" color="#0066CC" />
                         </ChartContainer>
                     </div>
@@ -584,22 +609,22 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                 {activeTab === 'education' && (
                     <div className="grid grid-cols-12 gap-4">
                         {/* Study Level Distribution - Pie with side legend */}
-                        <ChartContainer title="Study Level Distribution" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.studyLevelDistribution')} className="col-span-4">
                             <PieWithLegend data={studyLevelData} />
                         </ChartContainer>
 
                         {/* GPA Distribution - Bar chart */}
-                        <ChartContainer title="GPA Distribution" className="col-span-8">
+                        <ChartContainer title={t('advancedAnalytics.gpaDistribution')} className="col-span-8">
                             <ResponsiveBarChart data={gpaDistribution} layout="vertical" color="#0E7F41" height={180} />
                         </ChartContainer>
 
                         {/* College Distribution - Half width */}
-                        <ChartContainer title="Applicants by College" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.applicantsByCollege')} className="col-span-6">
                             <ResponsiveBarChart data={collegeData} layout="horizontal" color="#9333EA" />
                         </ChartContainer>
 
                         {/* Major Distribution - Half width */}
-                        <ChartContainer title="Top 10 Majors" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.top10Majors')} className="col-span-6">
                             <ResponsiveBarChart data={majorData} layout="horizontal" color="#0066CC" />
                         </ChartContainer>
                     </div>
@@ -611,69 +636,65 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         {/* Summary Stats */}
                         <div className="col-span-12 grid grid-cols-4 gap-4">
                             <StatCard
-                                title="Total Companies"
+                                title={t('eventOps.requirements.company')}
                                 value={companies?.length || 0}
-                                subtitle="Registered"
-                                color="#0E7F41"
+                                subtitle={t('advancedAnalytics.registered')}
                             />
                             <StatCard
-                                title="Representatives"
+                                title={t('managersCols.reps')}
                                 value={totalRepresentatives}
-                                subtitle="CEOs & Talent Seekers"
-                                color="#0066CC"
+                                subtitle={t('advancedAnalytics.ceosAndSeekers')}
                             />
                             <StatCard
-                                title="Open Positions"
+                                title={t('settings.profile.openPositions')}
                                 value={totalPositions}
-                                subtitle="Available roles"
-                                color="#9333EA"
+                                subtitle={t('advancedAnalytics.availableRoles')}
                             />
                             <StatCard
-                                title="Confirmed"
+                                title={t('enums.status.Confirmed')}
                                 value={companies?.filter(c => c.status === 'Confirmed').length || 0}
-                                subtitle={`${companies?.length > 0 ? ((companies?.filter(c => c.status === 'Confirmed').length / companies.length) * 100).toFixed(0) : 0}% rate`}
-                                color="#14B8A6"
+                                subtitle={t('advancedAnalytics.ratePercent', { pct: companies?.length > 0 ? ((companies?.filter(c => c.status === 'Confirmed').length / companies.length) * 100).toFixed(0) : 0 })}
                             />
                         </div>
 
                         {/* Sector Distribution - Pie */}
-                        <ChartContainer title="Companies by Sector" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.companiesBySector')} className="col-span-4">
                             <PieWithLegend data={companySectorData} />
                         </ChartContainer>
 
                         {/* Opportunity Types - Pie */}
-                        <ChartContainer title="Opportunity Types Offered" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.opportunityTypesOffered')} className="col-span-4">
                             {opportunityTypesData.length > 0 ? (
                                 <PieWithLegend data={opportunityTypesData} />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No opportunity data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noOpportunityData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Companies by City */}
-                        <ChartContainer title="Companies by City" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.companiesByCity')} className="col-span-4">
                             {companyCityData.length > 0 ? (
                                 <ResponsiveBarChart data={companyCityData} layout="vertical" color="#0066CC" height={180} />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No city data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noCityData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Company Fields Distribution */}
-                        <ChartContainer title="Industry Fields" className="col-span-6">
+                        <ChartContainer title={t('settings.profile.industryFields')} className="col-span-6">
                             {companyFieldsData.length > 0 ? (
                                 <ResponsiveBarChart data={companyFieldsData} layout="horizontal" color="#0E7F41" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No fields data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noFieldsData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Preferred Majors by Companies */}
-                        <ChartContainer title="Most Sought After Majors" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.mostSoughtMajors')} className="col-span-6">
                             {preferredMajorsData.length > 0 ? (
                                 <ResponsiveBarChart data={preferredMajorsData} layout="horizontal" color="#9333EA" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No preferred majors data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noPreferredMajorsData')}</p>
                             )}
                         </ChartContainer>
                     </div>
@@ -683,46 +704,46 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                 {activeTab === 'skills' && (
                     <div className="grid grid-cols-12 gap-4">
                         {/* Technical Skills */}
-                        <ChartContainer title="Top Technical Skills (Applicants)" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.topTechSkills')} className="col-span-6">
                             {techSkillsData.length > 0 ? (
                                 <ResponsiveBarChart data={techSkillsData} layout="horizontal" color="#0E7F41" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No technical skills data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noTechSkillsData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Non-Technical Skills */}
-                        <ChartContainer title="Top Non-Technical Skills (Applicants)" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.topNonTechSkills')} className="col-span-6">
                             {nonTechSkillsData.length > 0 ? (
                                 <ResponsiveBarChart data={nonTechSkillsData} layout="horizontal" color="#0066CC" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No non-technical skills data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noNonTechSkillsData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Languages */}
-                        <ChartContainer title="Languages Spoken by Applicants" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.languagesSpokenByApplicants')} className="col-span-6">
                             {languagesData.length > 0 ? (
                                 <ResponsiveBarChart data={languagesData} layout="horizontal" color="#9333EA" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No language data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noLanguageData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Experience Rate Card */}
-                        <ChartContainer title="Work Experience Status" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.workExperienceStatus')} className="col-span-6">
                             <div className="flex flex-col gap-4">
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <span className="text-sm text-gray-700">With Experience</span>
-                                    <span className="text-lg font-bold text-[#0E7F41]">{experienceRate.withExp}</span>
+                                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('advancedAnalytics.withExperience')}</span>
+                                    <span className="text-lg font-bold text-primary">{experienceRate.withExp}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                    <span className="text-sm text-gray-700">No Experience</span>
-                                    <span className="text-lg font-bold text-gray-400">{experienceRate.withoutExp}</span>
+                                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('advancedAnalytics.noExperience')}</span>
+                                    <span className="text-lg font-bold text-gray-400 dark:text-gray-500">{experienceRate.withoutExp}</span>
                                 </div>
-                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                    <span className="text-sm text-gray-700">Experience Rate</span>
-                                    <span className="text-lg font-bold text-[#0E7F41]">{experienceRate.percentage}%</span>
+                                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-500/15 rounded-lg">
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{t('advancedAnalytics.experienceRate')}</span>
+                                    <span className="text-lg font-bold text-primary">{experienceRate.percentage}%</span>
                                 </div>
                             </div>
                         </ChartContainer>
@@ -735,76 +756,72 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         {/* Summary Stats */}
                         <div className="col-span-12 grid grid-cols-4 gap-4">
                             <StatCard
-                                title="Total Shortlisted"
+                                title={t('advancedAnalytics.totalShortlisted')}
                                 value={applicants?.filter(a => a.shortlistedBy?.length > 0).length || 0}
-                                subtitle="By any company"
-                                color="#0066CC"
+                                subtitle={t('advancedAnalytics.byAnyCompany')}
                             />
                             <StatCard
-                                title="Total Flagged"
+                                title={t('advancedAnalytics.totalFlagged')}
                                 value={applicants?.filter(a => a.flags?.length > 0).length || 0}
-                                subtitle="Interesting candidates"
-                                color="#0E7F41"
+                                subtitle={t('advancedAnalytics.interestingCandidates')}
                             />
                             <StatCard
-                                title="Total Rejected"
+                                title={t('advancedAnalytics.totalRejected')}
                                 value={applicants?.filter(a => a.rejectedBy?.length > 0).length || 0}
-                                subtitle="By any company"
-                                color="#CC0000"
+                                subtitle={t('advancedAnalytics.byAnyCompany')}
                             />
                             <StatCard
-                                title="Conversion Rate"
+                                title={t('advancedAnalytics.conversionRate')}
                                 value={`${uniqueApplicants.length > 0 ? ((applicants?.filter(a => a.shortlistedBy?.length > 0).length / uniqueApplicants.length) * 100).toFixed(1) : 0}%`}
-                                subtitle="Shortlist rate"
-                                color="#9333EA"
+                                subtitle={t('advancedAnalytics.shortlistRate')}
                             />
                         </div>
 
                         {/* Most Applied Companies - Half width */}
-                        <ChartContainer title="Most Applied Companies" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.mostAppliedCompanies')} className="col-span-6">
                             {companyPopularity.length > 0 ? (
                                 <ResponsiveBarChart data={companyPopularity} layout="horizontal" color="#0E7F41" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No application data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noApplicationData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Shortlist by Company - Half width */}
-                        <ChartContainer title="Shortlists by Company" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.shortlistsByCompany')} className="col-span-6">
                             {shortlistData.length > 0 ? (
                                 <ResponsiveBarChart data={shortlistData} layout="horizontal" color="#0066CC" />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No shortlist data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noShortlistData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Flag Heat Map */}
-                        <ChartContainer title="Most Flagged Applicants" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.mostFlaggedApplicants')} className="col-span-6">
                             {flagData.length > 0 ? (
                                 <div className="space-y-2 max-h-64 overflow-y-auto">
                                     {flagData.map((item, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-medium text-gray-700 truncate">{item.name}</p>
-                                                <p className="text-xs text-gray-400 truncate" title={item.companies}>{item.companies}</p>
+                                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{item.name}</p>
+                                                <p className="text-xs text-gray-400 dark:text-gray-500 truncate" title={item.companies}>{item.companies}</p>
                                             </div>
-                                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold ml-2 flex-shrink-0">
-                                                {item.count} flags
+                                            <span className="bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full text-xs font-bold ms-2 flex-shrink-0">
+                                                {t('advancedAnalytics.flagsCount', { count: item.count })}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No flagged applicants</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noFlaggedApplicants')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Sector Demand */}
-                        <ChartContainer title="Applications by Sector" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.applicationsBySector')} className="col-span-6">
                             {sectorDemand.length > 0 ? (
                                 <ResponsiveBarChart data={sectorDemand} layout="vertical" color="#0066CC" height={220} />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No sector data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noSectorData')}</p>
                             )}
                         </ChartContainer>
                     </div>
@@ -816,70 +833,66 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
                         {/* Profile Completion Stats */}
                         <div className="col-span-12 grid grid-cols-4 gap-4">
                             <StatCard
-                                title="CV Upload Rate"
+                                title={t('advancedAnalytics.cvUploadRate')}
                                 value={`${cvRate.percentage}%`}
-                                subtitle={`${cvRate.withCV} of ${uniqueApplicants.length}`}
-                                color="#0E7F41"
+                                subtitle={t('advancedAnalytics.xOfY', { x: cvRate.withCV, y: uniqueApplicants.length })}
                             />
                             <StatCard
-                                title="LinkedIn Profile Rate"
+                                title={t('advancedAnalytics.linkedInProfileRate')}
                                 value={`${linkedInRate.percentage}%`}
-                                subtitle={`${linkedInRate.withProfile} of ${uniqueApplicants.length}`}
-                                color="#0066CC"
+                                subtitle={t('advancedAnalytics.xOfY', { x: linkedInRate.withProfile, y: uniqueApplicants.length })}
                             />
                             <StatCard
-                                title="Experience Rate"
+                                title={t('advancedAnalytics.experienceRate')}
                                 value={`${experienceRate.percentage}%`}
-                                subtitle={`${experienceRate.withExp} with experience`}
-                                color="#9333EA"
+                                subtitle={t('advancedAnalytics.withExperienceCount', { count: experienceRate.withExp })}
                             />
                             <StatCard
-                                title="Confirmed Attendance"
+                                title={t('advancedAnalytics.confirmedAttendance')}
                                 value={uniqueApplicants.filter(a => a.attended).length}
-                                subtitle={`${((uniqueApplicants.filter(a => a.attended).length / uniqueApplicants.length) * 100 || 0).toFixed(1)}% rate`}
-                                color="#14B8A6"
+                                subtitle={t('advancedAnalytics.ratePercent', { pct: ((uniqueApplicants.filter(a => a.attended).length / uniqueApplicants.length) * 100 || 0).toFixed(1) })}
                             />
                         </div>
 
                         {/* CV Stats Pie with side legend */}
-                        <ChartContainer title="CV Upload Status" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.cvUploadStatus')} className="col-span-4">
                             <PieWithLegend data={[
-                                { id: 0, value: cvRate.withCV, label: 'Has CV', color: '#0E7F41' },
-                                { id: 1, value: cvRate.withoutCV, label: 'No CV', color: '#E5E7EB' }
+                                { id: 0, value: cvRate.withCV, label: t('advancedAnalytics.hasCv'), color: '#0E7F41' },
+                                { id: 1, value: cvRate.withoutCV, label: t('advancedAnalytics.noCv'), color: '#E5E7EB' }
                             ]} />
                         </ChartContainer>
 
                         {/* LinkedIn Stats Pie with side legend */}
-                        <ChartContainer title="LinkedIn Profile Status" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.linkedInProfileStatus')} className="col-span-4">
                             <PieWithLegend data={[
-                                { id: 0, value: linkedInRate.withProfile, label: 'Has LinkedIn', color: '#0066CC' },
-                                { id: 1, value: linkedInRate.withoutProfile, label: 'No LinkedIn', color: '#E5E7EB' }
+                                { id: 0, value: linkedInRate.withProfile, label: t('advancedAnalytics.hasLinkedIn'), color: '#0066CC' },
+                                { id: 1, value: linkedInRate.withoutProfile, label: t('advancedAnalytics.noLinkedIn'), color: '#E5E7EB' }
                             ]} />
                         </ChartContainer>
 
                         {/* Experience Stats Pie with side legend */}
-                        <ChartContainer title="Work Experience Status" className="col-span-4">
+                        <ChartContainer title={t('advancedAnalytics.workExperienceStatus')} className="col-span-4">
                             <PieWithLegend data={[
-                                { id: 0, value: experienceRate.withExp, label: 'Has Experience', color: '#9333EA' },
-                                { id: 1, value: experienceRate.withoutExp, label: 'No Experience', color: '#E5E7EB' }
+                                { id: 0, value: experienceRate.withExp, label: t('advancedAnalytics.hasExperience'), color: '#9333EA' },
+                                { id: 1, value: experienceRate.withoutExp, label: t('advancedAnalytics.noExperience'), color: '#E5E7EB' }
                             ]} />
                         </ChartContainer>
 
                         {/* Expected Graduation Timeline */}
-                        <ChartContainer title="Expected Graduation Timeline" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.expectedGraduationTimeline')} className="col-span-6">
                             {graduationData.length > 0 ? (
                                 <ResponsiveBarChart data={graduationData} layout="vertical" color="#9333EA" height={200} />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No graduation data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noGraduationData')}</p>
                             )}
                         </ChartContainer>
 
                         {/* Languages Distribution */}
-                        <ChartContainer title="Languages Spoken" className="col-span-6">
+                        <ChartContainer title={t('advancedAnalytics.languagesSpoken')} className="col-span-6">
                             {languagesData.length > 0 ? (
                                 <ResponsiveBarChart data={languagesData} layout="vertical" color="#14B8A6" height={200} />
                             ) : (
-                                <p className="text-gray-400 text-sm text-center py-8">No language data available</p>
+                                <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-8">{t('advancedAnalytics.noLanguageData')}</p>
                             )}
                         </ChartContainer>
                     </div>

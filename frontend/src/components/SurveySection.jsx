@@ -216,13 +216,13 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
             {
                 section == 0
                 ?
-                page == 'survey' && <button ref={nextSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
+                page == 'survey' && <button ref={nextSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-surface-card rounded-xl border border-line icon-directional">
                     <NextSectionIcon />
                 </button>
                 :
                 page == 'survey' &&<>
                     <div className={`flex w-full justify-between`}>
-                        <button ref={prevSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-white rounded-xl border">
+                        <button ref={prevSectionBtn} onClick={scrollSection} className="button w-10 h-10 p-2.5 bg-surface-card rounded-xl border border-line icon-directional">
                             <PrevSectionIcon />
                         </button>
                         <SubmitSurveyButton />

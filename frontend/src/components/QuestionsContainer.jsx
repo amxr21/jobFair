@@ -1,10 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 import { SurveyContext } from "../context/SurveyContext";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL as link } from "../config/api";
 import CompactSelect from "./CompactSelect";
+import { tSurveyQuestion, tSurveyOption, tSurveyPart, tSurveySection } from "../i18n/surveyContent";
+import { useTheme } from "../context/ThemeContext";
 
 // ─── Survey definition (must match the live survey exactly) ────────────────────
 
@@ -66,28 +69,30 @@ const OPTION_COLORS = ["#0E7F41", "#EBC600", "#CC0000"];
 
 // ─── Building blocks ───────────────────────────────────────────────────────────
 
-const StatTile = ({ label, value, sub, color = "#0E7F41" }) => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1 min-w-0">
-    <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-    <p className="text-2xl font-bold truncate" style={{ color }}>{value}</p>
-    {sub && <p className="text-xs text-gray-400 truncate">{sub}</p>}
+const StatTile = ({ label, value, sub, color }) => (
+  <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-1 min-w-0">
+    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">{label}</p>
+    <p className={`text-2xl font-bold truncate ${color ? "" : "text-primary"}`} style={color ? { color } : undefined}>{value}</p>
+    {sub && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{sub}</p>}
   </div>
 );
 
 const ResponseDonut = ({ responded, total }) => {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
   const pct = total > 0 ? responded / total : 0;
   const R = 42, C = 2 * Math.PI * R;
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+    <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex items-center gap-4">
       <svg width="96" height="96" viewBox="0 0 96 96" className="shrink-0 -rotate-90">
-        <circle cx="48" cy="48" r={R} fill="none" stroke="#eef1f6" strokeWidth="10" />
-        <circle cx="48" cy="48" r={R} fill="none" stroke="#0E7F41" strokeWidth="10" strokeLinecap="round"
+        <circle cx="48" cy="48" r={R} fill="none" stroke={isDark ? "#374151" : "#eef1f6"} strokeWidth="10" />
+        <circle cx="48" cy="48" r={R} fill="none" stroke={isDark ? "#34C775" : "#0E7F41"} strokeWidth="10" strokeLinecap="round"
           strokeDasharray={`${C * pct} ${C}`} style={{ transition: "stroke-dasharray 0.6s ease" }} />
       </svg>
       <div className="min-w-0">
-        <p className="text-2xl font-bold text-gray-800">{Math.round(pct * 100)}%</p>
-        <p className="text-xs text-gray-500 font-medium">Response rate</p>
-        <p className="text-xs text-gray-400 mt-0.5">{responded} of {total} companies answered</p>
+        <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{Math.round(pct * 100)}%</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("surveyResults.responseRate")}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{t("surveyResults.respondedOfTotal", { responded, total })}</p>
       </div>
     </div>
   );
@@ -100,12 +105,12 @@ const DistributionBars = ({ options, counts, total }) => (
       const pct = total > 0 ? Math.round((count / total) * 100) : 0;
       return (
         <div key={opt} className="flex items-center gap-2">
-          <span className="w-40 text-xs text-gray-600 truncate shrink-0" title={opt}>{opt}</span>
-          <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+          <span className="w-40 text-xs text-gray-600 dark:text-gray-400 truncate shrink-0" title={tSurveyOption(opt)}>{tSurveyOption(opt)}</span>
+          <div className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
             <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: OPTION_COLORS[i] || "#9ca3af" }} />
           </div>
-          <span className="w-14 text-right text-xs text-gray-500 tabular-nums shrink-0">
-            <span className="font-semibold text-gray-700">{count}</span> · {pct}%
+          <span className="w-14 text-end text-xs text-gray-500 dark:text-gray-400 tabular-nums shrink-0">
+            <span className="font-semibold text-gray-700 dark:text-gray-300">{count}</span> · {pct}%
           </span>
         </div>
       );
@@ -113,11 +118,13 @@ const DistributionBars = ({ options, counts, total }) => (
   </div>
 );
 
-const QuestionCard = ({ index, question, agg, respondedCount }) => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3 min-w-0">
+const QuestionCard = ({ index, question, agg, respondedCount }) => {
+  const { t } = useTranslation();
+  return (
+  <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3 min-w-0">
     <div className="flex items-start gap-2">
-      <span className="w-6 h-6 rounded-lg bg-[#0E7F41]/10 text-[#0E7F41] text-[11px] font-bold flex items-center justify-center shrink-0">{index}</span>
-      <p className="text-xs font-semibold text-gray-700 leading-snug">{question.text}</p>
+      <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center shrink-0">{index}</span>
+      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-snug">{tSurveyQuestion(question.id, question.text)}</p>
     </div>
 
     {question.type === "multiple_choice" && (
@@ -127,18 +134,18 @@ const QuestionCard = ({ index, question, agg, respondedCount }) => (
     {question.type === "numeric" && (
       <div className="flex items-center gap-6">
         <div>
-          <p className="text-2xl font-bold text-[#0E7F41]">{agg.numeric.reduce((a, n) => a + n.value, 0)}</p>
-          <p className="text-xs text-gray-400">Total reported</p>
+          <p className="text-2xl font-bold text-primary">{agg.numeric.reduce((a, n) => a + n.value, 0)}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">{t("surveyResults.totalReported")}</p>
         </div>
         <div>
-          <p className="text-2xl font-bold text-[#2959A6]">
+          <p className="text-2xl font-bold text-secondary">
             {agg.numeric.length ? (agg.numeric.reduce((a, n) => a + n.value, 0) / agg.numeric.length).toFixed(1) : "0"}
           </p>
-          <p className="text-xs text-gray-400">Average per company</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500">{t("surveyResults.averagePerCompany")}</p>
         </div>
-        <div className="flex flex-wrap gap-1 ml-auto max-w-[45%]">
+        <div className="flex flex-wrap gap-1 ms-auto max-w-[45%]">
           {agg.numeric.map((n) => (
-            <span key={n.company} title={n.company} className="text-[10px] bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">
+            <span key={n.company} title={n.company} className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2 py-0.5">
               {n.company.split(" ")[0]}: <b>{n.value}</b>
             </span>
           ))}
@@ -147,26 +154,31 @@ const QuestionCard = ({ index, question, agg, respondedCount }) => (
     )}
 
     {question.type === "open_ended" && (
-      <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto pr-1">
-        {agg.answers.length === 0 && <p className="text-xs text-gray-400">No written answers yet</p>}
+      <div className="flex flex-col gap-1.5 max-h-44 overflow-y-auto pe-1">
+        {agg.answers.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-500">{t("surveyResults.noWrittenAnswers")}</p>}
         {agg.answers.map((a, i) => (
-          <div key={i} className="bg-gray-50 rounded-lg px-3 py-2">
-            <p className="text-xs text-gray-600 leading-relaxed">“{a.text}”</p>
-            <p className="text-[10px] text-gray-400 mt-1 font-medium">— {a.company}</p>
+          <div key={i} className="bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">“{a.text}”</p>
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-medium">— {a.company}</p>
           </div>
         ))}
       </div>
     )}
 
-    <p className="text-[10px] text-gray-300 mt-auto">
-      {question.type === "open_ended" ? `${agg.answers.length}` : question.type === "numeric" ? `${agg.numeric.length}` : `${agg.answered}`} of {respondedCount} respondents
+    <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-auto">
+      {t("surveyResults.answeredOfRespondents", {
+        answered: question.type === "open_ended" ? agg.answers.length : question.type === "numeric" ? agg.numeric.length : agg.answered,
+        total: respondedCount,
+      })}
     </p>
   </div>
-);
+  );
+};
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
 const QuestionsContainer = () => {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { setAllResponses } = useContext(SurveyContext);
 
@@ -284,11 +296,11 @@ const QuestionsContainer = () => {
   const numberFor = (() => { const m = {}; let n = 0; ALL_QUESTIONS.forEach((q) => { m[q.id] = ++n; }); return m; })();
 
   const PartTabs = () => (
-    <div className="flex bg-gray-100 rounded-xl p-1 gap-1 w-fit">
+    <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1 w-fit">
       {SURVEY_PARTS.map((p, i) => (
         <button key={i} onClick={() => setPart(i)}
-          className={`px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors ${part === i ? "bg-[#0E7F41] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
-          {p.title}
+          className={`px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors ${part === i ? "bg-primary text-primary-contrast shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}>
+          {tSurveyPart(p.title)}
         </button>
       ))}
     </div>
@@ -298,35 +310,35 @@ const QuestionsContainer = () => {
     <div className="flex flex-col gap-3 flex-1 h-full overflow-hidden p-3 md:p-0">
       {/* Mode switch + visibility toggle */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shrink-0">
-        <div className="flex bg-white border border-gray-200 rounded-xl p-1 gap-1 shadow-sm">
-          {[["summary", "Summary"], ["details", "By Company"]].map(([m, label]) => (
+        <div className="flex bg-surface-card border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-1 shadow-sm">
+          {[["summary", t("surveyResults.summary")], ["details", t("surveyResults.byCompany")]].map(([m, label]) => (
             <button key={m} onClick={() => setMode(m)}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${mode === m ? "bg-[#0E7F41] text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${mode === m ? "bg-primary text-primary-contrast shadow-sm" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}>
               {label}
             </button>
           ))}
         </div>
 
         {user?.email === "casto@sharjah.ac.ae" && (
-          <div className="flex items-center gap-2 md:gap-3 bg-white rounded-xl px-3 md:px-4 py-2 border shadow-sm">
-            <span className="text-xs md:text-sm text-gray-600 hidden sm:inline">Survey:</span>
+          <div className="flex items-center gap-2 md:gap-3 bg-surface-card rounded-xl px-3 md:px-4 py-2 border border-gray-200 dark:border-gray-700 shadow-sm">
+            <span className="text-xs md:text-sm text-gray-600 dark:text-gray-400 hidden sm:inline">{t("surveyResults.surveyLabel")}</span>
             <button
               onClick={toggleSurveyVisibility}
               disabled={isTogglingVisibility}
-              className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:ring-offset-2 ${
-                surveyPublic ? "bg-[#0E7F41]" : "bg-gray-300"
+              className={`relative h-6 w-11 flex-shrink-0 rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                surveyPublic ? "bg-primary" : "bg-gray-300 dark:bg-gray-600"
               } ${isTogglingVisibility ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
             >
-              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300 ease-in-out ${surveyPublic ? "left-[1.375rem]" : "left-0.5"}`} />
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all duration-300 ease-in-out ${surveyPublic ? "start-[1.375rem]" : "start-0.5"}`} />
             </button>
-            <span className={`text-xs md:text-sm font-medium ${surveyPublic ? "text-[#0E7F41]" : "text-gray-500"}`}>
-              {surveyPublic ? "Public" : "Hidden"}
+            <span className={`text-xs md:text-sm font-medium ${surveyPublic ? "text-primary" : "text-gray-500 dark:text-gray-400"}`}>
+              {surveyPublic ? t("surveyResults.public") : t("surveyResults.hidden")}
             </span>
           </div>
         )}
       </div>
 
-      <div className="bg-[#F3F6FF] flex-1 rounded-xl overflow-y-auto min-h-0">
+      <div className="bg-surface flex-1 rounded-xl overflow-y-auto min-h-0">
         <div className="flex flex-col gap-4 p-3 md:p-5">
 
           {mode === "summary" && (
@@ -334,9 +346,9 @@ const QuestionsContainer = () => {
               {/* Headline stats */}
               <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 <div className="col-span-2 lg:col-span-2"><ResponseDonut responded={responders.length} total={invited.length} /></div>
-                <StatTile label="Responses" value={responders.length} sub={`${pending.length} still pending`} />
-                <StatTile label="Students Hired" value={totalHired} sub="Reported by companies" color="#2959A6" />
-                <StatTile label="Shortlisted" value={totalShortlisted} sub="For interviews / next steps" color="#8b5cf6" />
+                <StatTile label={t("surveyResults.responses")} value={responders.length} sub={t("surveyResults.stillPending", { count: pending.length })} />
+                <StatTile label={t("surveyResults.studentsHired")} value={totalHired} sub={t("surveyResults.reportedByCompanies")} />
+                <StatTile label={t("surveyResults.shortlistedLabel")} value={totalShortlisted} sub={t("surveyResults.forInterviews")} />
               </div>
 
               {/* Companies that haven't answered yet */}
@@ -367,15 +379,15 @@ const QuestionsContainer = () => {
                 <div key={section.title} className="flex flex-col gap-3">
                   {section.title && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{section.title}</p>
+                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{tSurveySection(section.title)}</p>
                       {sentiment != null && (
                         <span
                           className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${
-                            sentiment >= 70 ? "bg-green-100 text-green-700" : sentiment >= 40 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-600"
+                            sentiment >= 70 ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-300" : sentiment >= 40 ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300" : "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-300"
                           }`}
-                          title="Share of top-option (most positive) answers across this section's multiple-choice questions"
+                          title={t("surveyResults.sentimentHint")}
                         >
-                          {sentiment}% positive
+                          {t("surveyResults.percentPositive", { pct: sentiment })}
                         </span>
                       )}
                     </div>
@@ -394,9 +406,9 @@ const QuestionsContainer = () => {
           {mode === "details" && (
             <>
               {/* Company navigator */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 flex-wrap sticky top-0 z-10">
+              <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3 flex items-center gap-3 flex-wrap sticky top-0 z-10">
                 <button onClick={() => setDetailIdx((i) => Math.max(0, i - 1))} disabled={detailIdx === 0}
-                  className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors flex items-center justify-center">
+                  className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center icon-directional">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
                 </button>
                 <div className="flex-1 min-w-[160px] max-w-xs">
@@ -407,30 +419,30 @@ const QuestionsContainer = () => {
                   />
                 </div>
                 <button onClick={() => setDetailIdx((i) => Math.min(responders.length - 1, i + 1))} disabled={detailIdx >= responders.length - 1}
-                  className="w-8 h-8 rounded-lg border border-gray-200 text-gray-500 disabled:opacity-30 hover:bg-gray-50 transition-colors flex items-center justify-center">
+                  className="w-8 h-8 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center icon-directional">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
                 </button>
-                <span className="text-xs text-gray-400 tabular-nums">{responders.length ? detailIdx + 1 : 0} of {responders.length}</span>
-                <div className="ml-auto"><PartTabs /></div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 tabular-nums">{t("surveyResults.ofCount", { current: responders.length ? detailIdx + 1 : 0, total: responders.length })}</span>
+                <div className="ms-auto"><PartTabs /></div>
               </div>
 
               {!detailCompany && (
-                <div className="bg-white rounded-xl border border-gray-100 p-8 text-center text-sm text-gray-400">
-                  No survey responses yet.
+                <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 p-8 text-center text-sm text-gray-400 dark:text-gray-500">
+                  {t("surveyResults.noResponsesYet")}
                 </div>
               )}
 
               {detailCompany && SURVEY_PARTS[part].sections.map((section) => (
                 <div key={section.title} className="flex flex-col gap-3">
-                  {section.title && <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{section.title}</p>}
+                  {section.title && <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{tSurveySection(section.title)}</p>}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {section.questions.map((q) => {
                       const answer = detailAnswers[q.text];
                       return (
-                        <div key={q.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2.5">
+                        <div key={q.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-2.5">
                           <div className="flex items-start gap-2">
-                            <span className="w-6 h-6 rounded-lg bg-[#0E7F41]/10 text-[#0E7F41] text-[11px] font-bold flex items-center justify-center shrink-0">{numberFor[q.id]}</span>
-                            <p className="text-xs font-semibold text-gray-700 leading-snug">{q.text}</p>
+                            <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-[11px] font-bold flex items-center justify-center shrink-0">{numberFor[q.id]}</span>
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 leading-snug">{tSurveyQuestion(q.id, q.text)}</p>
                           </div>
                           {q.type === "multiple_choice" && (
                             <div className="flex gap-1.5 flex-wrap">
@@ -438,13 +450,13 @@ const QuestionsContainer = () => {
                                 const chosen = answer === opt;
                                 return (
                                   <span key={opt} className={`text-xs rounded-full px-3 py-1 border font-medium transition-colors ${
-                                    chosen ? "text-white border-transparent" : "text-gray-400 border-gray-200 bg-white"
+                                    chosen ? "text-white border-transparent" : "text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-600 bg-surface-card"
                                   }`} style={chosen ? { background: OPTION_COLORS[i] || "#0E7F41" } : {}}>
-                                    {opt}
+                                    {tSurveyOption(opt)}
                                   </span>
                                 );
                               })}
-                              {!answer && <span className="text-xs text-gray-300 italic py-1">Not answered</span>}
+                              {!answer && <span className="text-xs text-gray-300 dark:text-gray-600 italic py-1">{t("surveyResults.notAnswered")}</span>}
                             </div>
                           )}
                           {q.type === "numeric" && (

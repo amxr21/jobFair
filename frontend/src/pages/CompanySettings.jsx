@@ -39,10 +39,10 @@ const CardHead = ({ title, desc, action }) => (
     </div>
 );
 
-const Field = ({ label, value, mono = false }) => (
+const Field = ({ label, value, mono = false, ltr = false }) => (
     <div className="flex flex-col gap-0.5 min-w-0">
         <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{label}</span>
-        <span className={`text-sm text-gray-700 truncate ${mono ? "font-mono" : ""}`}>{value || <span className="text-gray-300">—</span>}</span>
+        <span className={`text-sm text-gray-700 truncate ${mono ? "font-mono" : ""} ${ltr ? "bidi-ltr" : ""}`}>{value || <span className="text-gray-300">—</span>}</span>
     </div>
 );
 
@@ -235,8 +235,8 @@ const CompanySettings = () => {
                                     {!editing ? (
                                         <div className="flex flex-col gap-5">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <Field label={t("settings.profile.loginEmail")} value={companyData?.email} />
-                                                <Field label={t("settings.profile.phone")} value={companyData?.phone} />
+                                                <Field label={t("settings.profile.loginEmail")} value={companyData?.email} ltr />
+                                                <Field label={t("settings.profile.phone")} value={companyData?.phone} ltr />
                                                 <Field label={t("settings.profile.city")} value={tCity(companyData?.city)} />
                                                 <Field label={t("settings.profile.sector")} value={tSector(companyData?.sector)} />
                                                 <Field label={t("settings.profile.openPositions")} value={companyData?.noOfPositions} />
@@ -342,12 +342,12 @@ const CompanySettings = () => {
                                 <div className="p-4 md:p-5 flex flex-col gap-3">
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
-                                            <span className="font-medium text-gray-700 truncate">{companyData?.email}</span>
+                                            <span className="font-medium text-gray-700 truncate bidi-ltr">{companyData?.email}</span>
                                             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide shrink-0 ms-2">{t("settings.access.primary")}</span>
                                         </div>
                                         {loginEmails.map((e) => (
                                             <div key={e.id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
-                                                <span className="text-gray-700 truncate">{e.email}</span>
+                                                <span className="text-gray-700 truncate bidi-ltr">{e.email}</span>
                                                 <button onClick={() => removeEmail(e)} className="text-red-500 hover:text-red-700 font-semibold text-xs shrink-0 ms-2">{t("common.remove")}</button>
                                             </div>
                                         ))}
