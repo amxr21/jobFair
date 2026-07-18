@@ -1,8 +1,10 @@
 import { useContext, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { SurveyContext } from "../context/SurveyContext"
 
 const SurveyHeader = () => {
 
+    const { t } = useTranslation()
     const { surveyAnswers } = useContext(SurveyContext)
     
     
@@ -30,10 +32,10 @@ const SurveyHeader = () => {
 
 
     return (
-        <div className="pb-5 border-b flex flex-col gap-3">
-            <h1 className="text-3xl font-bold mb-2">Exit Survey of Internship and Career Fair 2025</h1>
-            <div className="w-full min-h-2 rounded-xl bg-gray-100 overflow-hidden">
-                <div style={{width: `${complete}%`}} className={`transition-all ease-in-out smooth duration-300 bg-[#0E7F41] h-full`}>
+        <div className="pb-5 border-b border-line flex flex-col gap-3">
+            <h1 className="text-3xl font-bold mb-2 text-fg">{t("survey.pageTitle")}</h1>
+            <div className="w-full min-h-2 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                <div style={{width: `${complete}%`}} className={`transition-all ease-in-out smooth duration-300 bg-primary h-full`}>
 
                 </div>
             </div>

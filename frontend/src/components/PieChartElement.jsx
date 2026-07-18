@@ -29,10 +29,10 @@ const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
     const { data: currentData, colors: currentColors } = getCurrentData();
 
     return (
-        <div className="bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
+        <div className="bg-surface-card rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
             {/* Header with title and filter in same row */}
             <div className="flex items-center justify-between mb-1">
-                <h2 className="text-xs font-medium text-gray-700">{title}</h2>
+                <h2 className="text-xs font-medium text-gray-700 dark:text-gray-300">{title}</h2>
                 <FieldFilter dataCategory={dataCategory} />
             </div>
 
@@ -70,7 +70,7 @@ const PieChartElement = ({title, dataset, colorsPair, dataCategory}) => {
                                 className="w-3 h-3 rounded flex-shrink-0"
                                 style={{ backgroundColor: currentColors[index % currentColors.length] }}
                             />
-                            <span className="text-xs font-medium">{item.label}: {item.value}</span>
+                            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{item.label}: {item.value}</span>
                         </div>
                     ))}
                 </div>

@@ -1,34 +1,20 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { StudentIcon, CompanyIcon, FieldIcon, SeekerIcon } from "./Icons";
 import CountUp from "./CountUp";
 
 const sample = [
-  {
-    header: "81",
-    subheader: "Registered Students",
-    icon: StudentIcon,
-  },
-  {
-    header: "36",
-    subheader: "Companies",
-    icon: CompanyIcon,
-  },
-  {
-    header: "8",
-    subheader: "CEO’s & Talent seekers",
-    icon: SeekerIcon,
-  },
-  {
-    header: "10",
-    subheader: "Tech fields",
-    icon: FieldIcon,
-  },
+  { header: "81", subheaderKey: "registeredStudents", icon: StudentIcon },
+  { header: "36", subheaderKey: "companies", icon: CompanyIcon },
+  { header: "8", subheaderKey: "ceosAndSeekers", icon: SeekerIcon },
+  { header: "10", subheaderKey: "techFields", icon: FieldIcon },
 ];
 
 const StatisticsElement = ({ data = {}, type }) => {
+  const { t } = useTranslation();
   const [icon, setIcon] = useState(sample[0].icon);
   const [header, setHeader] = useState(sample[0].header);
-  const [subheader, setSubheader] = useState(sample[0].subheader);
+  const [subheader, setSubheader] = useState(t(`statisticsElement.${sample[0].subheaderKey}`));
 
   const managers = Array.isArray(data.managers) ? data.managers : [];
   const applicantsRaw = Array.isArray(data.applicants) ? data.applicants : [];
@@ -88,37 +74,37 @@ const StatisticsElement = ({ data = {}, type }) => {
         // applicants is already filtered to unique latest entries
         setIcon(StudentIcon);
         setHeader(applicants.length);
-        setSubheader("Registered Students");
+        setSubheader(t("statisticsElement.registeredStudents"));
         break;
 
       case "companies":
         setIcon(CompanyIcon);
         setHeader(managers.length);
-        setSubheader("Companies");
+        setSubheader(t("statisticsElement.companies"));
         break;
 
       case "seekers":
         setIcon(SeekerIcon);
         setHeader(representativesCount);
-        setSubheader("CEO's & Talent seekers");
+        setSubheader(t("statisticsElement.ceosAndSeekers"));
         break;
 
       case "fields":
         setIcon(FieldIcon);
         setHeader(fieldsNumber);
-        setSubheader("Tech fields");
+        setSubheader(t("statisticsElement.techFields"));
         break;
 
       default:
         // Fallback to sample[0] just in case
         setIcon(sample[0].icon);
         setHeader(sample[0].header);
-        setSubheader(sample[0].subheader);
+        setSubheader(t(`statisticsElement.${sample[0].subheaderKey}`));
     }
-  }, [type, managers, applicants, representativesCount, fieldsNumber]);
+  }, [type, managers, applicants, representativesCount, fieldsNumber, t]);
 
   return (
-    <div className="statistics-element col-span-1 lg:col-span-3 flex gap-1.5 md:gap-2 bg-white p-1.5 md:p-2 h-fit rounded-lg">
+    <div className="statistics-element col-span-1 lg:col-span-3 flex gap-1.5 md:gap-2 bg-surface-card p-1.5 md:p-2 h-fit rounded-lg">
       <div className="icon h-7 w-7 md:h-8 md:w-8 shrink-0">
         <img src={icon} alt="icon" className="h-full w-full" />
       </div>

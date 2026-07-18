@@ -1,6 +1,13 @@
+import { useTranslation } from "react-i18next";
+
+// Horizontal progress timeline. Uses flex so it auto-mirrors in RTL (past steps
+// stay on the "start" side, future steps on the "end" side). Step titles arrive
+// as props (English) but are looked up in the `steps` namespace so the visible
+// label is translated; unknown titles fall back to the raw prop value.
 const StepTimeline = ({ currentStep, steps }) => {
+  const { t } = useTranslation();
   return (
-    <div className="w-8/10 px-6 mx-auto py-5 border-b border-gray-100 shrink-0 transition-all duration-300 ease-in-out">
+    <div className="w-8/10 px-6 mx-auto py-5 border-b border-line shrink-0 transition-all duration-300 ease-in-out">
       <div className="w-full flex items-center">
         {steps.map((s, idx) => (
           <div key={s.num} className={`flex items-center transition-all duration-300 ease-in-out ${idx < steps.length - 1 ? 'flex-1' : ''}`}>
@@ -8,10 +15,10 @@ const StepTimeline = ({ currentStep, steps }) => {
             <div className="flex flex-col items-center shrink-0 transition-all duration-300 ease-in-out">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-in-out ${
                 s.num === currentStep
-                  ? 'bg-[#0E7F41] text-white shadow-md scale-110'
+                  ? 'bg-primary text-primary-contrast shadow-md scale-110'
                   : s.num < currentStep
-                    ? 'bg-[#0E7F41]/20 text-[#0E7F41]'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-400'
               }`}>
                 {s.num < currentStep ? (
                   <svg className="w-5 h-5 transition-all duration-300 ease-in-out" fill="currentColor" viewBox="0 0 20 20">
@@ -19,14 +26,14 @@ const StepTimeline = ({ currentStep, steps }) => {
                   </svg>
                 ) : s.num}
               </div>
-              <span className={`text-xs mt-1.5 font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${s.num === currentStep ? 'text-[#0E7F41]' : 'text-gray-400'}`}>
-                {s.title}
+              <span className={`text-xs mt-1.5 font-medium whitespace-nowrap transition-all duration-300 ease-in-out ${s.num === currentStep ? 'text-primary' : 'text-gray-400'}`}>
+                {t(`steps.${s.title}`, s.title)}
               </span>
             </div>
 
             {/* Connector Line - takes full available space */}
             {idx < steps.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ease-in-out ${s.num < currentStep ? 'bg-[#0E7F41]/40' : 'bg-gray-200'}`} />
+              <div className={`flex-1 h-0.5 mx-4 transition-all duration-300 ease-in-out ${s.num < currentStep ? 'bg-primary/40' : 'bg-gray-200 dark:bg-gray-700'}`} />
             )}
           </div>
         ))}

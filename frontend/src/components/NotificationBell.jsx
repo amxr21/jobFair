@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useNotifications, formatNotifTime } from "../context/NotificationsContext";
 
 // Per-type accent + glyph. Kept small and inline so the bell has no external
@@ -14,6 +15,7 @@ const TYPE_META = {
 };
 
 const NotificationBell = () => {
+    const { t } = useTranslation();
     const { items, unreadCount, markAllRead, markRead, remove, clearAll } = useNotifications();
     const [open, setOpen] = useState(false);
     const wrapRef = useRef(null);
@@ -56,19 +58,19 @@ const NotificationBell = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
                 {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    <span className="absolute -top-0.5 -end-0.5 min-w-[16px] h-[16px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                         {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
                 )}
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-[320px] max-w-[86vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden animate-[fadeIn_0.12s_ease]">
+                <div className="absolute end-0 mt-2 w-[320px] max-w-[86vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden animate-[fadeIn_0.12s_ease]">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-bold text-gray-800">Notifications</p>
+                        <p className="text-sm font-bold text-gray-800">{t("notifications.title")}</p>
                         {items.length > 0 && (
                             <button onClick={clearAll} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">
-                                Clear all
+                                {t("notifications.clearAll")}
                             </button>
                         )}
                     </div>
@@ -76,8 +78,8 @@ const NotificationBell = () => {
                     <div className="max-h-[60vh] overflow-y-auto">
                         {items.length === 0 ? (
                             <div className="px-4 py-10 text-center">
-                                <p className="text-sm text-gray-400">You're all caught up</p>
-                                <p className="text-[11px] text-gray-300 mt-1">New activity will show up here.</p>
+                                <p className="text-sm text-gray-400">{t("notifications.allCaughtUp")}</p>
+                                <p className="text-[11px] text-gray-300 mt-1">{t("notifications.newActivity")}</p>
                             </div>
                         ) : (
                             items.map((n) => {

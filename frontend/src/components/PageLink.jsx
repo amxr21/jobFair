@@ -28,21 +28,16 @@ const PageLink = ({ title, icon, link, itemRef, matchPaths = [] }) => {
         <Link to={link} ref={itemRef} data-active={isActive || undefined} className="relative block">
             <div className="page-link cursor-pointer flex gap-x-3 items-center relative z-10">
                 <div
-                    className="flex items-center justify-center w-8 h-8 rounded-xl shrink-0 [&>svg]:w-4 [&>svg]:h-4"
-                    style={{
-                        color: isActive ? '#ffffff' : '#9ca3af',
-                        transition: 'color 0.2s ease 0.05s',
-                    }}
+                    className={`flex items-center justify-center w-8 h-8 rounded-xl shrink-0 [&>svg]:w-4 [&>svg]:h-4 transition-colors ${
+                        isActive ? 'text-primary-contrast' : 'text-gray-400 dark:text-gray-500'
+                    }`}
                 >
                     {ICON_MAP[icon] ?? <Survey />}
                 </div>
                 <h2
-                    className="title text-sm leading-none"
-                    style={{
-                        color: isActive ? '#0E7F41' : '#6b7280',
-                        fontWeight: isActive ? 600 : 400,
-                        transition: 'color 0.25s ease, font-weight 0.15s ease',
-                    }}
+                    className={`title text-sm leading-none transition-colors ${
+                        isActive ? 'text-primary font-semibold' : 'text-gray-500 dark:text-gray-400 font-normal'
+                    }`}
                 >
                     {title}
                 </h2>

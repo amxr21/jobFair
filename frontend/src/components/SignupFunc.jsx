@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSignUp } from "../hooks/useSignUp";
 import { Input, SelectInput, MultiSelectInput, StepTimeline, AuthFormOverlay } from "../components";
 import { INDUSTRY_FIELDS } from "./MultiSelectInput";
+import { tCity, tSector, tIndustryField, tMajor } from "../i18n/translateEnum";
 import axios from "axios";
 import { API_URL } from "../config/api";
 
 const SignupFunc = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -55,7 +58,7 @@ const SignupFunc = () => {
       const existingEmails = response.data.map(company => company.email?.toLowerCase());
 
       if (existingEmails.includes(emailToCheck.toLowerCase())) {
-        setEmailError("This email is already registered");
+        setEmailError(t("auth.signup.emailTaken"));
       }
     } catch (error) {
       // Silently fail - backend will catch duplicates anyway
@@ -121,7 +124,7 @@ const SignupFunc = () => {
       }
     } catch (error) {
       console.error("Error reinitializing company:", error);
-      alert(error.response?.data?.error || "Failed to update company. Please try again.");
+      alert(error.response?.data?.error || t("auth.signup.updateCompanyFailed"));
     } finally {
       setIsReinitializing(false);
     }
@@ -175,7 +178,13 @@ const SignupFunc = () => {
     );
   };
 
-  const opportunityOptions = ["Full-time", "Part-time", "Internship", "Co-op", "Graduate Program"];
+  const opportunityOptions = [
+    { value: "Full-time", label: t("auth.signup.opportunityOptions.fullTime") },
+    { value: "Part-time", label: t("auth.signup.opportunityOptions.partTime") },
+    { value: "Internship", label: t("auth.signup.opportunityOptions.internship") },
+    { value: "Co-op", label: t("auth.signup.opportunityOptions.coOp") },
+    { value: "Graduate Program", label: t("auth.signup.opportunityOptions.graduateProgram") },
+  ];
 
   const stepInfo = [
     { num: 1, title: "Account", desc: "Company details" },
@@ -220,7 +229,7 @@ const SignupFunc = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+    <div className="w-full h-full bg-white dark:bg-gray-900 rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
       <StepTimeline currentStep={step} steps={stepInfo} />
 
       {/* Form Content */}
@@ -229,20 +238,20 @@ const SignupFunc = () => {
           {/* Step 1: Company Info */}
           {step === 1 && (
             <div className="flex flex-col gap-3 transition-all duration-300 ease-in-out animate-fadeIn">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1 transition-all duration-300 ease-in-out">Company Information</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1 transition-all duration-300 ease-in-out">{t("auth.signup.step1.companyInformation")}</h3>
               <Input
                 Id="companyName"
-                Name="Company Name"
+                Name={t("auth.signup.step1.companyName")}
                 Type="text"
                 Value={companyName}
                 handleChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Enter your company name"
+                placeholder={t("auth.signup.step1.companyNamePlaceholder")}
               />
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative">
                   <Input
                     Id="email"
-                    Name="Email"
+                    Name={t("auth.signup.step1.email")}
                     Type="email"
                     Value={email}
                     handleChange={(e) => {
@@ -250,10 +259,10 @@ const SignupFunc = () => {
                       setEmailError("");
                     }}
                     onBlur={() => checkEmailAvailability(email)}
-                    placeholder="company@example.com"
+                    placeholder={t("auth.signup.step1.emailPlaceholder")}
                   />
                   {isCheckingEmail && (
-                    <div className="absolute right-2 top-7 text-gray-400">
+                    <div className="absolute end-2 top-7 text-gray-400">
                       <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -261,23 +270,23 @@ const SignupFunc = () => {
                     </div>
                   )}
                   {emailError && (
-                    <p className="text-xs text-red-500 mt-0.5 ml-1 animate-fadeIn">{emailError}</p>
+                    <p className="text-xs text-red-500 mt-0.5 ms-1 animate-fadeIn">{emailError}</p>
                   )}
                 </div>
                 <Input
                   Id="password"
-                  Name="Password"
+                  Name={t("auth.signup.step1.password")}
                   Type="password"
                   Value={password}
                   handleChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create password"
+                  placeholder={t("auth.signup.step1.passwordPlaceholder")}
                 />
               </div>
 
               {/* Representatives Section */}
               <div className="mt-2 transition-all duration-300 ease-in-out">
-                <label className="text-xs text-gray-600 ml-1 block mb-0.5 transition-all duration-300 ease-in-out">
-                  Number of Representatives <span className="text-red-500">*</span>
+                <label className="text-xs text-gray-600 dark:text-gray-400 ms-1 block mb-0.5 transition-all duration-300 ease-in-out">
+                  {t("auth.signup.step1.numberOfRepresentatives")} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2 transition-all duration-300 ease-in-out">
                   {[1, 2, 3].map((num) => (
@@ -288,7 +297,7 @@ const SignupFunc = () => {
                       className={`w-10 h-9 rounded-lg border text-sm font-medium transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 ${
                         numRepresentatives === String(num)
                           ? 'bg-[#0E7F41] text-white border-[#0E7F41] shadow-md'
-                          : 'bg-white text-gray-600 border-gray-300 hover:border-[#0E7F41] hover:shadow-sm'
+                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#0E7F41] hover:shadow-sm'
                       }`}
                     >
                       {num}
@@ -303,11 +312,11 @@ const SignupFunc = () => {
                     <Input
                       key={idx}
                       Id={`rep${idx + 1}`}
-                      Name={`Representative ${idx + 1} Name`}
+                      Name={t("auth.signup.step1.representativeName", { num: idx + 1 })}
                       Type="text"
                       Value={repNames[idx]}
                       handleChange={(e) => handleRepNameChange(idx, e.target.value)}
-                      placeholder={`Full name of representative ${idx + 1}`}
+                      placeholder={t("auth.signup.step1.representativeNamePlaceholder", { num: idx + 1 })}
                     />
                   ))}
                 </div>
@@ -318,34 +327,37 @@ const SignupFunc = () => {
           {/* Step 2: Company Type */}
           {step === 2 && (
             <div className="flex flex-col gap-3 transition-all duration-300 ease-in-out animate-fadeIn">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1 transition-all duration-300 ease-in-out">Company Profile</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1 transition-all duration-300 ease-in-out">{t("auth.signup.step2.companyProfile")}</h3>
               <MultiSelectInput
                 Id="fields"
-                Name="Industry Fields"
+                Name={t("auth.signup.step2.industryFields")}
                 options={INDUSTRY_FIELDS}
                 value={fields}
                 handleChange={setFields}
-                placeholder="Search and select industry fields..."
+                placeholder={t("auth.signup.step2.industryFieldsPlaceholder")}
+                tOption={tIndustryField}
               />
               <div className="grid grid-cols-2 gap-3">
                 <SelectInput
                   Id="sector"
-                  Name="Sector"
+                  Name={t("auth.signup.step2.sector")}
                   options={["Local", "Private", "Semi", "Federal"]}
                   value={sector}
                   handleChange={(e) => setSector(e.target.value)}
+                  tOption={tSector}
                 />
                 <SelectInput
                   Id="city"
-                  Name="City"
+                  Name={t("auth.signup.step2.city")}
                   options={["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Umm Al-Quwain", "AlFujairah"]}
                   value={city}
                   handleChange={(e) => setCity(e.target.value)}
+                  tOption={tCity}
                 />
               </div>
               <SelectInput
                 Id="noOfPositions"
-                Name="Available Positions"
+                Name={t("auth.signup.step2.availablePositions")}
                 options={["1-5", "5-10", "10-15", "15-20", ">20"]}
                 value={noOfPositions}
                 handleChange={(e) => setNoOfPositions(e.target.value)}
@@ -356,45 +368,46 @@ const SignupFunc = () => {
           {/* Step 3: Hiring Preferences */}
           {step === 3 && (
             <div className="flex flex-col gap-3 transition-all duration-300 ease-in-out animate-fadeIn">
-              <h3 className="text-lg font-semibold text-gray-800 mb-1 transition-all duration-300 ease-in-out">Hiring Preferences</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-1 transition-all duration-300 ease-in-out">{t("auth.signup.step3.hiringPreferences")}</h3>
               <MultiSelectInput
                 Id="preferredMajors"
-                Name="Preferred Majors"
+                Name={t("auth.signup.step3.preferredMajors")}
                 value={preferredMajors}
                 handleChange={setPreferredMajors}
-                placeholder="Search and select majors..."
+                placeholder={t("auth.signup.step3.preferredMajorsPlaceholder")}
+                tOption={tMajor}
               />
               <div className="transition-all duration-300 ease-in-out">
-                <label className="text-xs text-gray-600 ml-1 block mb-1.5 transition-all duration-300 ease-in-out">
-                  Opportunity Types <span className="text-red-500">*</span>
+                <label className="text-xs text-gray-600 dark:text-gray-400 ms-1 block mb-1.5 transition-all duration-300 ease-in-out">
+                  {t("auth.signup.step3.opportunityTypes")} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-wrap gap-1.5 transition-all duration-300 ease-in-out">
-                  {opportunityOptions.map((type) => (
+                  {opportunityOptions.map(({ value, label }) => (
                     <button
-                      key={type}
+                      key={value}
                       type="button"
-                      onClick={() => handleOpportunityTypeChange(type)}
+                      onClick={() => handleOpportunityTypeChange(value)}
                       className={`px-3 py-1.5 text-xs rounded-lg border transition-all duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                        opportunityTypes.includes(type)
+                        opportunityTypes.includes(value)
                           ? 'bg-[#0E7F41] text-white border-[#0E7F41] shadow-md'
-                          : 'bg-gray-50 text-gray-600 border-gray-300 hover:border-[#0E7F41] hover:shadow-sm'
+                          : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#0E7F41] hover:shadow-sm'
                       }`}
                     >
-                      {type}
+                      {label}
                     </button>
                   ))}
                 </div>
               </div>
               <div className="transition-all duration-300 ease-in-out">
-                <label className="text-xs text-gray-600 ml-1 block mb-0.5 transition-all duration-300 ease-in-out">
-                  Ideal Candidate Qualities <span className="text-red-500">*</span>
+                <label className="text-xs text-gray-600 dark:text-gray-400 ms-1 block mb-0.5 transition-all duration-300 ease-in-out">
+                  {t("auth.signup.step3.idealCandidateQualities")} <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={preferredQualities}
                   onChange={(e) => setPreferredQualities(e.target.value)}
-                  placeholder="Describe your ideal candidate (e.g., Strong communication skills, Team player)"
+                  placeholder={t("auth.signup.step3.idealCandidateQualitiesPlaceholder")}
                   rows={3}
-                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:border-transparent resize-none transition-all duration-300 ease-in-out hover:border-gray-400"
+                  className="w-full px-2.5 py-1.5 text-sm border border-gray-300 dark:border-gray-600 bg-surface-card text-fg rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0E7F41] focus:border-transparent resize-none transition-all duration-300 ease-in-out hover:border-gray-400"
                 />
               </div>
             </div>
@@ -402,22 +415,22 @@ const SignupFunc = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 transition-all duration-300 ease-in-out animate-fadeIn">
+            <div className="mt-3 bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 text-xs rounded-lg px-3 py-2 transition-all duration-300 ease-in-out animate-fadeIn">
               {error}
             </div>
           )}
         </div>
 
         {/* Navigation Buttons */}
-        <div className="px-6 py-4 border-t border-gray-100 shrink-0 transition-all duration-300 ease-in-out">
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 shrink-0 transition-all duration-300 ease-in-out">
           <div className="flex gap-3 transition-all duration-300 ease-in-out">
             {step > 1 && (
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex items-center justify-center w-12 h-10 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95"
+                className="flex items-center justify-center w-12 h-10 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 ease-in-out hover:scale-105 active:scale-95"
               >
-                <svg className="w-5 h-5 transition-all duration-300 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 icon-directional transition-all duration-300 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -428,23 +441,23 @@ const SignupFunc = () => {
               className="flex-1 flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white font-medium h-10 rounded-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
             >
               {isLoading ? (
-                "Creating..."
+                t("auth.signup.creating")
               ) : step < 3 ? (
                 <>
-                  <span>Continue</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>{t("auth.signup.continue")}</span>
+                  <svg className="w-5 h-5 icon-directional" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </>
               ) : (
-                "Create Account"
+                t("auth.signup.createAccount")
               )}
             </button>
           </div>
-          <div className="text-center mt-4 text-sm text-gray-600 transition-all duration-300 ease-in-out">
-            <span>Already have an account? </span>
+          <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-300 transition-all duration-300 ease-in-out">
+            <span>{t("auth.signup.alreadyHaveAccount")} </span>
             <a href="/login" className="text-[#0E7F41] hover:underline font-medium transition-all duration-300 ease-in-out">
-              Log in here
+              {t("auth.signup.logInHere")}
             </a>
           </div>
         </div>
@@ -452,29 +465,29 @@ const SignupFunc = () => {
 
       {/* Loading Overlay */}
       {isLoading && !isRedirecting && (
-        <AuthFormOverlay type="loading" message="Creating account..." />
+        <AuthFormOverlay type="loading" message={t("auth.signup.creatingAccount")} />
       )}
 
       {/* Redirect Overlay */}
       {isRedirecting && (
-        <AuthFormOverlay type="redirect" message="Account created!" />
+        <AuthFormOverlay type="redirect" message={t("auth.signup.accountCreated")} />
       )}
 
       {/* Similar Company Dialog */}
       {showSimilarCompanyDialog && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-2xl">
-          <div className="bg-white rounded-xl p-5 m-4 max-w-md w-full shadow-2xl animate-fadeIn">
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-5 m-4 max-w-md w-full shadow-2xl animate-fadeIn">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-yellow-100 rounded-full">
-                <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-500/15 rounded-full">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h3 className="text-base font-semibold text-gray-800">Similar Company Found</h3>
+              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{t("auth.signup.similarCompanyDialog.title")}</h3>
             </div>
 
-            <p className="text-sm text-gray-600 mb-4">
-              We found companies with similar names. If your company already has an account, you can update it instead of creating a new one.
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              {t("auth.signup.similarCompanyDialog.message")}
             </p>
 
             <div className="max-h-40 overflow-y-auto mb-4 space-y-2">
@@ -484,17 +497,17 @@ const SignupFunc = () => {
                   onClick={() => setSelectedExistingCompany(selectedExistingCompany === company.id ? null : company.id)}
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
                     selectedExistingCompany === company.id
-                      ? 'border-[#0E7F41] bg-green-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-[#0E7F41] bg-green-50 dark:bg-primary/10'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{company.companyName}</p>
-                      <p className="text-xs text-gray-500">{company.email}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate" dir="auto">{company.companyName}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate bidi-ltr">{company.email}</p>
                     </div>
                     {selectedExistingCompany === company.id && (
-                      <svg className="w-5 h-5 text-[#0E7F41]" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-[#0E7F41] shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -517,14 +530,14 @@ const SignupFunc = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Updating Account...
+                      {t("auth.signup.similarCompanyDialog.updatingAccount")}
                     </>
                   ) : (
                     <>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                       </svg>
-                      Update This Account
+                      {t("auth.signup.similarCompanyDialog.updateThisAccount")}
                     </>
                   )}
                 </button>
@@ -537,17 +550,17 @@ const SignupFunc = () => {
                   await proceedWithSignup();
                 }}
                 disabled={isLoading}
-                className="w-full py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                className="w-full py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                {isLoading ? "Creating..." : "No, Create New Account"}
+                {isLoading ? t("auth.signup.creating") : t("auth.signup.similarCompanyDialog.noCreateNewAccount")}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowSimilarCompanyDialog(false)}
-                className="w-full py-2 text-gray-500 text-sm hover:text-gray-700 transition-colors"
+                className="w-full py-2 text-gray-500 dark:text-gray-400 text-sm hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
               >
-                Cancel
+                {t("auth.signup.similarCompanyDialog.cancel")}
               </button>
             </div>
           </div>
@@ -556,13 +569,13 @@ const SignupFunc = () => {
 
       {/* Checking Company Name Overlay */}
       {isCheckingCompanyName && (
-        <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-40 rounded-2xl">
+        <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 flex items-center justify-center z-40 rounded-2xl">
           <div className="flex items-center gap-3">
             <svg className="animate-spin w-6 h-6 text-[#0E7F41]" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span className="text-sm text-gray-600">Checking company name...</span>
+            <span className="text-sm text-gray-600 dark:text-gray-300">{t("auth.signup.checkingCompanyName")}</span>
           </div>
         </div>
       )}

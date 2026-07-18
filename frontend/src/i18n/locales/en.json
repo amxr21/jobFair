@@ -1,0 +1,1696 @@
+{
+  "nav": {
+    "applicants": "Applicants",
+    "myStatus": "My Status",
+    "settings": "Settings",
+    "survey": "Survey",
+    "managers": "Companies",
+    "statistics": "Statistics",
+    "surveyResults": "Survey Results",
+    "eventSettings": "Event Settings",
+    "mobile": {
+      "status": "Status",
+      "stats": "Stats",
+      "survey": "Survey"
+    },
+    "logOut": "Log out",
+    "logIn": "Log in",
+    "signUp": "Sign up"
+  },
+  "topbar": {
+    "castoOffice": "CASTO Office",
+    "visitor": "Visitor",
+    "managerMode": "Manager mode",
+    "guestMode": "Guest mode",
+    "hide": "Hide top bar",
+    "show": "Show top bar"
+  },
+  "theme": { "light": "Light mode", "dark": "Dark mode" },
+  "lang": { "label": "Language" },
+  "steps": {
+    "Account": "Account",
+    "Profile": "Profile",
+    "Preferences": "Preferences"
+  },
+  "common": {
+    "save": "Save",
+    "saveChanges": "Save changes",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "remove": "Remove",
+    "add": "Add",
+    "saving": "Saving…",
+    "loading": "Loading…",
+    "search": "Search",
+    "somethingWentWrong": "Something went wrong",
+    "reloadPage": "Reload page",
+    "notSpecified": "Not specified",
+    "none": "None",
+    "gotIt": "Got it",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "send": "Send",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "openInMaps": "Open in Maps",
+    "mapPreview": "Map preview",
+    "updatedBy": "Updated by",
+    "retry": "Retry",
+    "success": "Success",
+    "couldntLoad": "Couldn't load {{what}}",
+    "itemsFallback": "items",
+    "tryAgain": "Try again",
+    "loadLabels": {
+      "items": "items",
+      "applicants": "applicants",
+      "companies": "companies"
+    },
+    "loadingApplicants": "Loading applicants",
+    "loadingCompanies": "Loading companies",
+    "signingYouIn": "Signing you in…",
+    "fab": {
+      "actions": "Actions",
+      "registerApplicant": "Register Applicant",
+      "confirmAttendance": "Confirm Attendance"
+    },
+    "select": "Select…",
+    "noOptions": "No options"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "clearAll": "Clear all",
+    "allCaughtUp": "You're all caught up",
+    "newActivity": "New activity will show up here."
+  },
+  "applicants": {
+    "title": "Applicants list",
+    "searchPlaceholder": "Search by name…",
+    "myApplicants": "My Applicants",
+    "mine": "Mine",
+    "otherApplicants": "Other Applicants",
+    "others": "Others",
+    "loadAll": "Load all",
+    "backToPages": "← Pages",
+    "prevPage": "Previous 50 applicants",
+    "nextPage": "Next 50 applicants",
+    "startTour": "Start feature tour",
+    "viewingMine": "Viewing your applicants",
+    "viewingOther": "Viewing other applicants",
+    "columns": {
+      "name": "Name",
+      "university": "University ",
+      "id": "ID",
+      "nationality": "Nationality",
+      "cgpa": "CGPA",
+      "major": "Major",
+      "cv": "CV",
+      "status": "Status"
+    },
+    "filterDropdown": {
+      "filterApplicants": "Filter Applicants",
+      "clearAll": "Clear all",
+      "categories": {
+        "status": "Attendance Status",
+        "major": "Major",
+        "nationality": "Nationality",
+        "city": "City",
+        "studyLevel": "Study Level",
+        "cgpaRange": "CGPA Range",
+        "expectedGraduation": "Expected Graduation",
+        "experience": "Experience",
+        "languages": "Languages",
+        "technicalSkills": "Technical Skills",
+        "hasCV": "CV Status",
+        "shortlisted": "Shortlisted",
+        "rejected": "Rejected",
+        "flagged": "Flagged"
+      },
+      "values": {
+        "3.0 - 3.49": "3.0 - 3.49",
+        "2.5 - 2.99": "2.5 - 2.99",
+        "2.0 - 2.49": "2.0 - 2.49",
+        "Below 2.0": "Below 2.0",
+        "Confirmed": "Confirmed",
+        "Registered": "Registered",
+        "Has CV": "Has CV",
+        "No CV": "No CV",
+        "Shortlisted": "Shortlisted",
+        "Not Shortlisted": "Not Shortlisted",
+        "Rejected": "Rejected",
+        "Not Rejected": "Not Rejected",
+        "Has Experience": "Has Experience",
+        "No Experience": "No Experience",
+        "Has Skills": "Has Skills",
+        "No Skills": "No Skills",
+        "Flagged": "Flagged",
+        "Not Flagged": "Not Flagged"
+      }
+    }
+  },
+  "managersCols": {
+    "company": "Company ",
+    "name": "Name",
+    "email": "Email",
+    "reps": "Reps",
+    "city": "City",
+    "sector": "Sector",
+    "apps": "Apps",
+    "status": "Status"
+  },
+  "tour": {
+    "skip": "Skip tour",
+    "next": "Next",
+    "back": "← Back",
+    "done": "✓ Done",
+    "tipLabel": "Tip",
+    "close": "Close",
+    "applicants": [
+      {
+        "title": "Search applicants by name or ID",
+        "body": "Type any part of a full name or university ID to instantly filter the list. Results update live as you type — no need to press Enter or submit anything.",
+        "tip": "The search is case-insensitive. Clearing the field restores all applicants immediately."
+      },
+      {
+        "title": "Flag filter — focus on your shortlist",
+        "body": "Click the flag icon to show only the applicants you have personally flagged for follow-up. Click it again to return to the full list. Flags are private to your account and persist across sessions.",
+        "tip": "You can flag any applicant by expanding their row and clicking the flag icon inside."
+      },
+      {
+        "title": "Advanced filters — narrow down fast",
+        "body": "Open the filter panel to filter by major, nationality, CGPA range, attendance status, CV presence, shortlist/rejection status, languages, skills, expected graduation, and more. Multiple filters stack — only applicants matching ALL selected criteria appear.",
+        "tip": "Active filters show as blue chips at the top. Click × on any chip to remove it, or \"Clear all\" to reset everything."
+      },
+      {
+        "title": "Sort by any column",
+        "body": "Click any column header — Name, University ID, Nationality, CGPA, Major, or Status — to sort the list by that column. Click the same header again to reverse the sort order. An arrow indicator shows which column is active.",
+        "tip": "CGPA sorts highest-first by default. Sorting is applied on top of any active filters."
+      },
+      {
+        "title": "Expand a row — full applicant profile",
+        "body": "Click the ↗ expand icon on the right of any row to open that applicant's full profile. Inside you can: view their QR code, download their CV, see all personal and academic details, and take actions — shortlist, reject, flag, or undo any of those.",
+        "tip": "Shortlisted and rejected statuses are visible to all company managers. Flags are private to you only."
+      },
+      {
+        "title": "Register & confirm attendance",
+        "body": "\"Register an Applicant\" opens a QR scanner — scan a student's printed QR code to link them to your company's applicant list. \"Confirm Attendance\" scans their QR a second time to mark them as physically present at the fair. Both actions require camera access.",
+        "tip": "Allow camera permissions when prompted. You can also confirm attendance from inside the expanded applicant row."
+      }
+    ],
+    "managers": [
+      {
+        "title": "Search companies by name",
+        "body": "Type any part of a company name to instantly filter the list. Results update live as you type. The search matches against the full registered company name.",
+        "tip": "Search is case-insensitive and works alongside any active filters."
+      },
+      {
+        "title": "Filter companies",
+        "body": "Open the filter panel to filter by attendance status (Pending / Confirmed / Canceled), sector (Private / Federal / Semi / Local), city, industry fields, whether they have registered applicants, and reminder email status. Combine multiple filters to zero in on a subset.",
+        "tip": "Use \"Reminder Status: Not Sent\" to quickly surface companies that haven't been contacted yet."
+      },
+      {
+        "title": "Send confirmation reminder emails",
+        "body": "Opens a modal listing all pending companies. Select individual companies or use \"Select All Pending\" to batch-select, then click Send. Each selected company receives a confirmation link by email. Sent timestamps appear next to each company.",
+        "tip": "Only companies with Pending status appear in the reminder modal. Already-confirmed companies are excluded."
+      },
+      {
+        "title": "Sort companies by any column",
+        "body": "Click any column header — Company Name, Email, Representatives, Sector, City, No. of Applicants, or Status — to sort. Click again to reverse. Use \"No. of Applicants\" to see which companies are attracting the most student interest.",
+        "tip": "Sorting by Status groups Confirmed, Pending, and Canceled companies together for easy batch review."
+      },
+      {
+        "title": "Expand a company row — full profile & actions",
+        "body": "Click the ↗ expand icon on any row to open the full company profile. View their delegate list, preferred majors, opportunity types, and applicants. You can also directly change their attendance status — Confirm, Cancel, or Reset to Pending — from this panel.",
+        "tip": "Status changes take effect immediately. The company receives no automatic notification when you change their status manually here."
+      }
+    ]
+  },
+  "help": {
+    "aboutThisPage": "About this page",
+    "relatedPages": "Related pages",
+    "whatIsThisPage": "What is this page?",
+    "pages": {
+      "/": {
+        "title": "Applicants",
+        "tagline": "Browse, search, and action everyone who registered.",
+        "body": [
+          "This is the live list of everyone who registered for the Job Fair. Search by name (matches are highlighted), filter, and open any applicant to see their full profile, CV, and QR ticket.",
+          "As a company you can shortlist, flag, or reject applicants — each action is confirmed in your notification bell. CASTO sees every applicant across all companies."
+        ]
+      },
+      "/managers": {
+        "title": "Companies & Cooperations",
+        "tagline": "Every registered company, searchable and expandable.",
+        "body": [
+          "Every registered company in one place. Search by name (matches highlight as you type), filter by sector or field, and expand a company to see its profile, representatives, applicants, and admin actions.",
+          "Use Send Reminders to nudge companies, and open a company card for full details or to cancel/delete a record."
+        ]
+      },
+      "/statistics": {
+        "title": "Statistics",
+        "tagline": "Aggregate insight across applicants and companies.",
+        "body": [
+          "Aggregate insight across all applicants and companies — demographics, majors, GPA spread, attendance, and more. Use the filters to slice the data."
+        ]
+      },
+      "/company-status": {
+        "title": "My Status",
+        "tagline": "Your booth, passes, schedule, and check-in.",
+        "body": [
+          "Your company's home for the event. The Overview tab shows your profile and applicant count; the Event Day tab shows your booth QR, banners, parking slot, entry passes, the event schedule, and lets you raise special requirements.",
+          "When you arrive, check in by scanning your booth QR or tapping \"I've arrived\" on the Event Day tab."
+        ]
+      },
+      "/company-settings": {
+        "title": "Company Settings",
+        "tagline": "Profile, login access, and display preferences.",
+        "body": [
+          "Edit your company profile, manage login access, confirm your attendance status, and adjust display preferences (font and size)."
+        ]
+      },
+      "/event-settings": {
+        "title": "Event Settings (Operations)",
+        "tagline": "The operational hub for event day.",
+        "body": [
+          "The operational hub for event day: booth assignments and floor map, banners, special requirements, equipment & logistics, delegate lists, attendance & check-in, the schedule, and access passes.",
+          "Every change is stamped with who made it and shows up in the Activity Log. Companies see the relevant pieces live on their own Status page."
+        ]
+      },
+      "/event-admin": {
+        "title": "Event Admin",
+        "tagline": "Report, team & roles, imports, and previews.",
+        "body": [
+          "Higher-level event administration: the post-event report, team & roles (who owns which module), importing companies, the activity log, and the View As preview tool.",
+          "Reassigning a module owner is gated behind a two-step verification and notifies the team of exactly what changed."
+        ]
+      },
+      "/view-as": {
+        "title": "View As (Preview)",
+        "tagline": "See what companies, staff, and students see.",
+        "body": [
+          "Preview exactly what a company, an attendance staffer, or the public student check-in sees — read-only, without touching your real session or any data."
+        ]
+      },
+      "/surveyResults": {
+        "title": "Survey Results",
+        "tagline": "Post-event company survey responses.",
+        "body": [
+          "Responses to the post-event company survey, aggregated for review."
+        ]
+      },
+      "/dev": {
+        "title": "Developer — Email Activity",
+        "tagline": "Confirm nothing is emailing real people.",
+        "body": [
+          "Shows whether outbound email is on or off (controlled by EMAIL_ENABLED in the backend), the From address, and a log of recent send attempts — sent vs skipped.",
+          "Use this to verify that testing (registering students, sending reminders) isn't emailing anyone while email is off."
+        ]
+      }
+    },
+    "relatedLabels": {
+      "applicants": "Applicants",
+      "myStatus": "My Status",
+      "statistics": "Statistics",
+      "companies": "Companies",
+      "surveyResults": "Survey Results",
+      "settings": "Settings",
+      "eventAdmin": "Event Admin",
+      "eventSettings": "Event Settings",
+      "viewAs": "View As (preview)"
+    }
+  },
+  "settings": {
+    "title": "Company Settings",
+    "tabs": {
+      "profile": "Profile",
+      "attendance": "Attendance",
+      "loginAccess": "Login Access",
+      "appearance": "Appearance"
+    },
+    "profile": {
+      "title": "Company profile",
+      "subtitle": "Your public details, shown to CASTO and used to match applicants.",
+      "loginEmail": "Login email",
+      "phone": "Phone",
+      "city": "City",
+      "sector": "Sector",
+      "openPositions": "Open positions",
+      "representatives": "Representatives",
+      "industryFields": "Industry fields",
+      "opportunityTypes": "Opportunity types",
+      "preferredMajors": "Preferred majors",
+      "idealQualities": "Ideal candidate qualities",
+      "phonePlaceholder": "+971 5X XXX XXXX"
+    },
+    "attendance": {
+      "title": "Attendance status",
+      "subtitle": "Let CASTO know whether your company is attending this year's fair.",
+      "hint": "Changing this notifies CASTO. You can update it any time before the event."
+    },
+    "access": {
+      "title": "Manage login access",
+      "subtitle": "Anyone with an approved email can log in with your company's shared password.",
+      "primary": "Primary",
+      "emptyHint": "No additional emails yet. Add colleagues who need access below.",
+      "emailPlaceholder": "colleague@company.com",
+      "addEmail": "+ Add email"
+    },
+    "appearance": {
+      "title": "Appearance",
+      "subtitle": "Font and text-size preferences, applied across your dashboard.",
+      "font": "Font",
+      "textSize": "Text size",
+      "scopeNote": "This preference is saved to your account and applied every time you sign in.",
+      "fonts": { "default": "Default", "inter": "Inter", "system": "System" },
+      "sizes": { "small": "Small", "medium": "Medium", "large": "Large" }
+    },
+    "toasts": {
+      "saved": "Account settings saved",
+      "saveFailed": "Failed to save changes",
+      "emailAdded": "Login email added",
+      "emailRemoved": "Login email removed",
+      "statusSet": "Attendance status set to {{status}}"
+    }
+  },
+  "viewAsPage": {
+    "castoOnly": "This preview is only available to the CASTO office.",
+    "pageTitle": "View As — Preview Mode",
+    "backToEventAdmin": "← Back to Event Admin",
+    "previewOnlyHint": "Preview only — nothing here changes real data or your session."
+  },
+  "eventAdmin": {
+    "main": {
+      "pageTitle": "Event Admin",
+      "importCompanies": "Import Companies",
+      "activityLog": "Activity Log",
+      "backToOperations": "← Operations",
+      "tabs": {
+        "postEventReport": "Post-Event Report",
+        "customize": "Customize"
+      }
+    },
+    "activity": {
+      "recentActivity": "Recent Activity",
+      "noActivityYet": "No activity yet"
+    },
+    "viewAs": {
+      "title": "View As",
+      "subtitle": "Preview what other roles see — read-only, doesn't touch your session",
+      "tabManager": "Manager (Company)",
+      "tabStaff": "Attendance Staff",
+      "tabStudent": "Student Check-in",
+      "chooseCompany": "Choose a company…",
+      "selectCompanyHint": "Select a company to preview their full status page.",
+      "noBackendRecord": "{{company}} hasn't registered a real account yet — only seed/demo companies without a backend record can't be previewed this way.",
+      "chooseStaffAccount": "Choose a staff account…",
+      "noStaffAccountsYet": "No staff accounts yet — create one in the Manage Staff tab.",
+      "whatTheySee": "This is what {{name}} sees at /student-checkin:",
+      "studentPublicHint": "The student check-in page is fully public — it needs a real access code to log in, so the truest preview is opening it directly.",
+      "openStudentCheckin": "Open /student-checkin in a new tab"
+    },
+    "team": {
+      "toastNameEmailRequired": "Name and email are both required",
+      "notifyJoined": "{{name}} joined the CASTO team",
+      "notifyJoinedDetail": "{{role}}{{modules}} — added by {{who}}",
+      "officer": "Officer",
+      "ownsModules": " · owns {{modules}}",
+      "toastAdded": "{{name}} added to the team — notification email sent",
+      "toastAddFailed": "Failed to add team member",
+      "notifyRemoved": "{{name}} was removed from the CASTO team",
+      "notifyRemovedDetail": "{{modulesNote}}removed by {{who}}",
+      "modulesNeedOwner_one": "{{modules}} now needs a new owner — ",
+      "modulesNeedOwner_other": "{{modules}} now need a new owner — ",
+      "toastRemoved": "{{name}} removed from the team",
+      "toastRemoveFailed": "Failed to remove team member",
+      "toastVerificationCode": "Verification code: {{code}} (no real inbox tied to this account — shown here instead)",
+      "incorrectPassword": "Incorrect password",
+      "codeDoesntMatch": "That code doesn't match",
+      "gained": "gained {{modules}}",
+      "noLongerOwns": "no longer owns {{modules}}",
+      "notifyReassigned": "{{name}}'s responsibilities were reassigned",
+      "notifyReassignedDetail": "{{name}} {{parts}} — by {{who}}",
+      "toastRolesUpdated": "Role responsibilities updated",
+      "title": "Team & Roles",
+      "subtitle": "Who owns what across Event Operations",
+      "reassign": "Reassign",
+      "selectModules": "Select the modules {{name}} should own:",
+      "saveChanges": "Save changes",
+      "step1": "Step 1 of 2 — confirm your admin password",
+      "castoPasswordPlaceholder": "CASTO account password",
+      "checking": "Checking…",
+      "continue": "Continue",
+      "step2": "Step 2 of 2 — enter the verification code",
+      "codeGeneratedHint": "A code was generated for this change — check the notification at the top of the screen.",
+      "sixDigitCode": "6-digit code",
+      "confirmAndSave": "Confirm & Save",
+      "onlyEventLead": "Only the Event Lead can reassign team responsibilities.",
+      "addOfficer": "Add an officer",
+      "emailNotifyPlaceholder": "Email — they'll get a notification here",
+      "roleTitleOptional": "Role / title (optional)",
+      "modulesTheyOwn": "Modules they'll own",
+      "addingEllipsis": "Adding…",
+      "addAndNotify": "Add & notify",
+      "addOfficerBtn": "+ Add officer",
+      "roles": {
+        "rana": {
+          "role": "Event Lead",
+          "responsibilities": "Owns the venue floor plan and booth assignments, builds the event-day schedule, and compiles the post-event report. Final point of contact for anything not covered by another module."
+        },
+        "prithba": {
+          "role": "Logistics & Equipment",
+          "responsibilities": "Handles all equipment requests (tables, chairs, power, screens) and special requirements raised by companies (accessibility, AV, custom setups)."
+        },
+        "aseel": {
+          "role": "Branding & Media",
+          "responsibilities": "Tracks every company's banner and branding assets from submission through printing to placement on-site."
+        },
+        "maha": {
+          "role": "Attendance & Check-in",
+          "responsibilities": "Runs check-in on event day (booth QR scans and student check-in) and manages the company delegate list and badge printing."
+        },
+        "yousef": {
+          "role": "Access & Passes",
+          "responsibilities": "Issues and manages entry and parking access passes for every company delegate, including parking slot assignments."
+        }
+      }
+    },
+    "report": {
+      "boothsAssigned": "Booths Assigned",
+      "bannersPlaced": "Banners Placed",
+      "requirementsFulfilled": "Requirements Fulfilled",
+      "equipmentFulfilled": "Equipment Fulfilled",
+      "totalCompanies": "Total Companies",
+      "confirmedCount": "{{count}} confirmed",
+      "totalStudents": "Total Students",
+      "uniqueRegistrations": "Unique registrations",
+      "checkinRate": "Check-in Rate",
+      "ofRegisteredStudents": "Of registered students",
+      "applicationsMade": "Applications Made",
+      "totalSubmissions": "Total submissions",
+      "companiesPlaced": "Companies placed",
+      "accessPassesIssued": "Access Passes Issued",
+      "bannersPlacedSub": "{{placed}}/{{total}} banners placed",
+      "operationsCompletion": "Operations Completion",
+      "exportReports": "Export Reports",
+      "exportCompaniesCsv": "Export Companies CSV",
+      "exportStudentsCsv": "Export Students CSV"
+    }
+  },
+  "importCompanies": {
+    "title": "Import Companies from Excel",
+    "subtitleSelect": "Upload a spreadsheet to bulk-add companies",
+    "subtitlePreview_one": "{{count}} valid row, {{errorCount}} with errors",
+    "subtitlePreview_other": "{{count}} valid rows, {{errorCount}} with errors",
+    "subtitleConflicts_one": "{{count}} row matches existing companies",
+    "subtitleConflicts_other": "{{count}} rows match existing companies",
+    "subtitleDone": "Import complete",
+    "close": "Close",
+    "downloadTemplate": "Download template (.xlsx)",
+    "clickToChoose": "Click to choose a file",
+    "acceptedFormats": ".xlsx, .xls, or .csv — required columns: {{columns}}",
+    "errors": {
+      "missingColumn": "Missing {{column}}",
+      "invalidEmail": "Invalid email format",
+      "invalidSector": "Sector must be one of: {{sectors}}",
+      "noRows": "The file has no rows.",
+      "readFailed": "Couldn't read that file — make sure it's a valid .xlsx/.xls/.csv."
+    },
+    "table": {
+      "row": "#",
+      "company": "Company",
+      "email": "Email",
+      "status": "Status",
+      "valid": "Valid",
+      "errorRowsNote": "Rows with errors are skipped automatically — only valid rows will be imported."
+    },
+    "conflicts": {
+      "rowLabel": "Row {{rowIndex}}:",
+      "matchesExisting": "matches existing",
+      "sameEmail": "same email",
+      "similarName": "similar name",
+      "updateExisting": "Update existing",
+      "keepExisting": "Keep existing (skip this row)"
+    },
+    "results": {
+      "tempPassword": "· temp password: {{password}}",
+      "requestFailed": "(request failed)",
+      "status": {
+        "created": "created",
+        "updated": "updated",
+        "skipped": "skipped",
+        "error": "error"
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "continue_one": "Continue ({{count}} row)",
+      "continue_other": "Continue ({{count}} rows)",
+      "import": "Import",
+      "importing": "Importing…"
+    }
+  },
+  "emailCompose": {
+    "titlePrefix": "Email {{company}}",
+    "fallbackCompany": "company",
+    "subtitle": "Opens in your mail app ·",
+    "close": "Close",
+    "subject": "Subject",
+    "subjectPlaceholder": "Subject line",
+    "message": "Message",
+    "bold": "Bold",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "formattingNote": "Formatting is simplified to plain text for your mail app.",
+    "writePlaceholder": "Write your message…",
+    "cancel": "Cancel",
+    "openInMailApp": "Open in mail app"
+  },
+  "activityLog": {
+    "booths": {
+      "assigned": "Assigned booth {{number}} to {{label}}",
+      "cleared": "Cleared booth {{number}}"
+    },
+    "banners": {
+      "moved": "Moved {{company}} {{material}} to \"{{status}}\"",
+      "updatedDetails": "Updated {{company}} branding details",
+      "uploadedArtwork": "Uploaded artwork for {{company}}"
+    },
+    "requirements": {
+      "added": "Added requirement for {{company}}: {{description}}",
+      "marked": "Marked {{company}} requirement as {{status}}"
+    },
+    "equipment": {
+      "added": "Added {{item}} request for {{entity}}",
+      "fulfilled": "Fulfilled {{item}} for {{entity}}",
+      "markedUnfulfilled": "Marked {{item}} for {{entity}} as unfulfilled",
+      "edited": "Edited {{item}} for {{entity}}",
+      "removed": "Removed {{item}} for {{entity}}",
+      "approved": "Approved {{item}} requested by {{requestedBy}}",
+      "declined": "Declined {{item}} requested by {{requestedBy}}"
+    },
+    "delegates": {
+      "printedBadge": "Printed badge for {{name}} ({{company}})"
+    },
+    "attendance": {
+      "checkedInStudent": "Checked in student {{id}} (manual)",
+      "checkedInCompany": "Checked in {{company}} at booth {{booth}} ({{method}})",
+      "selfCheckedIn": "{{company}} self-checked in via booth QR"
+    },
+    "schedule": {
+      "added": "Added time slot \"{{title}}\"",
+      "edited": "Edited time slot \"{{title}}\"",
+      "removed": "Removed time slot \"{{title}}\"",
+      "setStatus": "Set \"{{title}}\" to {{status}}"
+    },
+    "passes": {
+      "issued": "Issued entry pass {{code}} for {{company}}",
+      "revoked": "Revoked pass {{code}} ({{company}})",
+      "reactivated": "Reactivated pass {{code}} ({{company}})",
+      "setParkingSlot": "Set parking slot {{slot}} for {{company}}"
+    },
+    "attendanceStaff": {
+      "created": "Created a staff account for {{name}} ({{email}})",
+      "revokedCode": "Revoked a check-in access code",
+      "updatedProfileNamed": "{{name}} updated their profile",
+      "updatedProfile": "A staffer updated their profile"
+    },
+    "supportStaff": {
+      "addedWithRole": "Added support staff {{name}} ({{role}})",
+      "added": "Added support staff {{name}}",
+      "updatedDetails": "Updated support staff details",
+      "removed": "Removed a support staff member",
+      "assignedTask": "Assigned task \"{{title}}\"",
+      "setTaskStatus": "Set a task to {{status}}",
+      "removedTask": "Removed a task"
+    }
+  },
+  "eventOps": {
+    "map": {
+      "centerIsland": "CENTER ISLAND",
+      "entrance": "ENTRANCE",
+      "free": "Free"
+    },
+    "venue": {
+      "zone": "Zone {{zone}}",
+      "notAssignedYet": "Not assigned yet",
+      "boothTypeRing": "{{type}} booth · {{ring}}",
+      "centerIsland": "Center island",
+      "outerRing": "Outer ring",
+      "clickToManageBooth": "Click to manage this booth",
+      "toastAssigned": "Booth {{number}} assigned to {{company}}",
+      "toastCleared": "Booth {{number}} cleared",
+      "assignedCount": "{{assigned}} / {{total}} assigned",
+      "showFloorMap": "Show floor map",
+      "floorMap": "Floor Map",
+      "floorMapSubtitle": "Click a booth to manage its assignment",
+      "floorMapNote": "Schematic layout — will be replaced by the real venue map. Hover a booth for details, click to manage it.",
+      "typeRing": "{{type}} · {{ring}}",
+      "unassigned": "Unassigned",
+      "unassignedOption": "Unassigned",
+      "reassign": "Reassign",
+      "assign": "Assign"
+    },
+    "banners": {
+      "mark": "Mark {{status}}",
+      "size": "Size",
+      "quantity": "Quantity",
+      "companyContact": "Company contact",
+      "printDeadline": "Print deadline",
+      "notReceived": "Not received",
+      "artworkFile": "Artwork file",
+      "viewFile": "View file",
+      "material": "Material",
+      "selectType": "Select type…",
+      "widthCm": "Width (cm)",
+      "heightCm": "Height (cm)",
+      "uploading": "Uploading…",
+      "viewCurrentFile": "View current file",
+      "notes": "Notes",
+      "saveDetails": "Save details",
+      "toastMarked": "{{company}} banner marked {{status}}",
+      "toastSaved": "Branding details saved",
+      "toastUploaded": "Artwork uploaded",
+      "toastUploadFailed": "Failed to upload artwork"
+    },
+    "requirements": {
+      "toastDescribeFirst": "Please describe the requirement before saving",
+      "toastAdded": "Requirement added",
+      "addRequirement": "+ Add Requirement",
+      "newRequirement": "New Requirement",
+      "company": "Company",
+      "category": "Category",
+      "categoryPlaceholder": "e.g. AV Equipment",
+      "priority": "Priority",
+      "description": "Description",
+      "describePlaceholder": "Describe the requirement...",
+      "optional": "Optional...",
+      "start": "Start",
+      "fulfill": "Fulfill"
+    },
+    "equipment": {
+      "toastRequired": "Company and item are both required",
+      "toastAdded": "{{item}} request added for {{company}}",
+      "toastFulfilled": "{{item}} fulfilled",
+      "toastUnfulfilled": "{{item}} marked unfulfilled",
+      "toastItemRequired": "Item is required",
+      "toastUpdated": "Equipment updated",
+      "toastRemoved": "Removed {{item}}",
+      "toastApproved": "Approved {{item}} for {{requester}}",
+      "toastDeclined": "Declined item request",
+      "tables": "Tables",
+      "chairs": "Chairs",
+      "powerCables": "Power / Cables",
+      "screens": "Screens",
+      "totalRequested": "Total requested",
+      "stripsCables": "Strips & cables",
+      "monitorsDisplays": "Monitors & displays",
+      "awaitingApproval": "Equipment requests awaiting your approval",
+      "requestedBy": "Requested by {{requester}}",
+      "approve": "Approve",
+      "decline": "Decline",
+      "searchPlaceholder": "Search company, booth or item…",
+      "addRequest": "+ Add Equipment Request",
+      "selectCompany": "Select company…",
+      "boothOptional": "Booth (optional)",
+      "item": "Item",
+      "itemPlaceholder": "e.g. Folding Table",
+      "qty": "Qty",
+      "colCompanyBooth": "Company / Booth",
+      "colRequested": "Requested",
+      "colFulfilled": "Fulfilled",
+      "colLastChange": "Last change",
+      "booth": "Booth",
+      "statusAutoSet": "Status is set from fulfilled vs requested",
+      "requested": "Requested",
+      "unfulfill": "Unfulfill",
+      "noMatch": "No equipment matches \"{{search}}\"."
+    },
+    "delegates": {
+      "totalDelegates": "Total Delegates",
+      "acrossAllCompanies": "Across all companies",
+      "badgesPrinted": "Badges Printed",
+      "pending_one": "{{count}} pending",
+      "pending_other": "{{count}} pending",
+      "allRegistered": "All registered",
+      "withDelegates": "With Delegates",
+      "awaiting_one": "{{count}} awaiting",
+      "awaiting_other": "{{count}} awaiting",
+      "searchCompany": "Search company…",
+      "noDelegatesYet": "No delegates yet",
+      "delegatesCount_one": "{{count}} delegate",
+      "delegatesCount_other": "{{count}} delegates",
+      "badgesPrintedCount_one": "{{count}} badge printed",
+      "badgesPrintedCount_other": "{{count}} badges printed",
+      "noneRegisteredYet": "No delegates registered for this company yet. They'll appear here once added.",
+      "role": "Role",
+      "phone": "Phone",
+      "badge": "Badge",
+      "printed": "Printed",
+      "pendingBadge": "Pending",
+      "printBadge": "Print Badge",
+      "noCompanyMatch": "No companies match \"{{search}}\"."
+    },
+    "attendance": {
+      "expected": "Expected",
+      "checkedIn": "Checked In",
+      "pendingLabel": "Pending",
+      "subtabCompanies": "Companies",
+      "subtabStudents": "Students",
+      "subtabBoothQr": "Booth QR Codes",
+      "companiesHint": "Companies check themselves in by scanning their booth QR on arrival (or tapping \"I've arrived\" on their Status page) — that's the normal flow. The buttons below are a manual override for when a company can't scan.",
+      "colBooth": "Booth",
+      "colDelegates": "Delegates",
+      "colCheckedIn": "Checked In",
+      "colTime": "Time",
+      "colMethod": "Method",
+      "colStudentId": "Student ID",
+      "methodQr": "QR",
+      "methodManual": "Manual",
+      "manualOverrideHint": "Manual override — use only if the company can't scan their booth QR",
+      "checkInManually": "Check in manually",
+      "checkIn": "Check In",
+      "noBoothsYet": "No booths assigned yet. Assign booths to companies in the Venue & Booths tab and they'll appear here for check-in.",
+      "qrHint": "Each assigned booth has a printed QR code on its table. When a company representative scans it on event day, their attendance is confirmed automatically. Companies see the same code in their own settings page.",
+      "download": "Download",
+      "toastCheckedIn": "{{company}} checked in via {{method}}"
+    },
+    "staff": {
+      "toastNameRequired": "Name is required",
+      "toastAdded": "Added {{name}}",
+      "toastRemoved": "Removed {{name}}",
+      "supportStaff": "Support Staff",
+      "openTasks": "Open Tasks",
+      "totalTasks": "Total Tasks",
+      "supportHint": "Add the people who handle services on the day — printing, bringing supplies, setup, runners — and assign them tasks. Each task cycles through <b>Pending → In Progress → Done</b>. This is for staff you manage directly; temporary door helpers who scan students in live under the <b>Check-in Staff</b> tab.",
+      "newSupportStaff": "New Support Staff",
+      "fullName": "Full name",
+      "selectRole": "Select role",
+      "phoneOptional": "Phone (optional)",
+      "addStaff": "Add Staff",
+      "support": "Support",
+      "tasks": "Tasks",
+      "doneCount": "{{done}}/{{total}} done",
+      "clickToAdvance": "Click to advance status",
+      "noTasksYet": "No tasks assigned yet.",
+      "assignTask": "Assign a task…",
+      "noStaffYet": "No support staff added yet."
+    },
+    "checkinStaff": {
+      "tabLabel": "Check-in Staff",
+      "toastRequired": "Name and email are both required",
+      "toastCreated": "Account created for {{name}}",
+      "staffAccounts": "Staff Accounts",
+      "activeCount": "{{count}} active",
+      "studentsCheckedIn": "Students Checked In",
+      "awaitingFirstLogin": "Awaiting First Login",
+      "createHint": "Create an account with a name and email — you'll get a short access code to share with them. They log in at ",
+      "createHint2": " with that code, fill in their own remaining details, and can then check students in without a CASTO or company account. Each account's check-ins are logged separately below — no one sees anyone else's activity.",
+      "toastLinkCopied": "Check-in link copied",
+      "copyLink": "Copy link",
+      "studentTicketHint": "Students who lost their ticket can retrieve their own QR code at ",
+      "studentTicketHint2": " using the University ID they applied with.",
+      "toastTicketLinkCopied": "Student ticket link copied",
+      "newAccount": "New Staff Account",
+      "emailPlaceholder": "Email address",
+      "createAccount": "Create Account",
+      "accessCodeFor": "Access code for {{name}}",
+      "shareNowHint": "Share this with them now — it won't be shown again here.",
+      "dismiss": "Dismiss",
+      "active": "Active",
+      "invited": "Invited",
+      "code": "Code: {{code}}",
+      "revoke": "Revoke",
+      "checkedInCount_one": "Checked in {{count}} student",
+      "checkedInCount_other": "Checked in {{count}} students",
+      "noAccountsYet": "No staff accounts created yet."
+    },
+    "schedule": {
+      "toastRequired": "Session title and start time are both required",
+      "toastUpdated": "Time slot updated",
+      "toastRemoved": "Removed \"{{title}}\"",
+      "addSlot": "+ Add Slot",
+      "newSlot": "New Time Slot",
+      "start": "Start",
+      "end": "End",
+      "host": "Host",
+      "hostPlaceholder": "Host / team",
+      "location": "Location",
+      "selectArea": "Select area",
+      "sessionTitle": "Session Title",
+      "sessionTitlePlaceholder": "e.g. Opening Ceremony",
+      "capacity": "Capacity",
+      "saveSlot": "Save Slot",
+      "nextStatus": "Next status",
+      "hostLabel": "Host:",
+      "locationLabel": "Location:",
+      "registeredLabel": "Registered:"
+    },
+    "passes": {
+      "toastIssued": "Entry pass issued for {{company}}",
+      "toastRevoked": "Pass {{code}} revoked",
+      "toastReactivated": "Pass {{code}} reactivated",
+      "toastParkingSaved": "Parking assignment saved",
+      "typeAll": "All",
+      "typeEntry": "Entry",
+      "typeParking": "Parking",
+      "totalIssued": "Total Issued",
+      "entryPasses": "Entry Passes",
+      "parkingPasses": "Parking Passes",
+      "viewTable": "Table",
+      "viewByCompany": "By Company",
+      "delegate": "Delegate",
+      "type": "Type",
+      "parkingSlotLocation": "Parking Slot & Location",
+      "code": "Code",
+      "issued": "Issued",
+      "slotPlaceholder": "Slot e.g. P1-14",
+      "exactLocation": "Exact location",
+      "mapsLinkOptional": "Google Maps link (optional)",
+      "mapLinked": "Map linked",
+      "assignSlot": "Assign slot",
+      "revoke": "Revoke",
+      "reactivate": "Reactivate",
+      "passesCount_one": "{{count}} pass",
+      "passesCount_other": "{{count}} passes",
+      "noPassesYet": "No passes yet",
+      "issueEntryPass": "+ Issue entry pass",
+      "slotLine": "Slot {{slot}} · {{location}}",
+      "companyViewNote": "This exact view is what {{company}} sees in their settings page."
+    },
+    "tabs": {
+      "venue": "Venue & Booths",
+      "banners": "Banners & Branding",
+      "requirements": "Special Requirements",
+      "equipment": "Equipment & Logistics",
+      "delegates": "Delegate List",
+      "attendance": "Attendance",
+      "manageStaff": "Manage Staff",
+      "schedule": "Schedule",
+      "passes": "Access Passes"
+    },
+    "main": {
+      "pageTitle": "Event Operations",
+      "viewingAs": "Viewing as",
+      "adminLink": "Admin →",
+      "recordedUnder": "{{role}} — changes are recorded under {{name}}",
+      "assignedTo": "Assigned to {{name}}",
+      "reasonSignIn": "you may need to sign back in",
+      "reasonRetrying": "retrying…",
+      "toastSaveFailed": "Couldn't save changes to {{sections}} — {{reason}}"
+    }
+  },
+  "advancedAnalytics": {
+    "tabs": {
+      "demographics": "Demographics",
+      "education": "Education",
+      "companies": "Companies",
+      "skills": "Skills",
+      "recruitment": "Recruitment",
+      "profiles": "Profiles"
+    },
+    "genderDistribution": "Gender Distribution",
+    "top10Nationalities": "Top 10 Nationalities",
+    "attended": "Attended",
+    "applicantsByCity": "Applicants by City",
+    "studyLevelDistribution": "Study Level Distribution",
+    "gpaDistribution": "GPA Distribution",
+    "applicantsByCollege": "Applicants by College",
+    "top10Majors": "Top 10 Majors",
+    "registered": "Registered",
+    "ceosAndSeekers": "CEOs & Talent Seekers",
+    "availableRoles": "Available roles",
+    "ratePercent": "{{pct}}% rate",
+    "companiesBySector": "Companies by Sector",
+    "opportunityTypesOffered": "Opportunity Types Offered",
+    "noOpportunityData": "No opportunity data available",
+    "companiesByCity": "Companies by City",
+    "noCityData": "No city data available",
+    "noFieldsData": "No fields data available",
+    "mostSoughtMajors": "Most Sought After Majors",
+    "noPreferredMajorsData": "No preferred majors data available",
+    "topTechSkills": "Top Technical Skills (Applicants)",
+    "noTechSkillsData": "No technical skills data available",
+    "topNonTechSkills": "Top Non-Technical Skills (Applicants)",
+    "noNonTechSkillsData": "No non-technical skills data available",
+    "languagesSpokenByApplicants": "Languages Spoken by Applicants",
+    "noLanguageData": "No language data available",
+    "workExperienceStatus": "Work Experience Status",
+    "withExperience": "With Experience",
+    "noExperience": "No Experience",
+    "experienceRate": "Experience Rate",
+    "totalShortlisted": "Total Shortlisted",
+    "byAnyCompany": "By any company",
+    "totalFlagged": "Total Flagged",
+    "interestingCandidates": "Interesting candidates",
+    "totalRejected": "Total Rejected",
+    "conversionRate": "Conversion Rate",
+    "shortlistRate": "Shortlist rate",
+    "mostAppliedCompanies": "Most Applied Companies",
+    "noApplicationData": "No application data available",
+    "shortlistsByCompany": "Shortlists by Company",
+    "noShortlistData": "No shortlist data available",
+    "mostFlaggedApplicants": "Most Flagged Applicants",
+    "flagsCount_one": "{{count}} flag",
+    "flagsCount_other": "{{count}} flags",
+    "noFlaggedApplicants": "No flagged applicants",
+    "applicationsBySector": "Applications by Sector",
+    "noSectorData": "No sector data available",
+    "cvUploadRate": "CV Upload Rate",
+    "xOfY": "{{x}} of {{y}}",
+    "linkedInProfileRate": "LinkedIn Profile Rate",
+    "withExperienceCount": "{{count}} with experience",
+    "confirmedAttendance": "Confirmed Attendance",
+    "cvUploadStatus": "CV Upload Status",
+    "hasCv": "Has CV",
+    "noCv": "No CV",
+    "linkedInProfileStatus": "LinkedIn Profile Status",
+    "hasLinkedIn": "Has LinkedIn",
+    "noLinkedIn": "No LinkedIn",
+    "hasExperience": "Has Experience",
+    "expectedGraduationTimeline": "Expected Graduation Timeline",
+    "noGraduationData": "No graduation data available",
+    "languagesSpoken": "Languages Spoken"
+  },
+  "statisticsElement": {
+    "registeredStudents": "Registered Students",
+    "companies": "Companies",
+    "ceosAndSeekers": "CEO's & Talent seekers",
+    "techFields": "Tech fields"
+  },
+  "statistics": {
+    "male": "Male",
+    "female": "Female",
+    "toastOverview": "Switched to Overview",
+    "toastAdvanced": "Switched to Advanced Analytics",
+    "overview": "Overview",
+    "advancedPrefix": "Advanced",
+    "analytics": "Analytics",
+    "numberOf": "Number of",
+    "companiesBy": "Companies By",
+    "applicantsByGender": "Applicants By Gender",
+    "topCompany": "Top Company",
+    "applications": "Applications",
+    "topField": "Top Field",
+    "topMajor": "Top Major",
+    "students": "Students",
+    "avgGpa": "Avg GPA",
+    "gpa": "GPA",
+    "capacity": "Capacity",
+    "max": "Max",
+    "companiesByIndustryField": "Companies by Industry Field",
+    "topN": "Top {{count}}",
+    "companyCount_one": "{{count}} company",
+    "companyCount_other": "{{count}} companies",
+    "filter": {
+      "dataLabel": "Data",
+      "applicants": "Applicants",
+      "managers": "Managers",
+      "typeLabel": "Type",
+      "cities": "Cities",
+      "sectors": "Sectors"
+    }
+  },
+  "surveyResults": {
+    "sentimentHint": "Share of top-option (most positive) answers across this section's multiple-choice questions",
+    "percentPositive": "{{pct}}% positive",
+    "ofCount": "{{current}} of {{total}}",
+    "noResponsesYet": "No survey responses yet.",
+    "notAnswered": "Not answered",
+    "summary": "Summary",
+    "byCompany": "By Company",
+    "surveyLabel": "Survey:",
+    "public": "Public",
+    "hidden": "Hidden",
+    "responses": "Responses",
+    "stillPending_one": "{{count}} still pending",
+    "stillPending_other": "{{count}} still pending",
+    "studentsHired": "Students Hired",
+    "reportedByCompanies": "Reported by companies",
+    "shortlistedLabel": "Shortlisted",
+    "forInterviews": "For interviews / next steps",
+    "responseRate": "Response rate",
+    "respondedOfTotal": "{{responded}} of {{total}} companies answered",
+    "totalReported": "Total reported",
+    "averagePerCompany": "Average per company",
+    "noWrittenAnswers": "No written answers yet",
+    "answeredOfRespondents": "{{answered}} of {{total}} respondents"
+  },
+  "survey": {
+    "pageTitle": "Exit Survey of Internship and Career Fair 2025",
+    "openAnswerPlaceholder": "text",
+    "responded": "Responded",
+    "didntRespond": "Didn't respond",
+    "submit": "Submit",
+    "processing": "Hold on while we are processing your response"
+  },
+  "surveyQuestions": {
+    "parts": {
+      "Part 1: Event Experience": "Part 1: Event Experience",
+      "Part 2: Recruitment & Follow-Up": "Part 2: Recruitment & Follow-Up"
+    },
+    "sections": {
+      "Organization & Logistics": "Organization & Logistics",
+      "Student Interaction & Portal Experience": "Student Interaction & Portal Experience",
+      "Applications & Hiring": "Applications & Hiring"
+    },
+    "questions": {
+      "q1": "How would you rate the overall organization of the event?",
+      "q2": "How would you rate the pre-event communication and coordination?",
+      "q3": "How was your experience with parking and on-campus access?",
+      "q4": "How would you rate the event location (Main Building, M11) in terms of accessibility and visibility?",
+      "q5": "Was your booth setup ready and satisfactory upon arrival?",
+      "q6": "How would you rate the support provided by the organizers during the event?",
+      "q7": "Were the students well-prepared to engage with you?",
+      "q8": "Did the online portal support your recruitment efforts effectively?",
+      "q9": "Were the student profiles/resumes accessible and useful via the portal?",
+      "q10": "Are you in favor of continuing the paperless approach for future fairs?",
+      "q11": "Would you participate in our future career events?",
+      "q12": "Any suggestions or advice to improve the quality of the fair?",
+      "q13": "Have you reviewed the applications and profiles submitted via our portal?",
+      "q14": "Based on your review, how would you rate the overall quality of student applicants?",
+      "q15": "Did you find candidates that match your internship or job requirements?",
+      "q16": "Were the student resumes/profiles complete and easy to understand in the portal?",
+      "q17": "Was the portal helpful in managing and filtering applicants post-event?",
+      "q18": "Are you planning to follow up with any UoS students for internships/jobs?",
+      "q19": "Did you hire or shortlist any students from the fair?",
+      "q20": "If yes, how many students did you hire (internship or full-time)?",
+      "q21": "If yes, how many students did you shortlist for next steps/interviews?",
+      "q22": "Any other feedback or suggestions for improvement?"
+    },
+    "options": {
+      "Good": "Good",
+      "Fair": "Fair",
+      "Poor": "Poor",
+      "Smooth": "Smooth",
+      "Manageable": "Manageable",
+      "Difficult": "Difficult",
+      "Yes": "Yes",
+      "Somewhat": "Somewhat",
+      "No": "No",
+      "Helpful": "Helpful",
+      "Available when needed": "Available when needed",
+      "Unavailable": "Unavailable",
+      "Neutral": "Neutral",
+      "Maybe": "Maybe",
+      "Not yet": "Not yet",
+      "In progress": "In progress",
+      "Still deciding": "Still deciding"
+    }
+  },
+  "auth": {
+    "castoLogoAlt": "CASTO Logo",
+    "universityLogoAlt": "University Logo",
+    "noAccount": "Don't have an account?",
+    "signUpHere": "Sign up here",
+    "haveAccount": "Already have an account?",
+    "logInHere": "Log in here",
+    "fields": { "email": "Email", "password": "Password" },
+    "hero": {
+      "title": "Job Fair",
+      "descriptionLogin": "Use the credentials shared with you via email to access the participants of the event",
+      "descriptionSignup": "Register your company to access full features and connect with potential candidates."
+    },
+    "login": {
+      "title": "Log in to your account",
+      "subtitle": "Enter your credentials to access your dashboard",
+      "passwordPlaceholder": "Enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Log in",
+      "loggingIn": "Logging in…",
+      "success": "Logged in successfully"
+    },
+    "validation": {
+      "required": "{{field}} is required",
+      "invalidEmail": "Please enter a valid email address",
+      "invalidField": "{{field}} is invalid",
+      "passwordMin": "Password must be at least 6 characters"
+    },
+    "select": {
+      "selectField": "Select {{field}}…",
+      "noMatch": "No matches found",
+      "pleaseSelect": "Please select a {{field}}"
+    },
+    "multiSelect": {
+      "searchMajors": "Search and select majors...",
+      "noMatch": "No matching majors found",
+      "allSelected": "All majors selected",
+      "selectedCount": "{{count}} selected",
+      "pleaseSelect": "Please select at least one {{field}}"
+    },
+    "overlay": {
+      "processing": "Processing...",
+      "pleaseWait": "Please wait a moment",
+      "success": "Success!",
+      "redirecting": "Redirecting…"
+    },
+    "signup": {
+      "emailTaken": "This email is already registered",
+      "opportunityOptions": {
+        "fullTime": "Full-time",
+        "partTime": "Part-time",
+        "internship": "Internship",
+        "coOp": "Co-op",
+        "graduateProgram": "Graduate Program"
+      },
+      "step1": {
+        "companyInformation": "Company Information",
+        "companyName": "Company Name",
+        "companyNamePlaceholder": "Enter your company name",
+        "email": "Email",
+        "emailPlaceholder": "company@example.com",
+        "password": "Password",
+        "passwordPlaceholder": "Create password",
+        "numberOfRepresentatives": "Number of Representatives",
+        "representativeName": "Representative {{num}} Name",
+        "representativeNamePlaceholder": "Full name of representative {{num}}"
+      },
+      "step2": {
+        "companyProfile": "Company Profile",
+        "industryFields": "Industry Fields",
+        "industryFieldsPlaceholder": "Search and select industry fields...",
+        "sector": "Sector",
+        "city": "City",
+        "availablePositions": "Available Positions"
+      },
+      "step3": {
+        "hiringPreferences": "Hiring Preferences",
+        "preferredMajors": "Preferred Majors",
+        "preferredMajorsPlaceholder": "Search and select majors...",
+        "opportunityTypes": "Opportunity Types",
+        "idealCandidateQualities": "Ideal Candidate Qualities",
+        "idealCandidateQualitiesPlaceholder": "Describe your ideal candidate (e.g., Strong communication skills, Team player)"
+      },
+      "creating": "Creating...",
+      "continue": "Continue",
+      "createAccount": "Create Account",
+      "alreadyHaveAccount": "Already have an account?",
+      "logInHere": "Log in here",
+      "creatingAccount": "Creating account...",
+      "accountCreated": "Account created!",
+      "updateCompanyFailed": "Failed to update company. Please try again.",
+      "similarCompanyDialog": {
+        "title": "Similar Company Found",
+        "message": "We found companies with similar names. If your company already has an account, you can update it instead of creating a new one.",
+        "updateThisAccount": "Update This Account",
+        "updatingAccount": "Updating Account...",
+        "noCreateNewAccount": "No, Create New Account",
+        "cancel": "Cancel"
+      },
+      "checkingCompanyName": "Checking company name..."
+    }
+  },
+  "intro": {
+    "responseSubmitted": "Your response has been submitted. You will be redirected in a few seconds…"
+  },
+  "requests": {
+    "formTitle": "Request something from CASTO",
+    "currentTitle": "Your current requests",
+    "submit": "Submit request",
+    "submitting": "Sending…",
+    "doneMessage": "Request submitted — CASTO will review and follow up. Thank you!",
+    "itemsReady_one": "{{count}} item ready",
+    "itemsReady_other": "{{count}} items ready",
+    "toasts": {
+      "sent": "Request sent — CASTO will review it",
+      "failed": "Couldn't send your request. Please try again."
+    },
+    "types": {
+      "equipment": { "label": "Equipment", "hint": "Tables, chairs, power…" },
+      "requirement": { "label": "Special", "hint": "Catering, custom setup…" },
+      "parking": { "label": "Parking", "hint": "Cars, trucks, bays…" }
+    },
+    "equipment": {
+      "whatNeed": "What do you need?",
+      "chooseItem": "Choose an item…",
+      "describeItem": "Describe the item",
+      "quantity": "Quantity",
+      "removeItem": "Remove item",
+      "addAnother": "+ Add another item",
+      "noteLabel": "Note (optional)",
+      "notePlaceholder": "Anything CASTO should know (e.g. deliver before 8am)"
+    },
+    "requirement": {
+      "categoryLabel": "Category (optional)",
+      "categoryPlaceholder": "e.g. Power, AV, Accessibility, Catering",
+      "describeLabel": "Describe your need",
+      "describePlaceholder": "e.g. bringing a catering truck and need floor access, or a dedicated 30A power line."
+    },
+    "parking": {
+      "needsLabel": "Parking needs",
+      "needsPlaceholder": "e.g. 2 cars for delegates, or a larger bay for a branded truck.",
+      "hint": "Let CASTO know how many vehicles and any special access needs."
+    }
+  },
+  "companyStatus": {
+    "sections": {
+      "booth": "My Booth",
+      "banners": "Banners & Branding",
+      "requirements": "Special Requirements",
+      "equipment": "Logistics & Equipment"
+    },
+    "empty": {
+      "booth": "No booth assigned yet. Once the CASTO office assigns your booth, its number, zone, map location, and check-in QR code will appear here.",
+      "banners": "No banners or branding submitted yet. The CASTO branding officer will add your roll-ups, backdrops, and artwork here as they're processed.",
+      "requirements": "No requirements yet. Use the Requests tab to raise one — it appears here with its status once the CASTO logistics officer picks it up.",
+      "equipment": "No equipment allocated yet. Tables, chairs, power, and screens the CASTO office assigns to your booth will be listed here."
+    },
+    "booth": {
+      "zone": "Zone {{zone}}",
+      "typeLine": "{{type}} booth · {{ring}}",
+      "centerIsland": "Center island",
+      "outerRing": "Outer ring",
+      "since": "since {{time}}",
+      "attendancePending": "Attendance pending",
+      "scanHint": "Scan at your booth to confirm attendance.",
+      "arrivedCheckIn": "I've arrived — check in",
+      "checkedIn": "Checked in"
+    },
+    "venueMap": "Venue map",
+    "openInGoogleMaps": "Open in Maps",
+    "banners": {
+      "artworkAlt": "Banner artwork",
+      "noArtwork": "No artwork uploaded yet",
+      "meta": "Deadline {{deadline}} · Last update by {{updatedBy}} · {{when}}"
+    },
+    "checkedInToast": "You're checked in — welcome to the Job Fair!",
+    "saveError": {
+      "message": "Couldn't save your last change — {{reason}}.",
+      "signIn": "please sign in again",
+      "retry": "we'll keep retrying"
+    },
+    "notSetUpYet": "The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <b>Requests</b> tab to ask for equipment, raise a requirement, or send a parking note.",
+    "entryPasses": "Entry Passes",
+    "parking": "Parking",
+    "eventSchedule": "Event Schedule",
+    "needHelp": "Need help?",
+    "needHelpBody": "Each area below is owned by a CASTO officer — reach out directly if something needs attention.",
+    "empty2": {
+      "entryPasses": "No entry passes issued yet. Once the CASTO access officer issues them, each delegate's entry QR code will appear here.",
+      "parking": "No parking assigned yet. When the CASTO office allocates a parking slot, your slot number, exact location, and a map link will show here."
+    },
+    "slot": "Slot {{slot}}",
+    "host": "Host: {{host}}",
+    "requestsSubmitted": "Requests submitted by this company",
+    "noRequestsYet": "No requests submitted yet.",
+    "awaitingApproval": "Awaiting approval",
+    "loadFailed": "Failed to load company information",
+    "confirmFailed": "Failed to confirm attendance. Please try again.",
+    "previewMode": "Preview mode — this is exactly what {{company}} sees. Nothing here can be changed.",
+    "previewModeFallback": "this company",
+    "status": {
+      "Confirmed": "Confirmed",
+      "Pending": "Pending",
+      "Canceled": "Canceled"
+    },
+    "statusHeadline": {
+      "Confirmed": "Attendance confirmed",
+      "Pending": "Awaiting confirmation",
+      "Canceled": "Participation canceled"
+    },
+    "statusMessage": {
+      "Confirmed": "Your attendance is confirmed! We look forward to seeing you at the Job Fair.",
+      "Pending": "Please check your email for the confirmation link, or contact the event coordinator if you have not received it.",
+      "Canceled": "Your participation has been canceled. Please contact the event coordinator if you believe this is an error."
+    },
+    "confirming": "Confirming…",
+    "confirmMyAttendance": "Confirm My Attendance",
+    "totalApplicants": "Total Applicants",
+    "openPositions": "Open Positions",
+    "representatives": "Representatives",
+    "manageSettings": {
+      "title": "Manage your company settings",
+      "subtitle": "Edit your profile, attendance status, login access, and customization.",
+      "cta": "Manage Settings →"
+    },
+    "contactInformation": "Contact Information",
+    "noneListed": "None listed",
+    "industryFields": "Industry Fields",
+    "opportunityTypes": "Opportunity Types",
+    "notSpecified": "Not specified",
+    "preferredMajors": "Preferred Majors",
+    "idealCandidateQualities": "Ideal Candidate Qualities",
+    "surveyCompleted": "Survey Completed",
+    "surveyThankYou": "Thank you for completing the post-event survey!",
+    "tabs": {
+      "overview": "Overview",
+      "eventDay": "Event Day",
+      "requests": "Requests"
+    }
+  },
+  "barButtons": {
+    "registerAnApplicant": "Register an Applicant",
+    "confirmAttendance": "Confirm Attendance",
+    "registerApplicant": "Register Applicant",
+    "scanning": "Scanning...",
+    "confirmed": "Confirmed",
+    "confirm": "Confirm"
+  },
+  "applicantProfile": {
+    "graduated": "Graduated",
+    "age": "Age {{age}}",
+    "graduation": "Graduation",
+    "cannotBeUndone": "Cannot be undone.",
+    "contact": "Contact",
+    "email": "Email",
+    "phone": "Phone",
+    "academic": "Academic",
+    "program": "Program",
+    "skills": "Skills",
+    "background": "Background",
+    "languages": "Languages",
+    "experience": "Experience",
+    "linksAndDocs": "Links & Documents",
+    "emailThisCompany": "Email this company",
+    "copyEmail": "Copy email",
+    "positions": "Positions",
+    "fields": "Fields",
+    "adminActions": "Admin Actions",
+    "updating": "Updating...",
+    "revertToPending": "Revert to Pending",
+    "deleteCompany": "Delete Company",
+    "permanentlyDeleteCompany": "Permanently delete this company?",
+    "deleting": "Deleting...",
+    "yesDelete": "Yes, Delete",
+    "noKeep": "No, Keep",
+    "contactInformation": "Contact Information",
+    "companyDetails": "Company Details",
+    "noneListed": "None listed",
+    "unknown": "Unknown",
+    "noMajor": "No major",
+    "scrollToSeeAll": "Scroll to see all {{count}} applicants",
+    "anApplicant": "an applicant",
+    "you": "You",
+    "your": "your",
+    "notifyShortlisted": "{{who}} shortlisted {{applicant}}",
+    "notifyShortlistedDetail": "Added to {{who}} shortlist",
+    "notifyRejected": "{{who}} rejected {{applicant}}",
+    "notifyRejectedDetail": "Removed from {{who}} consideration",
+    "notifyFlagged": "{{who}} flagged {{applicant}}",
+    "notifyFlaggedDetail": "Marked for follow-up by {{who}}",
+    "graduatesYear": "Graduates {{year}}",
+    "undo": "Undo",
+    "addedToMyList": "Added to my list",
+    "adding": "Adding…",
+    "addToMyList": "Add to my list",
+    "processing": "Processing…",
+    "shortlisted": "Shortlisted",
+    "shortlist": "Shortlist",
+    "flagged": "Flagged",
+    "flag": "Flag",
+    "rejected": "Rejected",
+    "reject": "Reject",
+    "flagApplicant": "Flag Applicant"
+  },
+  "managers": {
+    "pageTitle": "Companies & Cooperations",
+    "searchPlaceholder": "Search by name…",
+    "sendReminders": "Send Reminders",
+    "reminderModal": {
+      "title": "Send Confirmation Reminders",
+      "subtitle_one": "{{count}} company hasn't confirmed attendance yet",
+      "subtitle_other": "{{count}} companies haven't confirmed attendance yet",
+      "allConfirmed": "All companies have confirmed",
+      "noOneLeft": "There's no one left to remind right now.",
+      "searchPlaceholder": "Search by company name or email…",
+      "selectAllShown_one": "Select all shown ({{count}})",
+      "selectAllShown_other": "Select all shown ({{count}})",
+      "selectAllPending_one": "Select all pending ({{count}})",
+      "selectAllPending_other": "Select all pending ({{count}})",
+      "neverContacted": "+ Never contacted ({{count}})",
+      "selectedCount": "{{count}} selected",
+      "noMatch": "No companies match \"{{search}}\"",
+      "lastSent": "Last sent: {{when}}",
+      "reminded": "Reminded {{date}}",
+      "neverContactedBadge": "Never contacted",
+      "sending": "Sending…",
+      "sendReminders": "Send Reminders ({{count}})"
+    },
+    "filters": {
+      "title": "Filter Companies",
+      "clearAll": "Clear all",
+      "attendanceStatus": "Attendance Status",
+      "sector": "Sector",
+      "city": "City",
+      "industryFields": "Industry Fields",
+      "applicants": "Applicants",
+      "reminderStatus": "Reminder Status",
+      "hasApplicants": "Has Applicants",
+      "noApplicants": "No Applicants",
+      "reminderSentValue": "Reminder Sent",
+      "notSentValue": "Not Sent"
+    }
+  },
+  "enums": {
+    "city": {
+      "Sharjah": "Sharjah",
+      "Dubai": "Dubai",
+      "Abu Dhabi": "Abu Dhabi",
+      "Ajman": "Ajman",
+      "Al-Ain": "Al-Ain",
+      "Ras Al-Khaima": "Ras Al Khaimah",
+      "Umm Al-Quwain": "Umm Al Quwain",
+      "AlFujairah": "Al Fujairah"
+    },
+    "sector": {
+      "Local": "Local",
+      "Private": "Private",
+      "Semi": "Semi-government",
+      "Federal": "Federal"
+    },
+    "industryField": {
+      "Information Technology": "Information Technology",
+      "Software Development": "Software Development",
+      "Artificial Intelligence": "Artificial Intelligence",
+      "Machine Learning": "Machine Learning",
+      "Data Science": "Data Science",
+      "Cybersecurity": "Cybersecurity",
+      "Cloud Computing": "Cloud Computing",
+      "Blockchain": "Blockchain",
+      "Internet of Things (IoT)": "Internet of Things (IoT)",
+      "Robotics": "Robotics",
+      "Web Development": "Web Development",
+      "Mobile App Development": "Mobile App Development",
+      "Game Development": "Game Development",
+      "DevOps": "DevOps",
+      "IT Consulting": "IT Consulting",
+      "Banking": "Banking",
+      "Investment Banking": "Investment Banking",
+      "Asset Management": "Asset Management",
+      "Insurance": "Insurance",
+      "FinTech": "FinTech",
+      "Accounting": "Accounting",
+      "Financial Services": "Financial Services",
+      "Venture Capital": "Venture Capital",
+      "Private Equity": "Private Equity",
+      "Healthcare": "Healthcare",
+      "Pharmaceuticals": "Pharmaceuticals",
+      "Biotechnology": "Biotechnology",
+      "Medical Devices": "Medical Devices",
+      "Clinical Research": "Clinical Research",
+      "Health Tech": "Health Tech",
+      "Hospitals & Clinics": "Hospitals & Clinics",
+      "Oil & Gas": "Oil & Gas",
+      "Renewable Energy": "Renewable Energy",
+      "Solar Energy": "Solar Energy",
+      "Nuclear Energy": "Nuclear Energy",
+      "Utilities": "Utilities",
+      "Energy Management": "Energy Management",
+      "Manufacturing": "Manufacturing",
+      "Automotive": "Automotive",
+      "Aerospace": "Aerospace",
+      "Defense": "Defense",
+      "Electronics": "Electronics",
+      "Industrial Engineering": "Industrial Engineering",
+      "Chemical Engineering": "Chemical Engineering",
+      "Civil Engineering": "Civil Engineering",
+      "Retail": "Retail",
+      "E-commerce": "E-commerce",
+      "Consumer Goods": "Consumer Goods",
+      "Fashion & Apparel": "Fashion & Apparel",
+      "Food & Beverage": "Food & Beverage",
+      "Hospitality": "Hospitality",
+      "Tourism & Travel": "Tourism & Travel",
+      "Media": "Media",
+      "Entertainment": "Entertainment",
+      "Advertising": "Advertising",
+      "Public Relations": "Public Relations",
+      "Broadcasting": "Broadcasting",
+      "Digital Marketing": "Digital Marketing",
+      "Content Creation": "Content Creation",
+      "Consulting": "Consulting",
+      "Legal Services": "Legal Services",
+      "Human Resources": "Human Resources",
+      "Recruitment": "Recruitment",
+      "Business Services": "Business Services",
+      "Management Consulting": "Management Consulting",
+      "Construction": "Construction",
+      "Real Estate": "Real Estate",
+      "Architecture": "Architecture",
+      "Property Management": "Property Management",
+      "Interior Design": "Interior Design",
+      "Logistics": "Logistics",
+      "Supply Chain": "Supply Chain",
+      "Transportation": "Transportation",
+      "Shipping & Maritime": "Shipping & Maritime",
+      "Warehousing": "Warehousing",
+      "Freight & Cargo": "Freight & Cargo",
+      "Education": "Education",
+      "EdTech": "EdTech",
+      "Research & Development": "Research & Development",
+      "Training & Development": "Training & Development",
+      "Academic Institutions": "Academic Institutions",
+      "Government": "Government",
+      "Public Administration": "Public Administration",
+      "Non-Profit Organizations": "Non-Profit Organizations",
+      "NGOs": "NGOs",
+      "Social Services": "Social Services",
+      "Telecommunications": "Telecommunications",
+      "Networking": "Networking",
+      "5G Technology": "5G Technology",
+      "Satellite Communications": "Satellite Communications",
+      "Agriculture": "Agriculture",
+      "AgriTech": "AgriTech",
+      "Environmental Services": "Environmental Services",
+      "Sustainability": "Sustainability",
+      "Water Management": "Water Management"
+    },
+    "major": {
+      "Architectural Engineering": "Architectural Engineering",
+      "Civil Engineering": "Civil Engineering",
+      "Computer Engineering": "Computer Engineering",
+      "Electrical Engineering": "Electrical Engineering",
+      "Mechanical Engineering": "Mechanical Engineering",
+      "Industrial Engineering": "Industrial Engineering",
+      "Nuclear Engineering": "Nuclear Engineering",
+      "Sustainable and Renewable Energy Engineering": "Sustainable and Renewable Energy Engineering",
+      "Computer Science": "Computer Science",
+      "Information Technology": "Information Technology",
+      "Cybersecurity": "Cybersecurity",
+      "Data Science": "Data Science",
+      "Artificial Intelligence": "Artificial Intelligence",
+      "Accounting": "Accounting",
+      "Finance": "Finance",
+      "Marketing": "Marketing",
+      "Management": "Management",
+      "Business Administration": "Business Administration",
+      "Human Resource Management": "Human Resource Management",
+      "Economics": "Economics",
+      "Management Information Systems": "Management Information Systems",
+      "Biology": "Biology",
+      "Biotechnology": "Biotechnology",
+      "Chemistry": "Chemistry",
+      "Applied Chemistry": "Applied Chemistry",
+      "Mathematics": "Mathematics",
+      "Physics": "Physics",
+      "Applied Physics": "Applied Physics",
+      "Environmental Sciences": "Environmental Sciences",
+      "Clinical Nutrition and Dietetics": "Clinical Nutrition and Dietetics",
+      "Health Services Administration": "Health Services Administration",
+      "Medical Laboratory Sciences": "Medical Laboratory Sciences",
+      "Nursing": "Nursing",
+      "Physiotherapy": "Physiotherapy",
+      "Radiologic Sciences": "Radiologic Sciences",
+      "Optometry": "Optometry",
+      "Speech Language Pathology": "Speech Language Pathology",
+      "Medicine (MBBS)": "Medicine (MBBS)",
+      "Dental Medicine": "Dental Medicine",
+      "Pharmacy": "Pharmacy",
+      "Clinical Pharmacy": "Clinical Pharmacy",
+      "Law": "Law",
+      "Private Law": "Private Law",
+      "Public Law": "Public Law",
+      "Islamic Studies": "Islamic Studies",
+      "Sharia (Islamic Law)": "Sharia (Islamic Law)",
+      "Arabic Language and Literature": "Arabic Language and Literature",
+      "English Language and Literature": "English Language and Literature",
+      "Translation Studies": "Translation Studies",
+      "History": "History",
+      "Sociology": "Sociology",
+      "Psychology": "Psychology",
+      "International Relations": "International Relations",
+      "Political Science": "Political Science",
+      "Journalism": "Journalism",
+      "Public Relations": "Public Relations",
+      "Radio and Television": "Radio and Television",
+      "Digital Media": "Digital Media",
+      "Mass Communication": "Mass Communication",
+      "Interior Design": "Interior Design",
+      "Graphic Design": "Graphic Design",
+      "Multimedia Design": "Multimedia Design",
+      "Visual Arts": "Visual Arts",
+      "Fashion Design": "Fashion Design"
+    },
+    "status": {
+      "Confirmed": "Confirmed",
+      "Registered": "Registered",
+      "Pending": "Pending",
+      "Canceled": "Canceled"
+    },
+    "boothStatus": {
+      "Assigned": "Assigned",
+      "Available": "Available",
+      "Reserved": "Reserved"
+    },
+    "bannerStatus": {
+      "Not Submitted": "Not Submitted",
+      "Submitted": "Submitted",
+      "Approved": "Approved",
+      "Printed": "Printed",
+      "Placed": "Placed"
+    },
+    "requestStatus": {
+      "Open": "Open",
+      "In Progress": "In Progress",
+      "Fulfilled": "Fulfilled",
+      "Partial": "Partial",
+      "Pending": "Pending",
+      "Approved": "Approved",
+      "Declined": "Declined"
+    },
+    "attendanceState": {
+      "Present": "Present",
+      "Absent": "Absent",
+      "Checked In": "Checked In"
+    },
+    "eventState": {
+      "Ended": "Ended",
+      "Live": "Live",
+      "Upcoming": "Upcoming"
+    },
+    "priority": {
+      "Critical": "Critical",
+      "High": "High",
+      "Medium": "Medium",
+      "Low": "Low"
+    },
+    "supportRole": {
+      "Printing & Supplies": "Printing & Supplies",
+      "Logistics & Setup": "Logistics & Setup",
+      "Runner": "Runner",
+      "Catering": "Catering",
+      "Technical / AV": "Technical / AV",
+      "Other": "Other"
+    },
+    "taskStatus": {
+      "Pending": "Pending",
+      "In Progress": "In Progress",
+      "Done": "Done"
+    },
+    "scheduleLocation": {
+      "Main Entrance": "Main Entrance",
+      "Main Hall": "Main Hall",
+      "Exhibition Floor": "Exhibition Floor",
+      "Cafeteria": "Cafeteria",
+      "Main Stage": "Main Stage"
+    },
+    "passStatus": {
+      "Active": "Active",
+      "Revoked": "Revoked"
+    }
+  }
+}

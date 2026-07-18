@@ -1,91 +1,30 @@
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../context/ThemeContext';
 
 export const APPLICANTS_TOUR_KEY = 'applicants_tour_v3';
 export const MANAGERS_TOUR_KEY = 'managers_tour_v3';
 
 // ─── Step definitions ─────────────────────────────────────────────────────────
+// Only the STRUCTURE (which element each step points at + preferred placement)
+// lives here. The user-facing text (title/body/tip) is translated — looked up by
+// index from the `tour.applicants` / `tour.managers` arrays in the locale files.
 
-const APPLICANT_STEPS = [
-    {
-        target: 'tour-search',
-        title: 'Search applicants by name or ID',
-        body: 'Type any part of a full name or university ID to instantly filter the list. Results update live as you type — no need to press Enter or submit anything.',
-        placement: 'bottom',
-        tip: 'The search is case-insensitive. Clearing the field restores all applicants immediately.',
-    },
-    {
-        target: 'tour-flag-btn',
-        title: 'Flag filter — focus on your shortlist',
-        body: 'Click the flag icon to show only the applicants you have personally flagged for follow-up. Click it again to return to the full list. Flags are private to your account and persist across sessions.',
-        placement: 'bottom',
-        tip: 'You can flag any applicant by expanding their row and clicking the flag icon inside.',
-    },
-    {
-        target: 'tour-filter-btn',
-        title: 'Advanced filters — narrow down fast',
-        body: 'Open the filter panel to filter by major, nationality, CGPA range, attendance status, CV presence, shortlist/rejection status, languages, skills, expected graduation, and more. Multiple filters stack — only applicants matching ALL selected criteria appear.',
-        placement: 'bottom',
-        tip: 'Active filters show as blue chips at the top. Click × on any chip to remove it, or "Clear all" to reset everything.',
-    },
-    {
-        target: 'tour-table-header',
-        title: 'Sort by any column',
-        body: 'Click any column header — Name, University ID, Nationality, CGPA, Major, or Status — to sort the list by that column. Click the same header again to reverse the sort order. An arrow indicator shows which column is active.',
-        placement: 'bottom',
-        tip: 'CGPA sorts highest-first by default. Sorting is applied on top of any active filters.',
-    },
-    {
-        target: 'tour-first-row',
-        title: 'Expand a row — full applicant profile',
-        body: 'Click the ↗ expand icon on the right of any row to open that applicant\'s full profile. Inside you can: view their QR code, download their CV, see all personal and academic details, and take actions — shortlist, reject, flag, or undo any of those.',
-        placement: 'top',
-        tip: 'Shortlisted and rejected statuses are visible to all company managers. Flags are private to you only.',
-    },
-    {
-        target: 'tour-register-btn',
-        title: 'Register & confirm attendance',
-        body: '"Register an Applicant" opens a QR scanner — scan a student\'s printed QR code to link them to your company\'s applicant list. "Confirm Attendance" scans their QR a second time to mark them as physically present at the fair. Both actions require camera access.',
-        placement: 'bottom',
-        tip: 'Allow camera permissions when prompted. You can also confirm attendance from inside the expanded applicant row.',
-    },
+const APPLICANT_TARGETS = [
+    { target: 'tour-search', placement: 'bottom' },
+    { target: 'tour-flag-btn', placement: 'bottom' },
+    { target: 'tour-filter-btn', placement: 'bottom' },
+    { target: 'tour-table-header', placement: 'bottom' },
+    { target: 'tour-first-row', placement: 'top' },
+    { target: 'tour-register-btn', placement: 'bottom' },
 ];
 
-const MANAGER_STEPS = [
-    {
-        target: 'tour-search',
-        title: 'Search companies by name',
-        body: 'Type any part of a company name to instantly filter the list. Results update live as you type. The search matches against the full registered company name.',
-        placement: 'bottom',
-        tip: 'Search is case-insensitive and works alongside any active filters.',
-    },
-    {
-        target: 'tour-filter-btn',
-        title: 'Filter companies',
-        body: 'Open the filter panel to filter by attendance status (Pending / Confirmed / Canceled), sector (Private / Federal / Semi / Local), city, industry fields, whether they have registered applicants, and reminder email status. Combine multiple filters to zero in on a subset.',
-        placement: 'bottom',
-        tip: 'Use "Reminder Status: Not Sent" to quickly surface companies that haven\'t been contacted yet.',
-    },
-    {
-        target: 'tour-register-btn',
-        title: 'Send confirmation reminder emails',
-        body: 'Opens a modal listing all pending companies. Select individual companies or use "Select All Pending" to batch-select, then click Send. Each selected company receives a confirmation link by email. Sent timestamps appear next to each company.',
-        placement: 'bottom',
-        tip: 'Only companies with Pending status appear in the reminder modal. Already-confirmed companies are excluded.',
-    },
-    {
-        target: 'tour-table-header',
-        title: 'Sort companies by any column',
-        body: 'Click any column header — Company Name, Email, Representatives, Sector, City, No. of Applicants, or Status — to sort. Click again to reverse. Use "No. of Applicants" to see which companies are attracting the most student interest.',
-        placement: 'bottom',
-        tip: 'Sorting by Status groups Confirmed, Pending, and Canceled companies together for easy batch review.',
-    },
-    {
-        target: 'tour-first-row',
-        title: 'Expand a company row — full profile & actions',
-        body: 'Click the ↗ expand icon on any row to open the full company profile. View their delegate list, preferred majors, opportunity types, and applicants. You can also directly change their attendance status — Confirm, Cancel, or Reset to Pending — from this panel.',
-        placement: 'top',
-        tip: 'Status changes take effect immediately. The company receives no automatic notification when you change their status manually here.',
-    },
+const MANAGER_TARGETS = [
+    { target: 'tour-search', placement: 'bottom' },
+    { target: 'tour-filter-btn', placement: 'bottom' },
+    { target: 'tour-register-btn', placement: 'bottom' },
+    { target: 'tour-table-header', placement: 'bottom' },
+    { target: 'tour-first-row', placement: 'top' },
 ];
 
 // ─── Positioning ──────────────────────────────────────────────────────────────
@@ -122,11 +61,17 @@ const sameRect = (a, b) => a && b && Math.abs(a.top - b.top) < 0.5 && Math.abs(a
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TourGuide({ show, onDone, variant = 'applicants' }) {
-    const STEPS = variant === 'managers' ? MANAGER_STEPS : APPLICANT_STEPS;
+    const { t } = useTranslation();
+    const TARGETS = variant === 'managers' ? MANAGER_TARGETS : APPLICANT_TARGETS;
+    // Merge the structural targets with the translated text for the active language.
+    const texts = t(`tour.${variant === 'managers' ? 'managers' : 'applicants'}`, { returnObjects: true });
+    const STEPS = TARGETS.map((tgt, i) => ({ ...tgt, ...(Array.isArray(texts) ? texts[i] : {}) }));
     const [step, setStep] = useState(0);
     const [pos, setPos] = useState(null);
     const [spotRect, setSpotRect] = useState(null);
     const boxRef = useRef(null);
+    const { isDark } = useTheme();
+    const brand = isDark ? '#34C775' : '#0E7F41'; // two-tier brand green for SVG/inline
     const current = STEPS[step];
 
     // Continuous tracking loop: re-measures the target every animation frame while the
@@ -137,7 +82,18 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
         if (!show) return;
         let raf;
         let scrolled = false;
-        let settleFrames = 0;
+        // Keep forcing fresh measurements (ignore samePos/sameRect's "no-op" shortcut)
+        // until layout has truly settled — a cold-cache webfont swap (FOIT/FOUT) or a
+        // still-finishing scroll/transition can land an early rect that LOOKS stable
+        // for a frame or two but is actually about to shift, which is exactly the
+        // "unaligned, then correct after a refresh" symptom (a warm font cache on
+        // reload never hits this window). Also gated on document.fonts.ready so a
+        // slow font load can't sneak a stale measurement in as "final".
+        let settleFrames = 20;
+        let fontsReady = typeof document === 'undefined' || !document.fonts ? true : false;
+        if (!fontsReady) {
+            document.fonts.ready.then(() => { fontsReady = true; settleFrames = Math.max(settleFrames, 6); });
+        }
         const tick = () => {
             const el = document.querySelector(`[data-tour="${current?.target}"]`);
             if (el) {
@@ -147,12 +103,13 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
                 // containers), so keep re-measuring for a short settle window afterward
                 // instead of trusting the very next frame's rect as final — otherwise a
                 // mid-scroll rect can get frozen as the spotlight position.
-                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; settleFrames = 10; }
+                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; }
+                const forceUpdate = settleFrames > 0 || !fontsReady;
                 const r = computePosition(el, boxRef.current);
-                if (r) setPos(prev => (settleFrames > 0 || !samePos(prev, r) ? r : prev));
+                if (r) setPos(prev => (forceUpdate || !samePos(prev, r) ? r : prev));
                 const br = el.getBoundingClientRect();
                 const next = { top: br.top, left: br.left, width: br.width, height: br.height };
-                setSpotRect(prev => (settleFrames > 0 || !sameRect(prev, next) ? next : prev));
+                setSpotRect(prev => (forceUpdate || !sameRect(prev, next) ? next : prev));
                 if (settleFrames > 0) settleFrames--;
             } else {
                 // Target not in the DOM (data still loading / element hidden): center the
@@ -186,8 +143,8 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
     const ARROW = 8;
     const arrowStyle = (placement, arrowX) => {
         const base = { position: 'absolute', width: 0, height: 0 };
-        if (placement === 'bottom') return { ...base, top: -ARROW, left: Math.max(16, Math.min(arrowX, BOX_W - 16)), transform: 'translateX(-50%)', borderLeft: `${ARROW}px solid transparent`, borderRight: `${ARROW}px solid transparent`, borderBottom: `${ARROW}px solid #0E7F41` };
-        if (placement === 'top') return { ...base, bottom: -ARROW, left: Math.max(16, Math.min(arrowX, BOX_W - 16)), transform: 'translateX(-50%)', borderLeft: `${ARROW}px solid transparent`, borderRight: `${ARROW}px solid transparent`, borderTop: `${ARROW}px solid #0E7F41` };
+        if (placement === 'bottom') return { ...base, top: -ARROW, left: Math.max(16, Math.min(arrowX, BOX_W - 16)), transform: 'translateX(-50%)', borderLeft: `${ARROW}px solid transparent`, borderRight: `${ARROW}px solid transparent`, borderBottom: `${ARROW}px solid ${brand}` };
+        if (placement === 'top') return { ...base, bottom: -ARROW, left: Math.max(16, Math.min(arrowX, BOX_W - 16)), transform: 'translateX(-50%)', borderLeft: `${ARROW}px solid transparent`, borderRight: `${ARROW}px solid transparent`, borderTop: `${ARROW}px solid ${brand}` };
         return {};
     };
 
@@ -201,7 +158,7 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
                     </mask>
                 </defs>
                 <rect width="100%" height="100%" fill="rgba(0,0,0,0.55)" mask="url(#tour-spotlight-mask)" />
-                {hasSpot && <rect x={sr.left - pad} y={sr.top - pad} width={sr.width + pad * 2} height={sr.height + pad * 2} rx="8" fill="none" stroke="#0E7F41" strokeWidth="2.5" />}
+                {hasSpot && <rect x={sr.left - pad} y={sr.top - pad} width={sr.width + pad * 2} height={sr.height + pad * 2} rx="8" fill="none" stroke={brand} strokeWidth="2.5" />}
             </svg>
 
             <div className="fixed inset-0 z-[99991] cursor-pointer" onClick={onDone} />
@@ -209,12 +166,12 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
             <div
                 ref={boxRef}
                 onClick={(e) => e.stopPropagation()}
-                className="fixed z-[99999] bg-white rounded-2xl shadow-2xl overflow-hidden"
+                className="fixed z-[99999] bg-surface-card rounded-2xl shadow-2xl overflow-hidden"
                 style={{ width: BOX_W, maxWidth: `calc(100vw - ${SCREEN_PAD * 2}px)`, top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
             >
                 {pos?.arrowX != null && <div style={arrowStyle(pos.placement, pos.arrowX)} />}
 
-                <div className="bg-[#0E7F41] px-4 pt-3 pb-2.5">
+                <div className="bg-primary px-4 pt-3 pb-2.5">
                     <div className="w-full h-1 bg-white/25 rounded-full mb-2.5">
                         <div className="h-full bg-white rounded-full transition-all duration-300" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
                     </div>
@@ -226,32 +183,32 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
                         </div>
                         <div className="flex items-center gap-2.5">
                             <span className="text-[11px] text-white/70 font-medium tabular-nums">{step + 1} / {STEPS.length}</span>
-                            <button onClick={onDone} className="text-white/60 hover:text-white transition-colors text-base leading-none" title="Close">✕</button>
+                            <button onClick={onDone} className="text-white/60 hover:text-white transition-colors text-base leading-none" title={t('tour.close')}>✕</button>
                         </div>
                     </div>
                 </div>
 
                 <div className="px-4 pt-3 pb-1">
-                    <p className="text-[13px] font-semibold text-gray-900 mb-1.5 leading-snug">{current.title}</p>
-                    <p className="text-[12px] text-gray-600 leading-relaxed">{current.body}</p>
+                    <p className="text-[13px] font-semibold text-gray-900 dark:text-gray-100 mb-1.5 leading-snug">{current.title}</p>
+                    <p className="text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">{current.body}</p>
                     {current.tip && (
-                        <div className="mt-2.5 flex items-start gap-2 bg-[#F0FFF7] border border-[#C6EDD9] rounded-xl px-2.5 py-2">
-                            <svg className="w-3.5 h-3.5 text-[#0E7F41] mt-px shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="mt-2.5 flex items-start gap-2 bg-[#F0FFF7] dark:bg-primary/10 border border-[#C6EDD9] dark:border-primary/25 rounded-xl px-2.5 py-2">
+                            <svg className="w-3.5 h-3.5 text-primary mt-px shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p className="text-[11px] text-[#0E7F41] leading-relaxed font-medium">{current.tip}</p>
+                            <p className="text-[11px] text-primary leading-relaxed font-medium">{current.tip}</p>
                         </div>
                     )}
                 </div>
 
-                <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 mt-1">
-                    <button onClick={onDone} className="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">Skip tour</button>
+                <div className="flex items-center justify-between px-4 py-2.5 border-t border-gray-100 dark:border-gray-700 mt-1">
+                    <button onClick={onDone} className="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">{t('tour.skip')}</button>
                     <div className="flex items-center gap-2">
                         {step > 0 && (
-                            <button onClick={() => setStep(s => s - 1)} className="text-[12px] px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors font-medium">← Back</button>
+                            <button onClick={() => setStep(s => s - 1)} className="text-[12px] px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors font-medium">{t('tour.back')}</button>
                         )}
-                        <button onClick={advance} className="text-[12px] px-4 py-1.5 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a6535] transition-colors font-semibold">
-                            {step === STEPS.length - 1 ? '✓ Done' : 'Next →'}
+                        <button onClick={advance} className="text-[12px] px-4 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-primary-contrast transition-colors font-semibold">
+                            {step === STEPS.length - 1 ? t('tour.done') : t('tour.next')}
                         </button>
                     </div>
                 </div>
