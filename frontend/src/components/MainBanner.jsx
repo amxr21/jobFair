@@ -1,14 +1,17 @@
 import axios from "axios";
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../hooks/useAuthContext";
 import { Row, TableHeader, BarButtons, FlagButton, NoApplicants, LoadingApplicants, ScrollToTopButton, PageContainer, FilterDropdown } from "./index";
 import TourGuide, { APPLICANTS_TOUR_KEY } from "./TourGuide";
+import { pageHelpSeenKey } from "./PageHelp";
 import { useToast } from "./Toast";
 import LoadListError from "./LoadListError";
 
 const MainBanner = ({link}) => {
 
+    const { t } = useTranslation();
     const { user } = useAuthContext();
     const toast = useToast();
 
@@ -306,11 +309,24 @@ const MainBanner = ({link}) => {
     useEffect(() => {
         if (user) {
             fetchApplicants(1, searchQuery);
-            if (!localStorage.getItem(APPLICANTS_TOUR_KEY)) {
-                setTimeout(() => setShowTour(true), 800);
-            }
         }
     }, [user]); // Fetch applicants on initial load
+
+    // Gated on !isLoading (not a blind timer) so the tour's targets (search,
+    // table header, first row) are actually in the DOM before it measures them —
+    // a cold fetch taking longer than the old fixed delay left the tour
+    // reading a still-loading layout, which looked "unaligned until refresh"
+    // (see the same fix already applied to Managers.jsx's tour trigger).
+    useEffect(() => {
+        if (!user || isLoading) return;
+        if (localStorage.getItem(APPLICANTS_TOUR_KEY)) return;
+        // The tour is about to explain this whole page, so the separate "?"
+        // auto-popup would just stack on top of it a moment later on a true
+        // first visit. Pre-mark it seen for this session so only the tour shows.
+        try { sessionStorage.setItem(pageHelpSeenKey('/'), '1'); } catch { /* ignore */ }
+        const id = setTimeout(() => setShowTour(true), 400);
+        return () => clearTimeout(id);
+    }, [user, isLoading]);
 
     // Pagination handlers
     const handleNextPage = () => {
@@ -384,27 +400,28 @@ const MainBanner = ({link}) => {
         <>
         <PageContainer
             user={user}
-            title="Applicants list"
+            noHorizontalPadding
+            title={t("applicants.title")}
             titleExtra={user && (
                 <div className="flex flex-wrap gap-1.5 items-center">
                     {/* Search — local filter + highlight, no API call */}
                     <div data-tour="tour-search" className="relative flex items-center">
                         <input
                             type="text"
-                            placeholder="Search by name…"
+                            placeholder={t("applicants.searchPlaceholder")}
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className={`pl-7 pr-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
+                            className={`ps-7 pe-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
                                 searchQuery
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
                             }`}
                         />
-                        <svg className="absolute left-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                        <svg className="absolute start-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         {searchQuery && (
-                            <button onClick={() => handleSearch('')} className="absolute right-1.5 text-gray-400 hover:text-gray-600">
+                            <button onClick={() => handleSearch('')} className="absolute end-1.5 text-gray-400 hover:text-gray-600">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                             </button>
                         )}
@@ -421,14 +438,14 @@ const MainBanner = ({link}) => {
                         <div className="flex items-center gap-1">
                             <button onClick={handlePrevPage} disabled={!pagination.hasPrevPage}
                                 className={`w-7 h-7 md:w-8 md:h-8 rounded-lg border flex items-center justify-center transition-all duration-200 ${!pagination.hasPrevPage ? 'border-gray-300 bg-gray-100 text-gray-300 cursor-not-allowed' : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'}`}
-                                title="Previous 50 applicants">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+                                title={t("applicants.prevPage")}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3 icon-directional"><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
                             </button>
                             <span className="text-[10px] text-gray-500 min-w-[28px] text-center">{pagination.currentPage}/{pagination.totalPages}</span>
                             <button onClick={handleNextPage} disabled={!pagination.hasNextPage}
                                 className={`w-7 h-7 md:w-8 md:h-8 rounded-lg border flex items-center justify-center transition-all duration-200 ${!pagination.hasNextPage ? 'border-gray-300 bg-gray-100 text-gray-300 cursor-not-allowed' : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'}`}
-                                title="Next 50 applicants">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+                                title={t("applicants.nextPage")}>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3 icon-directional"><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
                             </button>
                         </div>
                     )}
@@ -436,8 +453,8 @@ const MainBanner = ({link}) => {
                     {(pagination.uniqueStudentCount || pagination.totalItems) > 50 && !hasActiveFilters && (
                         <button onClick={handleShowAll}
                             className={`hidden md:flex h-7 md:h-8 px-2 rounded-lg border text-[10px] font-medium transition-all duration-200 items-center ${showAll ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-[#0E7F41] bg-white text-[#0E7F41] hover:bg-[#0E7F41] hover:text-white'}`}
-                            title={showAll ? `Back to pages (${pagination.totalPages} pages of 50)` : `Load all ${pagination.uniqueStudentCount || pagination.totalItems} applicants`}>
-                            {showAll ? '← Pages' : 'Load all'}
+                            title={showAll ? `${t("applicants.backToPages")} (${pagination.totalPages})` : `${t("applicants.loadAll")} (${pagination.uniqueStudentCount || pagination.totalItems})`}>
+                            {showAll ? t("applicants.backToPages") : t("applicants.loadAll")}
                         </button>
                     )}
                 </div>
@@ -447,7 +464,7 @@ const MainBanner = ({link}) => {
                     <button
                         onClick={() => { localStorage.removeItem(APPLICANTS_TOUR_KEY); setShowTour(true); }}
                         className="w-7 h-7 md:w-8 md:h-8 rounded-lg border border-gray-300 bg-white text-gray-400 hover:text-[#0E7F41] hover:border-[#0E7F41] flex items-center justify-center transition-all duration-200 text-xs font-bold"
-                        title="Start feature tour"
+                        title={t("applicants.startTour")}
                     >?</button>
                     <span data-tour="tour-register-btn"><BarButtons link={link} /></span>
                 </div>
@@ -456,40 +473,40 @@ const MainBanner = ({link}) => {
         >
             {/* Tabs for non-CASTO users — sliding pill */}
             {user?.email !== 'casto@sharjah.ac.ae' && (
-                <div className="relative flex mb-3 md:mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+                <div className="relative flex mb-3 md:mb-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                     {/* Sliding pill */}
                     <div
-                        className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm"
+                        className="absolute top-1 bottom-1 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
                         style={{
                             width: 'calc(50% - 4px)',
-                            left: activeTab === 'my' ? '4px' : 'calc(50%)',
-                            transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+                            insetInlineStart: activeTab === 'my' ? '4px' : 'calc(50%)',
+                            transition: 'inset-inline-start 0.22s cubic-bezier(0.4,0,0.2,1)',
                         }}
                     />
                     <button
-                        onClick={() => { setActiveTab('my'); toast('Viewing your applicants', { type: 'info', duration: 1800 }); }}
+                        onClick={() => { setActiveTab('my'); toast(t('applicants.viewingMine'), { type: 'info', duration: 1800 }); }}
                         className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'my' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
+                            activeTab === 'my' ? 'text-[#0E7F41] dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                     >
-                        <span className="hidden md:inline">My Applicants</span>
-                        <span className="md:hidden">Mine</span>
+                        <span className="hidden md:inline">{t('applicants.myApplicants')}</span>
+                        <span className="md:hidden">{t('applicants.mine')}</span>
                         <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
-                            activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
+                            activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                         }`}>
                             {finalList.length}
                         </span>
                     </button>
                     <button
-                        onClick={() => { setActiveTab('other'); toast('Viewing other applicants', { type: 'info', duration: 1800 }); }}
+                        onClick={() => { setActiveTab('other'); toast(t('applicants.viewingOther'), { type: 'info', duration: 1800 }); }}
                         className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'other' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
+                            activeTab === 'other' ? 'text-[#0E7F41] dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                     >
-                        <span className="hidden md:inline">Other Applicants</span>
-                        <span className="md:hidden">Others</span>
+                        <span className="hidden md:inline">{t('applicants.otherApplicants')}</span>
+                        <span className="md:hidden">{t('applicants.others')}</span>
                         <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
-                            activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
+                            activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                         }`}>
                             {finalOtherList.length}
                         </span>

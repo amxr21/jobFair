@@ -1,6 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
-const SelectInput = ({ Id, Name, options = [], value, handleChange, required = true, placeholder }) => {
+// `tOption` (optional) translates the DISPLAY of a fixed-option value while the
+// stored value stays the English/DB canonical form. Pass tCity / tSector etc.
+const SelectInput = ({ Id, Name, options = [], value, handleChange, required = true, placeholder, tOption }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [touched, setTouched] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -9,6 +13,9 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
 
   const isValid = value && value.trim() !== "";
   const showError = touched && !isValid && required;
+
+  const label = (opt) => (tOption ? tOption(opt) : opt);
+  const fallbackPlaceholder = placeholder || t("auth.select.selectField", { field: Name.toLowerCase() });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -23,8 +30,9 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Search matches against the translated label so it works in Arabic too.
   const filteredOptions = options.filter(opt =>
-    opt.toLowerCase().includes(searchTerm.toLowerCase())
+    label(opt).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSelect = (option) => {
@@ -57,18 +65,18 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
   const getBorderClass = () => {
     if (showError) return "border-red-400 focus-within:ring-red-400";
     if (touched && isValid) return "border-green-400 focus-within:ring-green-400";
-    return "border-gray-300 focus-within:ring-[#0E7F41] hover:border-gray-400";
+    return "border-line focus-within:ring-primary hover:border-gray-400 dark:hover:border-gray-500";
   };
 
   return (
     <div className="w-full transition-all duration-300 ease-in-out" ref={dropdownRef}>
-      <label htmlFor={Id} className="text-xs text-gray-600 ml-1 block mb-0.5 transition-all duration-300 ease-in-out">
+      <label htmlFor={Id} className="text-xs text-gray-600 dark:text-gray-300 ms-1 block mb-0.5 transition-all duration-300 ease-in-out">
         {Name} {required && <span className="text-red-500">*</span>}
       </label>
 
       {/* Input Container */}
       <div
-        className={`relative w-full min-h-[38px] px-2.5 py-1.5 text-sm border rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:border-transparent transition-all duration-300 ease-in-out bg-white cursor-pointer ${getBorderClass()}`}
+        className={`relative w-full min-h-[38px] px-2.5 py-1.5 text-sm border rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:border-transparent transition-all duration-300 ease-in-out bg-surface-card cursor-pointer ${getBorderClass()}`}
         onClick={() => {
           setIsOpen(true);
           inputRef.current?.focus();
@@ -84,20 +92,20 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={value || placeholder || `Select ${Name.toLowerCase()}...`}
-              className="flex-1 outline-none text-sm bg-transparent"
+              placeholder={value ? label(value) : fallbackPlaceholder}
+              className="flex-1 outline-none text-sm bg-transparent text-fg"
               autoFocus
             />
           ) : (
-            <span className={`flex-1 text-sm ${!value ? 'text-gray-400' : 'text-gray-800'}`}>
-              {value || placeholder || `Select ${Name.toLowerCase()}...`}
+            <span className={`flex-1 text-sm ${!value ? 'text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-100'}`}>
+              {value ? label(value) : fallbackPlaceholder}
             </span>
           )}
 
           {/* Dropdown Arrow */}
-          <div className="pointer-events-none ml-2">
+          <div className="pointer-events-none ms-2">
             <svg
-              className={`h-4 w-4 text-gray-500 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
+              className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-300 ease-in-out ${isOpen ? 'rotate-180' : ''}`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -110,23 +118,23 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto transition-all duration-300 ease-in-out animate-fadeIn">
+        <div className="absolute z-50 w-full mt-1 bg-surface-card border border-line rounded-lg shadow-lg max-h-48 overflow-y-auto transition-all duration-300 ease-in-out animate-fadeIn">
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => handleSelect(option)}
-                className={`w-full px-3 py-2 text-left text-sm transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg ${
+                className={`w-full px-3 py-2 text-start text-sm transition-colors duration-200 first:rounded-t-lg last:rounded-b-lg ${
                   option === value
-                    ? 'bg-[#0E7F41]/10 text-[#0E7F41] font-medium'
-                    : 'hover:bg-[#0E7F41]/10'
+                    ? 'bg-primary/10 text-primary font-medium'
+                    : 'text-fg hover:bg-primary/10'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span>{option}</span>
+                  <span>{label(option)}</span>
                   {option === value && (
-                    <svg className="w-4 h-4 text-[#0E7F41]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -134,8 +142,8 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
               </button>
             ))
           ) : (
-            <div className="px-3 py-2 text-sm text-gray-500">
-              No matching options found
+            <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+              {t("auth.select.noMatch")}
             </div>
           )}
         </div>
@@ -143,8 +151,8 @@ const SelectInput = ({ Id, Name, options = [], value, handleChange, required = t
 
       {/* Error Message */}
       {showError && (
-        <p className="text-xs text-red-500 mt-0.5 ml-1 transition-all duration-300 ease-in-out animate-fadeIn">
-          Please select a {Name.toLowerCase()}
+        <p className="text-xs text-red-500 mt-0.5 ms-1 transition-all duration-300 ease-in-out animate-fadeIn">
+          {t("auth.select.pleaseSelect", { field: Name.toLowerCase() })}
         </p>
       )}
     </div>

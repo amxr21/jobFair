@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
+    const { t } = useTranslation();
+    // Value labels are translated for DISPLAY only — the raw English string
+    // stays the actual filter key (stored in activeFilters, compared with
+    // `===`), same pattern as tCity/tSector elsewhere in the app.
+    const valueLabel = (v) => t(`applicants.filterDropdown.values.${v}`, v);
     const [isOpen, setIsOpen] = useState(false);
     const [activeFilters, setActiveFilters] = useState({});
     const [expandedCategories, setExpandedCategories] = useState({});
@@ -77,20 +83,20 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
     };
 
     const filterCategories = [
-        { id: 'status', label: 'Attendance Status' },
-        { id: 'major', label: 'Major' },
-        { id: 'nationality', label: 'Nationality' },
-        { id: 'city', label: 'City' },
-        { id: 'studyLevel', label: 'Study Level' },
-        { id: 'cgpaRange', label: 'CGPA Range' },
-        { id: 'expectedGraduation', label: 'Expected Graduation' },
-        { id: 'experience', label: 'Experience' },
-        { id: 'languages', label: 'Languages' },
-        { id: 'technicalSkills', label: 'Technical Skills' },
-        { id: 'hasCV', label: 'CV Status' },
-        { id: 'shortlisted', label: 'Shortlisted' },
-        { id: 'rejected', label: 'Rejected' },
-        { id: 'flagged', label: 'Flagged' },
+        { id: 'status', label: t('applicants.filterDropdown.categories.status') },
+        { id: 'major', label: t('applicants.filterDropdown.categories.major') },
+        { id: 'nationality', label: t('applicants.filterDropdown.categories.nationality') },
+        { id: 'city', label: t('applicants.filterDropdown.categories.city') },
+        { id: 'studyLevel', label: t('applicants.filterDropdown.categories.studyLevel') },
+        { id: 'cgpaRange', label: t('applicants.filterDropdown.categories.cgpaRange') },
+        { id: 'expectedGraduation', label: t('applicants.filterDropdown.categories.expectedGraduation') },
+        { id: 'experience', label: t('applicants.filterDropdown.categories.experience') },
+        { id: 'languages', label: t('applicants.filterDropdown.categories.languages') },
+        { id: 'technicalSkills', label: t('applicants.filterDropdown.categories.technicalSkills') },
+        { id: 'hasCV', label: t('applicants.filterDropdown.categories.hasCV') },
+        { id: 'shortlisted', label: t('applicants.filterDropdown.categories.shortlisted') },
+        { id: 'rejected', label: t('applicants.filterDropdown.categories.rejected') },
+        { id: 'flagged', label: t('applicants.filterDropdown.categories.flagged') },
     ];
 
     // Close dropdown when clicking outside
@@ -149,30 +155,30 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
                 onClick={() => setIsOpen(!isOpen)}
                 className={`border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15'
+                        : 'border-[#0E7F41] bg-white dark:bg-gray-800 opacity-50 hover:opacity-100'
                 }`}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="size-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
                 </svg>
                 {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -end-1 bg-blue-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                         {activeFilterCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute top-12 left-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
-                    <div className="p-3 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                        <h3 className="font-semibold text-sm">Filter Applicants</h3>
+                <div className="absolute top-12 start-0 z-50 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
+                    <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 z-10">
+                        <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-100">{t('applicants.filterDropdown.filterApplicants')}</h3>
                         {activeFilterCount > 0 && (
                             <button
                                 onClick={clearAllFilters}
-                                className="text-xs text-red-500 hover:text-red-700"
+                                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                             >
-                                Clear all
+                                {t('applicants.filterDropdown.clearAll')}
                             </button>
                         )}
                     </div>
@@ -186,14 +192,14 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
                             const selectedCount = getSelectedCount(category.id);
 
                             return (
-                                <div key={category.id} className="border-b border-gray-50 last:border-b-0">
+                                <div key={category.id} className="border-b border-gray-50 dark:border-gray-700/60 last:border-b-0">
                                     <button
                                         onClick={() => toggleCategory(category.id)}
-                                        className="w-full px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-medium text-gray-700 flex items-center justify-between transition-colors"
+                                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-900/40 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between transition-colors"
                                     >
                                         <div className="flex items-center gap-2">
                                             <span>{category.label}</span>
-                                            <span className="text-gray-400 text-xs">({values.length})</span>
+                                            <span className="text-gray-400 dark:text-gray-500 text-xs">({values.length})</span>
                                             {selectedCount > 0 && (
                                                 <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                                                     {selectedCount}
@@ -215,7 +221,7 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
                                             isExpanded ? 'max-h-[250px] opacity-100' : 'max-h-0 opacity-0'
                                         }`}
                                     >
-                                        <div className="p-2 flex flex-wrap gap-1 bg-white max-h-[200px] overflow-y-auto">
+                                        <div className="p-2 flex flex-wrap gap-1 bg-white dark:bg-gray-800 max-h-[200px] overflow-y-auto">
                                             {values.map(value => {
                                                 const isSelected = activeFilters[category.id]?.includes(value);
                                                 return (
@@ -225,10 +231,10 @@ const FilterDropdown = ({ filters, onFilterChange, applicants }) => {
                                                         className={`px-2 py-1 text-xs rounded-md transition-all duration-150 ${
                                                             isSelected
                                                                 ? 'bg-blue-500 text-white'
-                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                         }`}
                                                     >
-                                                        {value}
+                                                        {valueLabel(value)}
                                                     </button>
                                                 );
                                             })}

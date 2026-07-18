@@ -24,12 +24,18 @@ const Modal = ({
     useEffect(() => {
         if (visible) {
             clearTimeout(closeTimer.current);
+            // Always mount in the pre-open ("opening") state first — even if the
+            // modal was already mounted — so the browser paints the closed
+            // transform/opacity, THEN flip to "open" on a later frame so the CSS
+            // transition has two distinct states to interpolate between. Two
+            // rAFs weren't always enough for a large modal (the first paint can
+            // land between them), which made it snap open instantly; a rAF
+            // followed by a short timeout guarantees a painted "opening" frame.
             setMounted(true);
-            // Mount first with phase "opening" (pre-animation state), then flip to
-            // "open" on the next frame so the CSS transition actually runs.
             setPhase("opening");
-            const id = requestAnimationFrame(() => requestAnimationFrame(() => setPhase("open")));
-            return () => cancelAnimationFrame(id);
+            let t;
+            const id = requestAnimationFrame(() => { t = setTimeout(() => setPhase("open"), 20); });
+            return () => { cancelAnimationFrame(id); clearTimeout(t); };
         } else if (mounted) {
             setPhase("closing");
             closeTimer.current = setTimeout(() => setMounted(false), 240);
@@ -54,7 +60,7 @@ const Modal = ({
             <div
                 ref={contentRef}
                 style={contentStyle}
-                className={`expandDetails absolute top-1/2 left-1/2 bg-white rounded-2xl shadow-2xl w-full ${maxWidth} mx-4 max-h-[90vh] overflow-hidden flex flex-col ${boxState} ${contentClassName}`}
+                className={`expandDetails absolute top-1/2 left-1/2 bg-surface-card text-fg rounded-2xl shadow-2xl w-full ${maxWidth} mx-4 max-h-[90vh] overflow-hidden flex flex-col ${boxState} ${contentClassName}`}
                 onMouseDown={(e) => e.stopPropagation()}
             >
                 {children}

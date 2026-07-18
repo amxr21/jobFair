@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { PieChart } from "@mui/x-charts/PieChart";
 
 import { BarChartElement, StatisticsElement, TopBar, PieChartElement, TopStatistic, AdvancedAnalytics } from "../components/index";
@@ -15,9 +16,9 @@ import { useToast } from "../components/Toast";
 // for a dimension that doesn't need its filter-toggle machinery (one clean
 // series, no sub-category switch)
 const SimplePieCard = ({ title, data, colors }) => (
-  <div className="bg-white rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
+  <div className="bg-surface-card rounded-lg p-2 md:p-3 flex flex-col w-full h-full overflow-hidden min-h-[240px]">
     <div className="flex items-center justify-between mb-1">
-      <h2 className="text-xs font-medium text-gray-700">{title}</h2>
+      <h2 className="text-xs font-medium text-gray-700 dark:text-gray-300">{title}</h2>
     </div>
     <div className="flex flex-col items-center justify-center flex-1 min-h-0 overflow-hidden">
       <div className="flex-shrink-0">
@@ -38,7 +39,7 @@ const SimplePieCard = ({ title, data, colors }) => (
         {data.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
             <div className="w-3 h-3 rounded flex-shrink-0" style={{ backgroundColor: colors[index % colors.length] }} />
-            <span className="text-xs font-medium">{item.label}: {item.value}</span>
+            <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{item.label}: {item.value}</span>
           </div>
         ))}
       </div>
@@ -47,6 +48,7 @@ const SimplePieCard = ({ title, data, colors }) => (
 );
 
 const Statistics = ({ link }) => {
+  const { t } = useTranslation();
   const path = useLocation();
   const toast = useToast();
   const [data, setData] = useState({ applicants: [], managers: [] });
@@ -85,35 +87,35 @@ const Statistics = ({ link }) => {
   const a = getUniqueLatestApplicants(data['applicants']);
 
   const pieData = [
-    { id: 0, value: a?.filter((app) => app.attended).length || 0, label: 'Confirmed' },
-    { id: 1, value: a?.filter((app) => !app.attended).length || 0, label: 'Registered' },
+    { id: 0, value: a?.filter((app) => app.attended).length || 0, label: t("enums.status.Confirmed") },
+    { id: 1, value: a?.filter((app) => !app.attended).length || 0, label: t("enums.status.Registered") },
   ];
 
   const pieData2 = [
-    { id: 0, value: data.managers?.filter((m) => m.status == 'Confirmed').length || 0, label: 'Confirmed' },
-    { id: 1, value: data.managers?.filter((m) => m.status != 'Confirmed').length || 0, label: 'Canceled' },
+    { id: 0, value: data.managers?.filter((m) => m.status == 'Confirmed').length || 0, label: t("enums.status.Confirmed") },
+    { id: 1, value: data.managers?.filter((m) => m.status != 'Confirmed').length || 0, label: t("enums.status.Canceled") },
   ];
 
   const categoryData1 = [
-    { id: 0, value: data.managers?.filter((m) => m.city?.toLowerCase() == "ajman").length, label: "Ajman" },
-    { id: 1, value: data.managers?.filter((m) => m.city?.toLowerCase() == "sharjah").length, label: "Sharjah" },
-    { id: 2, value: data.managers?.filter((m) => m.city?.toLowerCase() == "dubai").length, label: "Dubai" },
-    { id: 3, value: data.managers?.filter((m) => m.city?.toLowerCase() == "abu dhabi").length, label: "Abu Dhabi" },
-    { id: 4, value: data.managers?.filter((m) => m.city?.toLowerCase() == "ras al khaima").length, label: "Ras Al Khaima" },
+    { id: 0, value: data.managers?.filter((m) => m.city?.toLowerCase() == "ajman").length, label: t("enums.city.Ajman") },
+    { id: 1, value: data.managers?.filter((m) => m.city?.toLowerCase() == "sharjah").length, label: t("enums.city.Sharjah") },
+    { id: 2, value: data.managers?.filter((m) => m.city?.toLowerCase() == "dubai").length, label: t("enums.city.Dubai") },
+    { id: 3, value: data.managers?.filter((m) => m.city?.toLowerCase() == "abu dhabi").length, label: t("enums.city.Abu Dhabi") },
+    { id: 4, value: data.managers?.filter((m) => m.city?.toLowerCase() == "ras al khaima").length, label: t("enums.city.Ras Al-Khaima") },
   ]
 
   const categoryData2 = [
-    { id: 0, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "semi").length, label: "Semi" },
-    { id: 1, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "local").length, label: "Local" },
-    { id: 2, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "federal").length, label: "Federal" },
-    { id: 3, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "private").length, label: "Private" },
+    { id: 0, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "semi").length, label: t("enums.sector.Semi") },
+    { id: 1, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "local").length, label: t("enums.sector.Local") },
+    { id: 2, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "federal").length, label: t("enums.sector.Federal") },
+    { id: 3, value: data.managers?.filter((m) => m.sector?.toLowerCase() == "private").length, label: t("enums.sector.Private") },
   ]
 
   // Applicant gender split — a demographic dimension not covered by the other
   // two pies (which are about attendance/company status), from real submissions
   const genderData = [
-    { id: 0, value: a?.filter((app) => app.applicantDetails?.gender === 'Male').length || 0, label: 'Male' },
-    { id: 1, value: a?.filter((app) => app.applicantDetails?.gender === 'Female').length || 0, label: 'Female' },
+    { id: 0, value: a?.filter((app) => app.applicantDetails?.gender === 'Male').length || 0, label: t("statistics.male") },
+    { id: 1, value: a?.filter((app) => app.applicantDetails?.gender === 'Female').length || 0, label: t("statistics.female") },
   ];
 
   useEffect(() => {
@@ -227,37 +229,37 @@ const Statistics = ({ link }) => {
 
       {/* View Mode Toggle — sliding pill over two equal-width cells */}
       <div className="flex justify-end px-0.5 shrink-0">
-        <div className="relative grid grid-cols-2 bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+        <div className="relative grid grid-cols-2 bg-surface-card rounded-lg p-0.5 shadow-sm border border-gray-200 dark:border-gray-700">
           {/* Sliding pill — buttons share the same width, so 50% always matches */}
           <div
-            className="absolute top-0.5 bottom-0.5 rounded-md bg-[#0E7F41] shadow-md"
+            className="absolute top-0.5 bottom-0.5 rounded-md bg-primary shadow-md"
             style={{
               width: 'calc(50% - 2px)',
-              left: viewMode === 'basic' ? '2px' : 'calc(50% + 0px)',
-              transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+              insetInlineStart: viewMode === 'basic' ? '2px' : 'calc(50% + 0px)',
+              transition: 'inset-inline-start 0.22s cubic-bezier(0.4,0,0.2,1)',
             }}
           />
           <button
-            onClick={() => { setViewMode('basic'); toast('Switched to Overview', { type: 'info', duration: 1600 }); }}
+            onClick={() => { setViewMode('basic'); toast(t("statistics.toastOverview"), { type: 'info', duration: 1600 }); }}
             className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
-              viewMode === 'basic' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
+              viewMode === 'basic' ? 'text-primary-contrast' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
-            Overview
+            {t("statistics.overview")}
           </button>
           <button
-            onClick={() => { setViewMode('advanced'); toast('Switched to Advanced Analytics', { type: 'info', duration: 1600 }); }}
+            onClick={() => { setViewMode('advanced'); toast(t("statistics.toastAdvanced"), { type: 'info', duration: 1600 }); }}
             className={`relative z-10 px-2.5 md:px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors duration-200 ${
-              viewMode === 'advanced' ? 'text-white' : 'text-gray-600 hover:text-gray-800'
+              viewMode === 'advanced' ? 'text-primary-contrast' : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
-            <span className="hidden sm:inline">Advanced </span>Analytics
+            <span className="hidden sm:inline">{t("statistics.advancedPrefix")} </span>{t("statistics.analytics")}
           </button>
         </div>
       </div>
 
       {viewMode === 'basic' ? (
-        <div id="Statistics" className="bg-[#F3F6FF] flex-1 min-h-0 overflow-auto rounded-lg p-2 md:p-3 w-full animate-fadeIn">
+        <div id="Statistics" className="bg-surface flex-1 min-h-0 overflow-auto rounded-lg p-2 md:p-3 w-full animate-fadeIn">
           <div className="flex flex-col h-full gap-2">
             {/* Row 1 - Stats cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-1.5 md:gap-2 rounded-lg shrink-0">
@@ -269,10 +271,10 @@ const Statistics = ({ link }) => {
             {/* Row 2a - Pie charts, side by side in their own band */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 md:gap-2 shrink-0">
               <StatsticTypeProvider>
-                <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title="Number of" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
-                <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title="Companies By" colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
+                <PieChartElement dataCategory={'applicants_companies'} dataset={[pieData, pieData2]} title={t("statistics.numberOf")} colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
+                <PieChartElement dataCategory={'cities_sectors_industries'} dataset={[categoryData1, categoryData2]} title={t("statistics.companiesBy")} colorsPair={[['#0E7F41', '#E5FFE5'], ["#2959A6", "#E5F0FF"]]} />
               </StatsticTypeProvider>
-              <SimplePieCard title="Applicants By Gender" data={genderData} colors={["#0066CC", "#EC4899"]} />
+              <SimplePieCard title={t("statistics.applicantsByGender")} data={genderData} colors={["#0066CC", "#EC4899"]} />
             </div>
 
             {/* Row 2b - Bar chart, full width with real room to breathe */}
@@ -282,11 +284,11 @@ const Statistics = ({ link }) => {
 
             {/* Row 3 - Bottom stats */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-1.5 md:gap-2 shrink-0">
-              <TopStatistic title="Top Company" subtitle="Applications" data={mostCompany?.length ? mostCompany : ['', '']} icon={<StarIcon />} />
-              <TopStatistic title="Top Field" subtitle="Companies" data={mostField?.length ? mostField : ['', '']} icon={<TrendIcon />} />
-              <TopStatistic title="Top Major" subtitle="Students" data={topMajor?.length ? topMajor : ['', '']} icon={<GraduationIcon />} />
-              <TopStatistic title="Avg GPA" subtitle="Applicants" data={avgGPA ? [avgGPA, 'GPA'] : ['', '']} icon={<ChartIcon />} />
-              <TopStatistic title="Capacity" subtitle="" data={number ? [`${number}%`, 'Max'] : ['', '']} icon={<LightningIcon />} />
+              <TopStatistic title={t("statistics.topCompany")} subtitle={t("statistics.applications")} data={mostCompany?.length ? mostCompany : ['', '']} icon={<StarIcon />} />
+              <TopStatistic title={t("statistics.topField")} subtitle={t("managersCols.company")} data={mostField?.length ? mostField : ['', '']} icon={<TrendIcon />} />
+              <TopStatistic title={t("statistics.topMajor")} subtitle={t("statistics.students")} data={topMajor?.length ? topMajor : ['', '']} icon={<GraduationIcon />} />
+              <TopStatistic title={t("statistics.avgGpa")} subtitle={t("nav.applicants")} data={avgGPA ? [avgGPA, t("statistics.gpa")] : ['', '']} icon={<ChartIcon />} />
+              <TopStatistic title={t("statistics.capacity")} subtitle="" data={number ? [`${number}%`, t("statistics.max")] : ['', '']} icon={<LightningIcon />} />
             </div>
           </div>
         </div>

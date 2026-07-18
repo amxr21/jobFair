@@ -6,6 +6,7 @@ import { Login } from "./pages/Login";
 import { Signup } from "./pages/Signup";
 import { Managers, Statistics, Survey, MainBanner, NavBar, SurveyResults, ConfirmAttendance, CompanyStatus, CompanySettings, NotFound, EventOperations, EventAdmin, StudentCheckin, MyQrCode, ViewAs, DevPanel } from "./pages/index";
 import { MobileNav, MobileRegisterFAB } from "./components/index";
+import LanguageTransitionOverlay from "./components/LanguageTransitionOverlay";
 import { useAuthContext } from "./hooks/useAuthContext";
 import { PrimeReactProvider } from 'primereact/api';
 import { API_URL as link } from "./config/api";
@@ -136,6 +137,7 @@ function App() {
                     </EventOpsProvider>
                 </NotificationsProvider>
             </ToastProvider>
+            <LanguageTransitionOverlay />
         </PrimeReactProvider>
     )
 }

@@ -270,7 +270,14 @@ export const EventOpsProvider = ({ children }) => {
     // freezes at creation time: reading it meant every edit was applied to the
     // page-load snapshot, silently undoing all earlier edits in the same
     // section (assign booth A, then booth B → A reverts to Available).
-    const update = useCallback(async (section, message, updater) => {
+    // `messageKey` is an i18n key into the `activityLog` namespace (e.g.
+    // "booths.assigned") and `messageParams` are its interpolation values —
+    // NOT a pre-built string. The audit trail stores the key + params so the
+    // Activity panel can translate each entry for whichever language is active
+    // at *display* time, not whichever language was active when the action
+    // happened. Entries persisted before this change still carry an old-style
+    // plain `message` string; the display side falls back to that verbatim.
+    const update = useCallback(async (section, messageKey, messageParams, updater) => {
         let serverBaseline; // only used on this tab's very first pre-hydration edit
         if (!hydratedRef.current) {
             try {
@@ -289,7 +296,7 @@ export const EventOpsProvider = ({ children }) => {
             const baseline = serverBaseline !== undefined ? serverBaseline : prev[section];
             const updatedSection = updater(baseline, { updatedBy: employee.name, updatedAt: now });
             const updatedAudit = [
-                { id: Date.now(), at: now, by: employee.name, section, message },
+                { id: Date.now(), at: now, by: employee.name, section, messageKey, messageParams },
                 ...(prev.audit || []),
             ].slice(0, 120);
             const next = { ...prev, [section]: updatedSection, audit: updatedAudit };
@@ -310,18 +317,18 @@ export const EventOpsProvider = ({ children }) => {
     // session the first time they log in with the code
     const addStaffer = useCallback((name, email) => {
         const code = Math.random().toString(36).slice(2, 7).toUpperCase();
-        update("attendanceStaff", `Created a staff account for ${name} (${email})`, (rows, who) =>
+        update("attendanceStaff", "attendanceStaff.created", { name, email }, (rows, who) =>
             [...(rows || []), { id: Date.now(), name, email, code, status: "invited", phone: "", ...who }]);
         return code;
     }, [update]);
 
     const removeStaffer = useCallback((id) => {
-        update("attendanceStaff", "Revoked a check-in access code", (rows) => (rows || []).filter((s) => s.id !== id));
+        update("attendanceStaff", "attendanceStaff.revokedCode", null, (rows) => (rows || []).filter((s) => s.id !== id));
     }, [update]);
 
     // A staffer fills in their own remaining details after their first login
     const updateStafferProfile = useCallback((id, patch) => {
-        update("attendanceStaff", `${patch.name || "A staffer"} updated their profile`, (rows) =>
+        update("attendanceStaff", patch.name ? "attendanceStaff.updatedProfileNamed" : "attendanceStaff.updatedProfile", { name: patch.name }, (rows) =>
             (rows || []).map((s) => (s.id === id ? { ...s, ...patch, status: "active" } : s)));
     }, [update]);
 
@@ -331,35 +338,35 @@ export const EventOpsProvider = ({ children }) => {
     // list. Tasks can optionally reference an Equipment or Requirement row
     // (linkedTo), so "bring 6 chairs to B07" traces back to the actual request.
     const addSupportStaff = useCallback((name, role, phone = "", email = "") => {
-        update("supportStaff", `Added support staff ${name}${role ? ` (${role})` : ""}`, (rows, who) =>
+        update("supportStaff", role ? "supportStaff.addedWithRole" : "supportStaff.added", { name, role }, (rows, who) =>
             [...(rows || []), { id: Date.now(), name, role, phone, email, tasks: [], ...who }]);
     }, [update]);
 
     const updateSupportStaff = useCallback((id, patch) => {
-        update("supportStaff", `Updated support staff details`, (rows) =>
+        update("supportStaff", "supportStaff.updatedDetails", null, (rows) =>
             (rows || []).map((s) => (s.id === id ? { ...s, ...patch } : s)));
     }, [update]);
 
     const removeSupportStaff = useCallback((id) => {
-        update("supportStaff", "Removed a support staff member", (rows) => (rows || []).filter((s) => s.id !== id));
+        update("supportStaff", "supportStaff.removed", null, (rows) => (rows || []).filter((s) => s.id !== id));
     }, [update]);
 
     const addSupportTask = useCallback((staffId, title, linkedTo = null) => {
-        update("supportStaff", `Assigned task "${title}"`, (rows, who) =>
+        update("supportStaff", "supportStaff.assignedTask", { title }, (rows, who) =>
             (rows || []).map((s) => (s.id === staffId
                 ? { ...s, tasks: [...(s.tasks || []), { id: Date.now(), title, status: "Pending", linkedTo }], ...who }
                 : s)));
     }, [update]);
 
     const setSupportTaskStatus = useCallback((staffId, taskId, status) => {
-        update("supportStaff", `Set a task to ${status}`, (rows, who) =>
+        update("supportStaff", "supportStaff.setTaskStatus", { status }, (rows, who) =>
             (rows || []).map((s) => (s.id === staffId
                 ? { ...s, tasks: (s.tasks || []).map((t) => (t.id === taskId ? { ...t, status } : t)), ...who }
                 : s)));
     }, [update]);
 
     const removeSupportTask = useCallback((staffId, taskId) => {
-        update("supportStaff", "Removed a task", (rows) =>
+        update("supportStaff", "supportStaff.removedTask", null, (rows) =>
             (rows || []).map((s) => (s.id === staffId
                 ? { ...s, tasks: (s.tasks || []).filter((t) => t.id !== taskId) }
                 : s)));
@@ -400,7 +407,7 @@ export const EventOpsProvider = ({ children }) => {
         const time = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
         const booth = data.booths.find((b) => eq(b.company, companyName));
         const delegateCount = data.delegates.find((d) => eq(d.company, companyName))?.delegates.length || 0;
-        update("attendanceCompanies", `${companyName} self-checked in via booth QR`, (prev, who) => {
+        update("attendanceCompanies", "attendance.selfCheckedIn", { company: companyName }, (prev, who) => {
             const rows = prev || [];
             const present = { checkedIn: delegateCount, delegateCount, time, method: "QR", status: "Present", ...who };
             if (rows.some((c) => eq(c.company, companyName))) {

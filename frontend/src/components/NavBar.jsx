@@ -3,6 +3,7 @@ import { OfficeLogo, PageLink, UniLogo, AccessButtons } from "./index";
 
 import { useEffect, useState, useRef, useLayoutEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../hooks/useAuthContext";
 import axios from "axios";
@@ -12,6 +13,7 @@ import axios from "axios";
 const SlidingPill = ({ containerRef }) => {
     const pillRef = useRef(null);
     const location = useLocation();
+    const { i18n } = useTranslation();
 
     const reposition = useCallback((animate = true) => {
         const container = containerRef.current;
@@ -38,7 +40,11 @@ const SlidingPill = ({ containerRef }) => {
         reposition(false);
         const id = requestAnimationFrame(() => reposition(true));
         return () => cancelAnimationFrame(id);
-    }, [location.pathname, reposition]);
+        // Also re-measure on language change: label widths/positions shift when
+        // switching EN<->AR (different text length, RTL flow), so the pill sized
+        // for the old layout would otherwise stay stuck until the next route
+        // change or window resize.
+    }, [location.pathname, i18n.resolvedLanguage, reposition]);
 
     useEffect(() => {
         const onResize = () => reposition(false);
@@ -49,14 +55,15 @@ const SlidingPill = ({ containerRef }) => {
     return (
         <div
             ref={pillRef}
-            className="absolute rounded-xl pointer-events-none"
-            style={{ background: '#0E7F41', boxShadow: '0 2px 10px rgba(14,127,65,0.4)', opacity: 0 }}
+            className="absolute rounded-xl pointer-events-none bg-primary shadow-[0_2px_10px_rgba(14,127,65,0.4)] dark:shadow-[0_2px_10px_rgba(52,199,117,0.35)]"
+            style={{ opacity: 0 }}
         />
     );
 };
 
 const NavBar = ({ link }) => {
 
+    const { t } = useTranslation();
     const { user } = useAuthContext()
 
     const [userData, setUserData] = useState()
@@ -110,14 +117,14 @@ const NavBar = ({ link }) => {
                     {/* Main navigation group — one shared sliding pill glides between these */}
                     <div ref={mainGroupRef} className="relative flex flex-col gap-y-3">
                         <SlidingPill containerRef={mainGroupRef} />
-                        <PageLink link='' title={'Applicants'} icon={'applicants'} />
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={'My Status'} icon={'status'} />}
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={'Settings'} icon={'settings'} />}
+                        <PageLink link='' title={t('nav.applicants')} icon={'applicants'} />
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={t('nav.myStatus')} icon={'status'} />}
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={t('nav.settings')} icon={'settings'} />}
                         {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" &&
-                            <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
-                        {isCASTOAdmin && <PageLink link='managers' title={'Managers'} icon={'managers'} />}
-                        {isCASTOAdmin && <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />}
-                        {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={'Survey Results'} icon={'surveyResults'} />}
+                            <PageLink link='survey' title={t('nav.survey')} icon={'surveyStatstics'} />}
+                        {isCASTOAdmin && <PageLink link='managers' title={t('nav.managers')} icon={'managers'} />}
+                        {isCASTOAdmin && <PageLink link='statistics' title={t('nav.statistics')} icon={'statistics'} />}
+                        {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={t('nav.surveyResults')} icon={'surveyResults'} />}
                     </div>
                 </div>
 
@@ -126,7 +133,7 @@ const NavBar = ({ link }) => {
                     {isCASTOAdmin && (
                         <div ref={settingsGroupRef} className="relative flex flex-col gap-y-3 pt-3 border-t border-gray-100">
                             <SlidingPill containerRef={settingsGroupRef} />
-                            <PageLink link='event-settings' title={'Event Settings'} icon={'settings'} matchPaths={['event-admin', 'view-as', 'dev']} />
+                            <PageLink link='event-settings' title={t('nav.eventSettings')} icon={'settings'} matchPaths={['event-admin', 'view-as', 'dev']} />
                         </div>
                     )}
                     <AccessButtons />

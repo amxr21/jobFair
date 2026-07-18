@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 
 import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
+import { tCity, tSector, tStatus } from "../i18n/translateEnum";
 import { useAuthContext } from "../hooks/useAuthContext";
 import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
+import { pageHelpSeenKey } from "../components/PageHelp";
 import { useToast } from "../components/Toast";
 import Modal from "../components/Modal";
 import LoadListError from "../components/LoadListError";
@@ -13,10 +16,27 @@ import { CircularProgress } from "@mui/material";
 
 // Company Filter Dropdown Component
 const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [activeFilters, setActiveFilters] = useState({});
     const [expandedCategories, setExpandedCategories] = useState({});
     const dropdownRef = useRef(null);
+
+    // Display a filter VALUE in the active language while keeping the raw DB
+    // value as the underlying key used for filtering. Fixed-option values use
+    // the enum helpers; hasApplicants/reminderSent are UI-only sentinels.
+    const displayValue = (category, value) => {
+        switch (category) {
+            case 'status': return tStatus(value);
+            case 'sector': return tSector(value);
+            case 'city': return tCity(value);
+            case 'hasApplicants':
+                return value === 'Has Applicants' ? t('managers.filters.hasApplicants') : t('managers.filters.noApplicants');
+            case 'reminderSent':
+                return value === 'Reminder Sent' ? t('managers.filters.reminderSentValue') : t('managers.filters.notSentValue');
+            default: return value;
+        }
+    };
 
     // Get unique values for each filter category from companies
     const getUniqueValues = (category) => {
@@ -56,12 +76,12 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
     };
 
     const filterCategories = [
-        { id: 'status', label: 'Attendance Status' },
-        { id: 'sector', label: 'Sector' },
-        { id: 'city', label: 'City' },
-        { id: 'fields', label: 'Industry Fields' },
-        { id: 'hasApplicants', label: 'Applicants' },
-        { id: 'reminderSent', label: 'Reminder Status' },
+        { id: 'status', label: t('managers.filters.attendanceStatus') },
+        { id: 'sector', label: t('managers.filters.sector') },
+        { id: 'city', label: t('managers.filters.city') },
+        { id: 'fields', label: t('managers.filters.industryFields') },
+        { id: 'hasApplicants', label: t('managers.filters.applicants') },
+        { id: 'reminderSent', label: t('managers.filters.reminderStatus') },
     ];
 
     // Close dropdown when clicking outside
@@ -118,32 +138,34 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label={t('managers.filters.title')}
+                title={t('managers.filters.title')}
                 className={`relative border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15'
+                        : 'border-primary bg-surface-card opacity-50 hover:opacity-100'
                 }`}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="w-3 h-3 md:w-3.5 md:h-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-3 h-3 md:w-3.5 md:h-3.5 ${activeFilterCount > 0 ? 'text-blue-500' : 'text-primary'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
                 </svg>
                 {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -end-1 bg-blue-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                         {activeFilterCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute top-9 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
-                    <div className="p-3 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                        <h3 className="font-semibold text-sm">Filter Companies</h3>
+                <div className="absolute top-9 end-0 z-50 bg-surface-card rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
+                    <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-surface-card z-10">
+                        <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-100">{t('managers.filters.title')}</h3>
                         {activeFilterCount > 0 && (
                             <button
                                 onClick={clearAllFilters}
-                                className="text-xs text-red-500 hover:text-red-700"
+                                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                             >
-                                Clear all
+                                {t('managers.filters.clearAll')}
                             </button>
                         )}
                     </div>
@@ -157,14 +179,14 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
                             const selectedCount = getSelectedCount(category.id);
 
                             return (
-                                <div key={category.id} className="border-b border-gray-50 last:border-b-0">
+                                <div key={category.id} className="border-b border-gray-50 dark:border-gray-700 last:border-b-0">
                                     <button
                                         onClick={() => toggleCategory(category.id)}
-                                        className="w-full px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-medium text-gray-700 flex items-center justify-between transition-colors"
+                                        className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-xs font-medium text-gray-700 dark:text-gray-300 flex items-center justify-between transition-colors cursor-pointer"
                                     >
                                         <div className="flex items-center gap-2">
                                             <span>{category.label}</span>
-                                            <span className="text-gray-400 text-xs">({values.length})</span>
+                                            <span className="text-gray-400 dark:text-gray-500 text-xs">({values.length})</span>
                                             {selectedCount > 0 && (
                                                 <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                                                     {selectedCount}
@@ -186,7 +208,7 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
                                             isExpanded ? 'max-h-[250px] opacity-100' : 'max-h-0 opacity-0'
                                         }`}
                                     >
-                                        <div className="p-2 flex flex-wrap gap-1 bg-white max-h-[200px] overflow-y-auto">
+                                        <div className="p-2 flex flex-wrap gap-1 bg-surface-card max-h-[200px] overflow-y-auto">
                                             {values.map(value => {
                                                 const isSelected = activeFilters[category.id]?.includes(value);
                                                 return (
@@ -196,10 +218,10 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
                                                         className={`px-2 py-1 text-xs rounded-md transition-all duration-150 ${
                                                             isSelected
                                                                 ? 'bg-blue-500 text-white'
-                                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                                                         }`}
                                                     >
-                                                        {value}
+                                                        {displayValue(category.id, value)}
                                                     </button>
                                                 );
                                             })}
@@ -218,6 +240,7 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
 
 // Reminder Modal Component
 const ReminderModal = ({ visible, onClose, companies, link, user }) => {
+    const { t } = useTranslation();
     const [selectedCompanies, setSelectedCompanies] = useState([]);
     const [isSending, setIsSending] = useState(false);
     const [result, setResult] = useState(null);
@@ -279,12 +302,12 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
     return (
         <Modal visible={visible} onClose={onClose} maxWidth="max-w-2xl">
             {/* Header */}
-            <div className="bg-[#0E7F41] text-white px-6 py-4 flex items-center justify-between shrink-0">
+            <div className="bg-primary text-primary-contrast px-6 py-4 flex items-center justify-between shrink-0">
                 <div>
-                    <h2 className="text-lg font-bold">Send Confirmation Reminders</h2>
-                    <p className="text-xs text-white/80 mt-0.5">{pendingCompanies.length} companies haven't confirmed attendance yet</p>
+                    <h2 className="text-lg font-bold">{t("managers.reminderModal.title")}</h2>
+                    <p className="text-xs text-white/80 mt-0.5">{t("managers.reminderModal.subtitle", { count: pendingCompanies.length })}</p>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label={t("common.close")}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -293,39 +316,39 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
 
             {pendingCompanies.length === 0 ? (
                 <div className="p-10 text-center">
-                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/15 flex items-center justify-center mx-auto mb-3">
+                        <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                     </div>
-                    <p className="text-sm font-semibold text-gray-700">All companies have confirmed</p>
-                    <p className="text-xs text-gray-400 mt-1">There's no one left to remind right now.</p>
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("managers.reminderModal.allConfirmed")}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{t("managers.reminderModal.noOneLeft")}</p>
                 </div>
             ) : (
                 <>
                     {/* Toolbar: search + quick-select */}
-                    <div className="px-6 pt-4 pb-3 border-b border-gray-100 flex flex-col gap-2.5 shrink-0">
+                    <div className="px-6 pt-4 pb-3 border-b border-gray-100 dark:border-gray-700 flex flex-col gap-2.5 shrink-0">
                         <div className="relative">
-                            <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-gray-400 dark:text-gray-500 absolute start-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                             <input
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search by company name or email…"
-                                className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                                placeholder={t("managers.reminderModal.searchPlaceholder")}
+                                className="w-full border border-gray-200 dark:border-gray-700 rounded-lg ps-9 pe-3 py-2 text-sm bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer">
+                            <label className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer">
                                 <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAllVisible}
-                                    className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41]" />
-                                Select all {search ? "shown" : "pending"} ({visibleCompanies.length})
+                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary" />
+                                {search ? t("managers.reminderModal.selectAllShown", { count: visibleCompanies.length }) : t("managers.reminderModal.selectAllPending", { count: visibleCompanies.length })}
                             </label>
                             {neverContacted.length > 0 && (
-                                <button onClick={() => selectGroup(neverContacted)} className="text-xs font-medium border border-gray-200 rounded-full px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors">
-                                    + Never contacted ({neverContacted.length})
+                                <button onClick={() => selectGroup(neverContacted)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-full px-2.5 py-1 text-gray-500 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors">
+                                    {t("managers.reminderModal.neverContacted", { count: neverContacted.length })}
                                 </button>
                             )}
-                            <span className="ml-auto text-xs font-semibold text-gray-500">{selectedCompanies.length} selected</span>
+                            <span className="ms-auto text-xs font-semibold text-gray-500 dark:text-gray-400">{t("managers.reminderModal.selectedCount", { count: selectedCompanies.length })}</span>
                         </div>
                     </div>
 
@@ -333,7 +356,7 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                     <div className="px-6 py-3 overflow-y-auto flex-1 min-h-0 max-h-[42vh]">
                         <div className="flex flex-col gap-1.5">
                             {visibleCompanies.length === 0 && (
-                                <p className="text-center text-sm text-gray-400 py-8">No companies match "{search}"</p>
+                                <p className="text-center text-sm text-gray-400 dark:text-gray-500 py-8">{t("managers.reminderModal.noMatch", { search })}</p>
                             )}
                             {visibleCompanies.map(company => {
                                 const checked = selectedCompanies.includes(company.id);
@@ -341,25 +364,25 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                                     <label
                                         key={company.id}
                                         className={`flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors ${
-                                            checked ? 'border-[#0E7F41] bg-[#0E7F41]/5' : 'border-gray-100 hover:border-gray-200'
+                                            checked ? 'border-primary bg-primary/5' : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
                                         }`}
                                     >
                                         <input
                                             type="checkbox"
                                             checked={checked}
                                             onChange={() => handleToggleCompany(company.id)}
-                                            className="w-4 h-4 rounded border-gray-300 text-[#0E7F41] focus:ring-[#0E7F41] shrink-0"
+                                            className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary shrink-0"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-800 truncate">{company.companyName}</p>
-                                            <p className="text-xs text-gray-400 truncate">{company.email}</p>
+                                            <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{company.companyName}</p>
+                                            <p className="text-xs text-gray-400 dark:text-gray-500 truncate bidi-ltr">{company.email}</p>
                                         </div>
                                         {company.reminderSentAt ? (
-                                            <span className="text-[10px] bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 shrink-0" title={`Last sent: ${new Date(company.reminderSentAt).toLocaleString()}`}>
-                                                Reminded {new Date(company.reminderSentAt).toLocaleDateString()}
+                                            <span className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full px-2 py-0.5 shrink-0" title={t("managers.reminderModal.lastSent", { when: new Date(company.reminderSentAt).toLocaleString() })}>
+                                                {t("managers.reminderModal.reminded", { date: new Date(company.reminderSentAt).toLocaleDateString() })}
                                             </span>
                                         ) : (
-                                            <span className="text-[10px] bg-amber-50 text-amber-600 rounded-full px-2 py-0.5 shrink-0">Never contacted</span>
+                                            <span className="text-[10px] bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 rounded-full px-2 py-0.5 shrink-0">{t("managers.reminderModal.neverContactedBadge")}</span>
                                         )}
                                     </label>
                                 );
@@ -367,7 +390,7 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                         </div>
 
                         {result && (
-                            <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                            <div className={`mt-3 p-3 rounded-lg text-sm ${result.type === 'success' ? 'bg-green-50 dark:bg-green-500/15 text-green-800 dark:text-green-300' : 'bg-red-50 dark:bg-red-500/15 text-red-800 dark:text-red-300'}`}>
                                 {result.type === 'success' ? (
                                     <div>
                                         <p className="font-semibold">{result.data.message}</p>
@@ -383,23 +406,23 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-3.5 border-t bg-gray-50 flex items-center justify-end gap-3 shrink-0">
-                        <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                            {result ? "Done" : "Cancel"}
+                    <div className="px-6 py-3.5 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-end gap-3 shrink-0">
+                        <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                            {result ? t("common.done") : t("common.cancel")}
                         </button>
                         <button
                             onClick={handleSendReminders}
                             disabled={selectedCompanies.length === 0 || isSending}
-                            className="px-5 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            className="px-5 py-2 bg-primary hover:bg-primary-hover text-primary-contrast text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                             {isSending ? (
-                                <><CircularProgress size={14} sx={{ color: 'white' }} />Sending…</>
+                                <><CircularProgress size={14} sx={{ color: 'white' }} />{t("managers.reminderModal.sending")}</>
                             ) : (
                                 <>
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
-                                    Send Reminders ({selectedCompanies.length})
+                                    {t("managers.reminderModal.sendReminders", { count: selectedCompanies.length })}
                                 </>
                             )}
                         </button>
@@ -412,7 +435,7 @@ const ReminderModal = ({ visible, onClose, companies, link, user }) => {
 
 
 const Managers = ({link}) => {
-
+    const { t } = useTranslation();
     const [companies, setCompanies ] = useState([]);
     const { user } = useAuthContext();
     const toast = useToast();
@@ -704,6 +727,10 @@ const Managers = ({link}) => {
     useEffect(() => {
         if (!user || isLoading) return;
         if (localStorage.getItem(MANAGERS_TOUR_KEY)) return;
+        // The tour is about to explain this whole page, so the separate "?"
+        // auto-popup would just stack on top of it a moment later on a true
+        // first visit. Pre-mark it seen for this session so only the tour shows.
+        try { sessionStorage.setItem(pageHelpSeenKey('/managers'), '1'); } catch { /* ignore */ }
         const id = setTimeout(() => setShowTour(true), 400);
         return () => clearTimeout(id);
     }, [user, isLoading]);
@@ -725,25 +752,26 @@ const Managers = ({link}) => {
         <>
         <PageContainer
             user={user}
-            title="Companies & Cooperations"
+            noHorizontalPadding
+            title={t("managers.pageTitle")}
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
                 <div className="flex flex-wrap gap-1.5 items-center">
                     {/* Search — name-only, filter + highlight */}
                     <div data-tour="tour-search" className="relative flex items-center">
                         <input
                             type="text"
-                            placeholder="Search by name…"
+                            placeholder={t("managers.searchPlaceholder")}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className={`pl-7 pr-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
-                                searchQuery ? 'border-blue-500 bg-blue-50' : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                            className={`ps-7 pe-6 h-7 md:h-8 text-xs border rounded-lg bg-surface-card text-fg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
+                                searchQuery ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15' : 'border-primary opacity-50 hover:opacity-100'
                             }`}
                         />
-                        <svg className="absolute left-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                        <svg className={`absolute start-2 w-3 h-3 pointer-events-none ${searchQuery ? 'text-blue-500' : 'text-primary'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         {searchQuery && (
-                            <button onClick={() => setSearchQuery('')} className="absolute right-1.5 text-gray-400 hover:text-gray-600">
+                            <button onClick={() => setSearchQuery('')} className="absolute end-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                             </button>
                         )}
@@ -752,11 +780,11 @@ const Managers = ({link}) => {
                         <CompanyFilterDropdown filters={activeFilters} onFilterChange={handleFilterChange} companies={companies} />
                     </span>
                     <button data-tour="tour-register-btn" onClick={() => setShowReminderModal(true)}
-                        className="flex items-center gap-1.5 px-2.5 h-7 md:h-8 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-xs font-medium rounded-lg transition-colors">
+                        className="flex items-center gap-1.5 px-2.5 h-7 md:h-8 bg-primary hover:bg-primary-hover text-primary-contrast text-xs font-medium rounded-lg transition-colors">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
-                        <span className="hidden md:inline">Send Reminders</span>
+                        <span className="hidden md:inline">{t("managers.sendReminders")}</span>
                     </button>
                 </div>
             )}

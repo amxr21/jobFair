@@ -15,7 +15,7 @@ const FilterInput = ({label}) => {
     return (
         <div className="filter-input mx-2 z-39">
             <input ref={checkIt} onChange={filterChecked} className="" type="checkbox" name={label} id={label} />
-            <label className="ml-2" htmlFor={label}>{label}</label>
+            <label className="ms-2" htmlFor={label}>{label}</label>
         </div>
     )
 }

@@ -199,7 +199,7 @@ const StudentCheckin = () => {
                         <div className="p-6 flex flex-col gap-3">
                             <div>
                                 <label className="text-xs font-medium text-gray-500">Email</label>
-                                <p className="text-sm text-gray-700 mt-0.5">{session.email}</p>
+                                <p className="text-sm text-gray-700 mt-0.5 bidi-ltr">{session.email}</p>
                             </div>
                             <div>
                                 <label className="text-xs font-medium text-gray-500">Phone number</label>
