@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
@@ -282,6 +282,7 @@ function composeSize(width, height) {
 }
 
 const BannerBranding = () => {
+  const { t } = useTranslation();
   const { data, update } = useEventOps();
   const toast = useToast();
   const banners = data.banners;
@@ -295,7 +296,7 @@ const BannerBranding = () => {
     const next = BANNER_STEPS[stepIdx(row.status) + 1];
     update("banners", `Moved ${row.company} ${row.material.toLowerCase()} to "${next}"`, (rows, who) =>
       rows.map((b) => (b.id === row.id ? { ...b, status: next, ...who } : b)));
-    toast(`${row.company} banner marked ${next}`, { type: "success" });
+    toast(t("eventOps.banners.toastMarked", { company: row.company, status: translateEnum("bannerStatus", next) }), { type: "success" });
   };
 
   const startEdit = (row) => { setEditingId(row.id); setForm({ ...row, ...parseSize(row.size) }); };
@@ -303,7 +304,7 @@ const BannerBranding = () => {
     const size = composeSize(form.width, form.height);
     update("banners", `Updated ${form.company} branding details`, (rows, who) =>
       rows.map((b) => (b.id === editingId ? { ...b, ...form, size, quantity: Number(form.quantity) || 1, ...who } : b)));
-    toast("Branding details saved", { type: "success" });
+    toast(t("eventOps.banners.toastSaved"), { type: "success" });
     setEditingId(null);
   };
 
@@ -326,9 +327,9 @@ const BannerBranding = () => {
       update("banners", `Uploaded artwork for ${row.company}`, (rows, who) =>
         rows.map((b) => (b.id === row.id ? { ...b, artwork: res.data.artwork, ...who } : b)));
       if (editingId === row.id) setForm((f) => ({ ...f, artwork: res.data.artwork }));
-      toast("Artwork uploaded", { type: "success" });
+      toast(t("eventOps.banners.toastUploaded"), { type: "success" });
     } catch (err) {
-      toast(err.response?.data?.error || "Failed to upload artwork", { type: "error" });
+      toast(err.response?.data?.error || t("eventOps.banners.toastUploadFailed"), { type: "error" });
     } finally {
       setUploadingId(null);
     }
@@ -338,9 +339,9 @@ const BannerBranding = () => {
     <div className="flex flex-col gap-5">
       <div className="flex gap-4 flex-wrap pb-1">
         {BANNER_STEPS.map((step, idx) => (
-          <div key={step} className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${idx === 0 ? "bg-gray-300" : idx === 4 ? "bg-green-500" : "bg-blue-400"}`} />
-            {step}
+          <div key={step} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${idx === 0 ? "bg-gray-300 dark:bg-gray-600" : idx === 4 ? "bg-green-500" : "bg-blue-400"}`} />
+            {translateEnum("bannerStatus", step)}
           </div>
         ))}
       </div>
@@ -350,98 +351,98 @@ const BannerBranding = () => {
           const si = stepIdx(row.status);
           const editing = editingId === row.id;
           return (
-            <div key={row.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+            <div key={row.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div>
-                  <p className="font-semibold text-gray-800 text-sm">{row.company}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{row.material}</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{row.company}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{row.material}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge label={row.status} color={statusColor(row.status)} />
+                  <Badge label={translateEnum("bannerStatus", row.status)} color={statusColor(row.status)} />
                   {si < BANNER_STEPS.length - 1 && (
-                    <button onClick={() => advance(row)} className="text-xs font-medium text-white rounded-lg px-3 py-1 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
-                      Mark {BANNER_STEPS[si + 1]}
+                    <button onClick={() => advance(row)} className="text-xs font-medium text-primary-contrast rounded-lg px-3 py-1 hover:opacity-90 transition-opacity bg-primary">
+                      {t("eventOps.banners.mark", { status: translateEnum("bannerStatus", BANNER_STEPS[si + 1]) })}
                     </button>
                   )}
-                  <button onClick={() => (editing ? setEditingId(null) : startEdit(row))} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:bg-gray-50 transition-colors">
-                    {editing ? "Close" : "Edit"}
+                  <button onClick={() => (editing ? setEditingId(null) : startEdit(row))} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    {editing ? t("common.close") : t("common.edit")}
                   </button>
                 </div>
               </div>
 
               {/* Detailed spec grid */}
               {!editing ? (
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-1.5 text-xs bg-gray-50 rounded-lg px-3 py-2">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-x-4 gap-y-1.5 text-xs bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
                   {[
-                    ["Size", row.size],
-                    ["Quantity", row.quantity],
-                    ["Company contact", row.contact],
-                    ["Print deadline", row.deadline],
+                    [t("eventOps.banners.size"), row.size],
+                    [t("eventOps.banners.quantity"), row.quantity],
+                    [t("eventOps.banners.companyContact"), row.contact],
+                    [t("eventOps.banners.printDeadline"), row.deadline],
                   ].map(([k, v]) => (
                     <div key={k} className="min-w-0">
-                      <p className="text-gray-400">{k}</p>
-                      <p className={`font-medium truncate ${v === "Not received" ? "text-red-500" : "text-gray-700"}`}>{v}</p>
+                      <p className="text-gray-400 dark:text-gray-500">{k}</p>
+                      <p className={`font-medium truncate ${v === "Not received" ? "text-red-500 dark:text-red-400" : "text-gray-700 dark:text-gray-300"}`}>{v === "Not received" ? t("eventOps.banners.notReceived") : v}</p>
                     </div>
                   ))}
                   <div className="min-w-0">
-                    <p className="text-gray-400">Artwork file</p>
+                    <p className="text-gray-400 dark:text-gray-500">{t("eventOps.banners.artworkFile")}</p>
                     {row.artwork ? (
-                      <a href={row.artwork} target="_blank" rel="noreferrer" className="font-medium text-blue-600 hover:underline truncate block">View file</a>
+                      <a href={row.artwork} target="_blank" rel="noreferrer" className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate block">{t("eventOps.banners.viewFile")}</a>
                     ) : (
-                      <p className="font-medium text-red-500 truncate">Not received</p>
+                      <p className="font-medium text-red-500 dark:text-red-400 truncate">{t("eventOps.banners.notReceived")}</p>
                     )}
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-[#F3F6FF] rounded-lg p-3 border border-blue-100">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-surface-raised rounded-lg p-3 border border-blue-100 dark:border-blue-500/20">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Material</label>
-                    <CompactSelect className="text-xs" value={form.material ?? ""} onChange={F("material")} options={BANNER_MATERIALS} placeholder="Select type…" />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.material")}</label>
+                    <CompactSelect className="text-xs" value={form.material ?? ""} onChange={F("material")} options={BANNER_MATERIALS} placeholder={t("eventOps.banners.selectType")} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Width (cm)</label>
-                    <input type="number" min="0" className={`text-xs ${inputCls}`} value={form.width ?? ""} onChange={F("width")} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.widthCm")}</label>
+                    <input type="number" min="0" dir="ltr" className={`text-xs ${inputCls}`} value={form.width ?? ""} onChange={F("width")} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Height (cm)</label>
-                    <input type="number" min="0" className={`text-xs ${inputCls}`} value={form.height ?? ""} onChange={F("height")} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.heightCm")}</label>
+                    <input type="number" min="0" dir="ltr" className={`text-xs ${inputCls}`} value={form.height ?? ""} onChange={F("height")} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Quantity</label>
-                    <input type="number" min="1" step="1" className={`text-xs ${inputCls}`} value={form.quantity ?? ""} onChange={F("quantity")} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.quantity")}</label>
+                    <input type="number" min="1" step="1" dir="ltr" className={`text-xs ${inputCls}`} value={form.quantity ?? ""} onChange={F("quantity")} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Company contact</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.companyContact")}</label>
                     <input className={`text-xs ${inputCls}`} value={form.contact ?? ""} onChange={F("contact")} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs text-gray-500 font-medium">Print deadline</label>
-                    <input type="date" className={`text-xs ${inputCls}`} value={form.deadline ? String(form.deadline).slice(0, 10) : ""} onChange={F("deadline")} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.printDeadline")}</label>
+                    <input type="date" dir="ltr" className={`text-xs ${inputCls}`} value={form.deadline ? String(form.deadline).slice(0, 10) : ""} onChange={F("deadline")} />
                   </div>
                   <div className="flex flex-col gap-1 col-span-2 md:col-span-3">
-                    <label className="text-xs text-gray-500 font-medium">Artwork file</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.artworkFile")}</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="file"
                         accept=".jpg,.jpeg,.png,.pdf,.ai,.eps"
                         disabled={uploadingId === row.id}
                         onChange={(e) => uploadArtwork(row, e.target.files[0])}
-                        className="text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-[#0E7F41] file:text-white hover:file:bg-[#0a5f31] file:cursor-pointer disabled:opacity-50"
+                        className="text-xs file:me-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary file:text-primary-contrast hover:file:bg-primary-hover file:cursor-pointer disabled:opacity-50"
                       />
-                      {uploadingId === row.id && <span className="text-xs text-gray-400">Uploading…</span>}
+                      {uploadingId === row.id && <span className="text-xs text-gray-400 dark:text-gray-500">{t("eventOps.banners.uploading")}</span>}
                     </div>
                     {form.artwork && (
-                      <a href={form.artwork} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline truncate">
-                        View current file
+                      <a href={form.artwork} target="_blank" rel="noreferrer" className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate">
+                        {t("eventOps.banners.viewCurrentFile")}
                       </a>
                     )}
                   </div>
                   <div className="flex flex-col gap-1 col-span-2 md:col-span-3">
-                    <label className="text-xs text-gray-500 font-medium">Notes</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.notes")}</label>
                     <input className={`text-xs ${inputCls}`} value={form.notes ?? ""} onChange={F("notes")} />
                   </div>
                   <div className="col-span-2 md:col-span-3 flex justify-end">
-                    <button onClick={saveEdit} className="text-xs font-semibold text-white rounded-lg px-4 py-1.5" style={{ background: "#0E7F41" }}>Save details</button>
+                    <button onClick={saveEdit} className="text-xs font-semibold text-primary-contrast rounded-lg px-4 py-1.5 bg-primary">{t("eventOps.banners.saveDetails")}</button>
                   </div>
                 </div>
               )}
@@ -450,21 +451,21 @@ const BannerBranding = () => {
               <div className="flex items-center gap-0.5">
                 {BANNER_STEPS.map((step, idx) => (
                   <div key={step} className="flex items-center flex-1 last:flex-none">
-                    <div title={step} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold flex-shrink-0 transition-all duration-300 ${
+                    <div title={translateEnum("bannerStatus", step)} className={`w-5 h-5 rounded-full border-2 flex items-center justify-center text-[9px] font-bold flex-shrink-0 transition-all duration-300 ${
                       idx < si ? "border-green-500 bg-green-500 text-white"
-                      : idx === si ? "border-green-500 bg-white text-green-600"
-                      : "border-gray-200 bg-white text-gray-300"}`}>
+                      : idx === si ? "border-green-500 bg-surface-card text-green-600 dark:text-green-400"
+                      : "border-gray-200 dark:border-gray-600 bg-surface-card text-gray-300 dark:text-gray-500"}`}>
                       {idx < si ? <CheckIcon /> : idx + 1}
                     </div>
                     {idx < BANNER_STEPS.length - 1 && (
-                      <div className={`flex-1 h-0.5 mx-0.5 transition-all duration-300 ${idx < si ? "bg-green-400" : "bg-gray-200"}`} />
+                      <div className={`flex-1 h-0.5 mx-0.5 transition-all duration-300 ${idx < si ? "bg-green-400" : "bg-gray-200 dark:bg-gray-600"}`} />
                     )}
                   </div>
                 ))}
               </div>
 
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                {row.notes ? <p className="text-xs text-gray-400 italic">{row.notes}</p> : <span />}
+                {row.notes ? <p className="text-xs text-gray-400 dark:text-gray-500 italic">{row.notes}</p> : <span />}
                 <LastEdited row={row} />
               </div>
             </div>
@@ -478,6 +479,7 @@ const BannerBranding = () => {
 // ─── Tab: Special Requirements ────────────────────────────────────────────────
 
 const SpecialRequirements = () => {
+  const { t } = useTranslation();
   const { data, update, companies } = useEventOps();
   const toast = useToast();
   const rows = data.requirements;
@@ -488,13 +490,13 @@ const SpecialRequirements = () => {
 
   const handleAdd = () => {
     if (!form.description.trim()) {
-      toast("Please describe the requirement before saving", { type: "error" });
+      toast(t("eventOps.requirements.toastDescribeFirst"), { type: "error" });
       return;
     }
     const company = form.company || companies[0];
     update("requirements", `Added requirement for ${company}: ${form.description.slice(0, 40)}`, (prev, who) =>
       [...prev, { ...form, company, id: Date.now(), ...who }]);
-    toast("Requirement added", { type: "success" });
+    toast(t("eventOps.requirements.toastAdded"), { type: "success" });
     setForm({ company: "", description: "", category: "", priority: "Medium", status: "Open", notes: "" });
     setShowForm(false);
   };
@@ -511,60 +513,60 @@ const SpecialRequirements = () => {
       <div className="flex justify-between items-center">
         <div className="flex gap-2 flex-wrap">
           {["Open", "In Progress", "Fulfilled"].map((s) => (
-            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Badge label={`${rows.filter(r => r.status === s).length} ${s}`} color={statusColor(s)} />
+            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Badge label={`${rows.filter(r => r.status === s).length} ${translateEnum("requestStatus", s)}`} color={statusColor(s)} />
             </span>
           ))}
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0" style={{ background: "#0E7F41" }}>
-          {showForm ? "Cancel" : "+ Add Requirement"}
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-primary-contrast rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0 bg-primary">
+          {showForm ? t("common.cancel") : t("eventOps.requirements.addRequirement")}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
-          <p className="text-sm font-semibold text-gray-700">New Requirement</p>
+        <div className="bg-surface-raised rounded-xl p-4 border border-blue-100 dark:border-blue-500/20 flex flex-col gap-3">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("eventOps.requirements.newRequirement")}</p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
-              { label: "Company", el: <CompactSelect value={form.company} onChange={F("company")} placeholder="Select…" options={companies} /> },
-              { label: "Category", el: <input className={inputCls} placeholder="e.g. AV Equipment" value={form.category} onChange={F("category")} /> },
-              { label: "Priority", el: <CompactSelect value={form.priority} onChange={F("priority")} options={["Low", "Medium", "High", "Critical"]} /> },
+              { label: t("eventOps.requirements.company"), el: <CompactSelect value={form.company} onChange={F("company")} placeholder={t("common.search")} options={companies} /> },
+              { label: t("eventOps.requirements.category"), el: <input className={inputCls} placeholder={t("eventOps.requirements.categoryPlaceholder")} value={form.category} onChange={F("category")} /> },
+              { label: t("eventOps.requirements.priority"), el: <CompactSelect value={form.priority} onChange={F("priority")} options={["Low", "Medium", "High", "Critical"]} tOption={(v) => translateEnum("priority", v)} /> },
             ].map(({ label, el }) => (
-              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
+              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</label>{el}</div>
             ))}
             <div className="flex flex-col gap-1 md:col-span-2">
-              <label className="text-xs text-gray-500 font-medium">Description</label>
-              <input className={inputCls} placeholder="Describe the requirement..." value={form.description} onChange={F("description")} />
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.requirements.description")}</label>
+              <input className={inputCls} placeholder={t("eventOps.requirements.describePlaceholder")} value={form.description} onChange={F("description")} />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Notes</label>
-              <input className={inputCls} placeholder="Optional..." value={form.notes} onChange={F("notes")} />
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.banners.notes")}</label>
+              <input className={inputCls} placeholder={t("eventOps.requirements.optional")} value={form.notes} onChange={F("notes")} />
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} disabled={!form.description.trim()} className="text-sm font-semibold text-white rounded-xl px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>Save</button>
+            <button onClick={handleAdd} disabled={!form.description.trim()} className="text-sm font-semibold text-primary-contrast rounded-xl px-4 py-2 disabled:opacity-50 bg-primary">{t("common.save")}</button>
           </div>
         </div>
       )}
 
       <div className="flex flex-col gap-2">
         {rows.map((row) => (
-          <div key={row.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 flex items-start justify-between gap-3 flex-wrap hover:border-gray-200 transition-colors">
+          <div key={row.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-3.5 flex items-start justify-between gap-3 flex-wrap hover:border-gray-200 dark:hover:border-gray-600 transition-colors">
             <div className="flex flex-col gap-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-gray-800 text-sm">{row.company}</span>
+                <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{row.company}</span>
                 {row.category && <Badge label={row.category} color="blue" />}
-                <Badge label={row.priority} color={statusColor(row.priority)} />
+                <Badge label={translateEnum("priority", row.priority)} color={statusColor(row.priority)} />
               </div>
-              <p className="text-sm text-gray-600">{row.description}</p>
-              {row.notes && <p className="text-xs text-gray-400 italic">{row.notes}</p>}
+              <p className="text-sm text-gray-600 dark:text-gray-300">{row.description}</p>
+              {row.notes && <p className="text-xs text-gray-400 dark:text-gray-500 italic">{row.notes}</p>}
               <LastEdited row={row} />
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge label={row.status} color={statusColor(row.status)} />
+              <Badge label={translateEnum("requestStatus", row.status)} color={statusColor(row.status)} />
               {row.status !== "Fulfilled" && (
-                <button onClick={() => cycleStatus(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-50 transition-colors text-gray-600">
-                  {row.status === "Open" ? "Start" : "Fulfill"}
+                <button onClick={() => cycleStatus(row)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-gray-300">
+                  {row.status === "Open" ? t("eventOps.requirements.start") : t("eventOps.requirements.fulfill")}
                 </button>
               )}
             </div>
@@ -578,6 +580,7 @@ const SpecialRequirements = () => {
 // ─── Tab: Equipment & Logistics ───────────────────────────────────────────────
 
 const EquipmentLogistics = () => {
+  const { t } = useTranslation();
   const { data, update, companies: allCompanyNames } = useEventOps();
   const toast = useToast();
   const allRows = data.equipment;
@@ -596,14 +599,14 @@ const EquipmentLogistics = () => {
 
   const addRequest = () => {
     if (!form.company || !form.item.trim()) {
-      toast("Company and item are both required", { type: "error" });
+      toast(t("eventOps.equipment.toastRequired"), { type: "error" });
       return;
     }
     const entity = form.booth.trim() ? `${form.company} / ${form.booth.trim()}` : form.company;
     const qtyReq = Number(form.qtyReq) || 1;
     update("equipment", `Added ${form.item} request for ${entity}`, (prev, who) =>
       [...prev, { id: Date.now(), entity, item: form.item.trim(), qtyReq, qtyFul: 0, status: "Pending", requestedBy: null, ...who }]);
-    toast(`${form.item.trim()} request added for ${form.company}`, { type: "success" });
+    toast(t("eventOps.equipment.toastAdded", { item: form.item.trim(), company: form.company }), { type: "success" });
     setForm({ company: "", booth: "", item: "", qtyReq: "1" });
     setShowForm(false);
   };
@@ -611,14 +614,14 @@ const EquipmentLogistics = () => {
   const fulfillItem = (row) => {
     update("equipment", `Fulfilled ${row.item} for ${row.entity}`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled", ...who } : r)));
-    toast(`${row.item} fulfilled`, { type: "success" });
+    toast(t("eventOps.equipment.toastFulfilled", { item: row.item }), { type: "success" });
   };
   // Reverses a fulfillment — resets to Pending since the exact prior partial
   // amount (if any) wasn't tracked separately from qtyFul
   const unfulfillItem = (row) => {
     update("equipment", `Marked ${row.item} for ${row.entity} as unfulfilled`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: 0, status: "Pending", ...who } : r)));
-    toast(`${row.item} marked unfulfilled`, { type: "warning" });
+    toast(t("eventOps.equipment.toastUnfulfilled", { item: row.item }), { type: "warning" });
   };
 
   // Split "Company / Booth" back into parts for editing, then recompose on save
@@ -630,19 +633,19 @@ const EquipmentLogistics = () => {
   };
   const cancelEdit = () => { setEditingId(null); setEditForm({}); };
   const saveEdit = (row) => {
-    if (!editForm.item?.trim()) { toast("Item is required", { type: "error" }); return; }
+    if (!editForm.item?.trim()) { toast(t("eventOps.equipment.toastItemRequired"), { type: "error" }); return; }
     const entity = editForm.booth?.trim() ? `${editForm.company} / ${editForm.booth.trim()}` : editForm.company;
     const qtyReq = Number(editForm.qtyReq) || 1;
     const qtyFul = Math.min(Number(editForm.qtyFul) || 0, qtyReq);
     const status = qtyFul === 0 ? "Pending" : qtyFul >= qtyReq ? "Fulfilled" : "Partial";
     update("equipment", `Edited ${editForm.item} for ${entity}`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, entity, item: editForm.item.trim(), qtyReq, qtyFul, status, ...who } : r)));
-    toast("Equipment updated", { type: "success" });
+    toast(t("eventOps.equipment.toastUpdated"), { type: "success" });
     cancelEdit();
   };
   const removeItem = (row) => {
     update("equipment", `Removed ${row.item} for ${row.entity}`, (prev) => prev.filter((r) => r.id !== row.id));
-    toast(`Removed ${row.item}`, { type: "info" });
+    toast(t("eventOps.equipment.toastRemoved", { item: row.item }), { type: "info" });
     if (editingId === row.id) cancelEdit();
   };
 
@@ -653,40 +656,40 @@ const EquipmentLogistics = () => {
   const approveRequest = (row) => {
     update("equipment", `Approved ${row.item} requested by ${row.requestedBy}`, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, requestedBy: null, ...who } : r)));
-    toast(`Approved ${row.item} for ${row.requestedBy}`, { type: "success" });
+    toast(t("eventOps.equipment.toastApproved", { item: row.item, requester: row.requestedBy }), { type: "success" });
   };
   const declineRequest = (row) => {
     update("equipment", `Declined ${row.item} requested by ${row.requestedBy}`, (prev) => prev.filter((r) => r.id !== row.id));
-    toast(`Declined ${row.item} request`, { type: "warning" });
+    toast(t("eventOps.equipment.toastDeclined"), { type: "warning" });
   };
 
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Tables" value={total(["table"])} sub="Total requested" />
-        <StatCard label="Chairs" value={total(["chair"])} sub="Total requested" color="#2959A6" />
-        <StatCard label="Power / Cables" value={total(["power", "extension", "cable"])} sub="Strips & cables" color="#f59e0b" />
-        <StatCard label="Screens" value={total(["screen", "monitor"])} sub="Monitors & displays" color="#8b5cf6" />
+        <StatCard label={t("eventOps.equipment.tables")} value={total(["table"])} sub={t("eventOps.equipment.totalRequested")} />
+        <StatCard label={t("eventOps.equipment.chairs")} value={total(["chair"])} sub={t("eventOps.equipment.totalRequested")} />
+        <StatCard label={t("eventOps.equipment.powerCables")} value={total(["power", "extension", "cable"])} sub={t("eventOps.equipment.stripsCables")} />
+        <StatCard label={t("eventOps.equipment.screens")} value={total(["screen", "monitor"])} sub={t("eventOps.equipment.monitorsDisplays")} />
       </div>
 
       {/* Company-submitted requests awaiting approval — surfaced at the top so
           CASTO acts on them before they get lost in the full list. */}
       {pendingRequests.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col gap-2.5">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 p-4 flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <span className="w-5 h-5 rounded-full bg-amber-400 text-white text-[11px] font-bold flex items-center justify-center">{pendingRequests.length}</span>
-            <p className="text-sm font-semibold text-amber-800">Equipment requests awaiting your approval</p>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">{t("eventOps.equipment.awaitingApproval")}</p>
           </div>
           <div className="flex flex-col gap-2">
             {pendingRequests.map((row) => (
-              <div key={row.id} className="flex items-center justify-between gap-3 bg-white rounded-lg border border-amber-100 px-3 py-2 flex-wrap">
+              <div key={row.id} className="flex items-center justify-between gap-3 bg-surface-card rounded-lg border border-amber-100 dark:border-amber-500/20 px-3 py-2 flex-wrap">
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 truncate">{row.qtyReq} × {row.item}</p>
-                  <p className="text-[11px] text-gray-500">Requested by {row.requestedBy}</p>
+                  <p className="text-xs font-semibold text-gray-800 dark:text-gray-100 truncate">{row.qtyReq} × {row.item}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{t("eventOps.equipment.requestedBy", { requester: row.requestedBy })}</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={() => approveRequest(row)} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>Approve</button>
-                  <button onClick={() => declineRequest(row)} className="text-xs font-medium border border-red-200 rounded-lg px-3 py-1.5 text-red-500 hover:bg-red-50 transition-colors">Decline</button>
+                  <button onClick={() => approveRequest(row)} className="text-xs font-semibold text-primary-contrast rounded-lg px-3 py-1.5 hover:opacity-90 transition-opacity bg-primary">{t("eventOps.equipment.approve")}</button>
+                  <button onClick={() => declineRequest(row)} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-3 py-1.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">{t("eventOps.equipment.decline")}</button>
                 </div>
               </div>
             ))}
@@ -699,99 +702,99 @@ const EquipmentLogistics = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search company, booth or item…"
-            className="w-full sm:w-80 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+            placeholder={t("eventOps.equipment.searchPlaceholder")}
+            className="w-full sm:w-80 ps-8 pe-3 h-9 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <svg className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity" style={{ background: "#0E7F41" }}>
-          {showForm ? "Cancel" : "+ Add Equipment Request"}
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-primary-contrast rounded-xl px-3 py-2 hover:opacity-90 transition-opacity bg-primary">
+          {showForm ? t("common.cancel") : t("eventOps.equipment.addRequest")}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+        <div className="bg-surface-raised rounded-xl p-4 border border-blue-100 dark:border-blue-500/20 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div className="flex flex-col gap-1 md:col-span-2">
-            <label className="text-xs text-gray-500 font-medium">Company</label>
-            <CompactSelect value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} placeholder="Select company…" options={allCompanyNames} />
+            <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.requirements.company")}</label>
+            <CompactSelect value={form.company} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} placeholder={t("eventOps.equipment.selectCompany")} options={allCompanyNames} />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">Booth (optional)</label>
+            <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.equipment.boothOptional")}</label>
             <input className={inputCls} placeholder="e.g. B03" value={form.booth} onChange={(e) => setForm((f) => ({ ...f, booth: e.target.value }))} />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">Item</label>
-            <input className={inputCls} placeholder="e.g. Folding Table" value={form.item} onChange={(e) => setForm((f) => ({ ...f, item: e.target.value }))} />
+            <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.equipment.item")}</label>
+            <input className={inputCls} placeholder={t("eventOps.equipment.itemPlaceholder")} value={form.item} onChange={(e) => setForm((f) => ({ ...f, item: e.target.value }))} />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-xs text-gray-500 font-medium">Qty</label>
+            <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.equipment.qty")}</label>
             <div className="flex gap-2">
-              <input type="number" min="1" className={inputCls} value={form.qtyReq} onChange={(e) => setForm((f) => ({ ...f, qtyReq: e.target.value }))} />
-              <button onClick={addRequest} className="text-xs font-semibold text-white rounded-lg px-3 shrink-0" style={{ background: "#0E7F41" }}>Add</button>
+              <input type="number" min="1" dir="ltr" className={inputCls} value={form.qtyReq} onChange={(e) => setForm((f) => ({ ...f, qtyReq: e.target.value }))} />
+              <button onClick={addRequest} className="text-xs font-semibold text-primary-contrast rounded-lg px-3 shrink-0 bg-primary">{t("common.add")}</button>
             </div>
           </div>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-gray-100">
+      <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
         <table className="w-full text-sm min-w-[640px]">
           <thead>
-            <tr className="bg-gray-50 border-b border-gray-100">
-              {["Company / Booth", "Item", "Requested", "Fulfilled", "Status", "Last change", ""].map((h, i) => (
-                <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
+            <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+              {[t("eventOps.equipment.colCompanyBooth"), t("eventOps.equipment.item"), t("eventOps.equipment.colRequested"), t("eventOps.equipment.colFulfilled"), t("applicants.columns.status"), t("eventOps.equipment.colLastChange"), ""].map((h, i) => (
+                <th key={i} className="text-start text-xs font-semibold text-gray-500 dark:text-gray-400 px-4 py-2.5 whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => editingId === row.id ? (
-              <tr key={row.id} className="border-b border-blue-100 bg-blue-50/40">
+              <tr key={row.id} className="border-b border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/10">
                 <td className="px-4 py-2">
                   <div className="flex gap-1.5">
-                    <CompactSelect className="text-xs min-w-[130px]" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} options={allCompanyNames} placeholder="Company" />
-                    <input className={`text-xs w-20 ${inputCls}`} placeholder="Booth" value={editForm.booth} onChange={(e) => setEditForm((f) => ({ ...f, booth: e.target.value }))} />
+                    <CompactSelect className="text-xs min-w-[130px]" value={editForm.company} onChange={(e) => setEditForm((f) => ({ ...f, company: e.target.value }))} options={allCompanyNames} placeholder={t("eventOps.requirements.company")} />
+                    <input className={`text-xs w-20 ${inputCls}`} placeholder={t("eventOps.equipment.booth")} value={editForm.booth} onChange={(e) => setEditForm((f) => ({ ...f, booth: e.target.value }))} />
                   </div>
                 </td>
                 <td className="px-4 py-2"><input className={`text-xs ${inputCls}`} value={editForm.item} onChange={(e) => setEditForm((f) => ({ ...f, item: e.target.value }))} /></td>
-                <td className="px-4 py-2"><input type="number" min="1" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyReq} onChange={(e) => setEditForm((f) => ({ ...f, qtyReq: e.target.value }))} /></td>
-                <td className="px-4 py-2"><input type="number" min="0" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyFul} onChange={(e) => setEditForm((f) => ({ ...f, qtyFul: e.target.value }))} /></td>
-                <td className="px-4 py-2 text-[10px] text-gray-400" colSpan={2}>Status is set from fulfilled vs requested</td>
+                <td className="px-4 py-2"><input type="number" min="1" dir="ltr" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyReq} onChange={(e) => setEditForm((f) => ({ ...f, qtyReq: e.target.value }))} /></td>
+                <td className="px-4 py-2"><input type="number" min="0" dir="ltr" className={`text-xs w-16 text-center ${inputCls}`} value={editForm.qtyFul} onChange={(e) => setEditForm((f) => ({ ...f, qtyFul: e.target.value }))} /></td>
+                <td className="px-4 py-2 text-[10px] text-gray-400 dark:text-gray-500" colSpan={2}>{t("eventOps.equipment.statusAutoSet")}</td>
                 <td className="px-4 py-2">
                   <div className="flex gap-1.5">
-                    <button onClick={() => saveEdit(row)} className="text-xs font-semibold text-white rounded-lg px-2.5 py-1" style={{ background: "#0E7F41" }}>Save</button>
-                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-2 py-1">Cancel</button>
+                    <button onClick={() => saveEdit(row)} className="text-xs font-semibold text-primary-contrast rounded-lg px-2.5 py-1 bg-primary">{t("common.save")}</button>
+                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-2 py-1">{t("common.cancel")}</button>
                   </div>
                 </td>
               </tr>
             ) : (
-              <tr key={row.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0 ${row.requestedBy ? "bg-amber-50/40" : ""}`}>
-                <td className="px-4 py-3 text-xs font-medium text-gray-600">
+              <tr key={row.id} className={`border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors last:border-0 ${row.requestedBy ? "bg-amber-50/40 dark:bg-amber-500/10" : ""}`}>
+                <td className="px-4 py-3 text-xs font-medium text-gray-600 dark:text-gray-300">
                   <Highlight text={row.entity} query={search} />
-                  {row.requestedBy && <Badge label="Requested" color="yellow" />}
+                  {row.requestedBy && <Badge label={t("eventOps.equipment.requested")} color="yellow" />}
                 </td>
-                <td className="px-4 py-3 text-gray-800"><Highlight text={row.item} query={search} /></td>
-                <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyReq}</td>
-                <td className="px-4 py-3 text-gray-600 text-center font-mono">{row.qtyFul}</td>
-                <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <td className="px-4 py-3 text-gray-800 dark:text-gray-100"><Highlight text={row.item} query={search} /></td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300 text-center font-mono">{row.qtyReq}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-300 text-center font-mono">{row.qtyFul}</td>
+                <td className="px-4 py-3"><Badge label={translateEnum("requestStatus", row.status)} color={statusColor(row.status)} /></td>
                 <td className="px-4 py-3"><LastEdited row={row} /></td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1.5">
                     {row.status === "Fulfilled" ? (
-                      <button onClick={() => unfulfillItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 hover:text-red-600 transition-colors text-gray-500">
-                        Unfulfill
+                      <button onClick={() => unfulfillItem(row)} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2.5 py-1 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors text-gray-500 dark:text-gray-400">
+                        {t("eventOps.equipment.unfulfill")}
                       </button>
                     ) : (
-                      <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                        Fulfill
+                      <button onClick={() => fulfillItem(row)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors text-gray-500 dark:text-gray-400">
+                        {t("eventOps.requirements.fulfill")}
                       </button>
                     )}
-                    <button onClick={() => startEdit(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-gray-100 transition-colors text-gray-500">Edit</button>
-                    <button onClick={() => removeItem(row)} className="text-xs font-medium border border-red-200 rounded-lg px-2 py-1 text-red-500 hover:bg-red-50 transition-colors">✕</button>
+                    <button onClick={() => startEdit(row)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400">{t("common.edit")}</button>
+                    <button onClick={() => removeItem(row)} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2 py-1 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">✕</button>
                   </div>
                 </td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-gray-400">No equipment matches "{search}".</td></tr>
+              <tr><td colSpan={7} className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-500">{t("eventOps.equipment.noMatch", { search })}</td></tr>
             )}
           </tbody>
         </table>
@@ -803,6 +806,7 @@ const EquipmentLogistics = () => {
 // ─── Tab: Delegates ───────────────────────────────────────────────────────────
 
 const DelegateList = () => {
+  const { t } = useTranslation();
   const { data, update, companies: allCompanyNames } = useEventOps();
   const [expanded, setExpanded] = useState(new Set());
   const [search, setSearch] = useState("");
@@ -868,20 +872,20 @@ const DelegateList = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Total Delegates" value={totalDelegates} sub="Across all companies" />
-        <StatCard label="Badges Printed" value={totalPrinted} sub={`${totalDelegates - totalPrinted} pending`} color="#2959A6" />
-        <StatCard label="Companies" value={mergedAll.length} sub="All registered" color="#8b5cf6" />
-        <StatCard label="With Delegates" value={companiesWithDelegates} sub={`${mergedAll.length - companiesWithDelegates} awaiting`} color="#f59e0b" />
+        <StatCard label={t("eventOps.delegates.totalDelegates")} value={totalDelegates} sub={t("eventOps.delegates.acrossAllCompanies")} />
+        <StatCard label={t("eventOps.delegates.badgesPrinted")} value={totalPrinted} sub={t("eventOps.delegates.pending", { count: totalDelegates - totalPrinted })} />
+        <StatCard label={t("eventOps.requirements.company")} value={mergedAll.length} sub={t("eventOps.delegates.allRegistered")} />
+        <StatCard label={t("eventOps.delegates.withDelegates")} value={companiesWithDelegates} sub={t("eventOps.delegates.awaiting", { count: mergedAll.length - companiesWithDelegates })} />
       </div>
 
       <div className="relative">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search company…"
-          className="w-full sm:w-72 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+          placeholder={t("eventOps.delegates.searchCompany")}
+          className="w-full sm:w-72 ps-8 pe-3 h-9 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
         />
-        <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+        <svg className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -889,47 +893,47 @@ const DelegateList = () => {
           const open = expanded.has(company.company);
           const empty = company.delegates.length === 0;
           return (
-            <div key={company.company} className="rounded-xl border border-gray-200 overflow-hidden">
-              <button onClick={() => toggle(company.company)} className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors">
+            <div key={company.company} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <button onClick={() => toggle(company.company)} className="w-full flex items-center justify-between px-4 py-3 bg-surface-card hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="font-semibold text-gray-800 text-sm truncate"><Highlight text={company.company} query={search} /></span>
+                  <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate"><Highlight text={company.company} query={search} /></span>
                   {empty ? (
-                    <Badge label="No delegates yet" color="gray" />
+                    <Badge label={t("eventOps.delegates.noDelegatesYet")} color="gray" />
                   ) : (
                     <>
-                      <Badge label={`${company.delegates.length} delegates`} color="blue" />
-                      <Badge label={`${company.delegates.filter(d => d.badge === "Printed").length} badges printed`} color="green" />
+                      <Badge label={t("eventOps.delegates.delegatesCount", { count: company.delegates.length })} color="blue" />
+                      <Badge label={t("eventOps.delegates.badgesPrintedCount", { count: company.delegates.filter(d => d.badge === "Printed").length })} color="green" />
                     </>
                   )}
                 </div>
-                <span className="text-gray-400"><ChevronIcon open={open} /></span>
+                <span className="text-gray-400 dark:text-gray-500"><ChevronIcon open={open} /></span>
               </button>
 
               {open && (
-                <div className="border-t border-gray-100 overflow-x-auto">
+                <div className="border-t border-gray-100 dark:border-gray-700 overflow-x-auto">
                   {empty ? (
-                    <p className="text-xs text-gray-400 px-4 py-4">No delegates registered for this company yet. They'll appear here once added.</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 px-4 py-4">{t("eventOps.delegates.noneRegisteredYet")}</p>
                   ) : (
                     <table className="w-full text-sm min-w-[520px]">
                       <thead>
-                        <tr className="bg-gray-50">
-                          {["Name", "Role", "Email", "Phone", "Badge", ""].map((h, i) => (
-                            <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2">{h}</th>
+                        <tr className="bg-gray-50 dark:bg-gray-800">
+                          {[t("applicants.columns.name"), t("eventOps.delegates.role"), t("managersCols.email"), t("eventOps.delegates.phone"), t("eventOps.delegates.badge"), ""].map((h, i) => (
+                            <th key={i} className="text-start text-xs font-semibold text-gray-500 dark:text-gray-400 px-4 py-2">{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {company.delegates.map((d, di) => (
-                          <tr key={di} className="border-t border-gray-50 hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-2.5 font-medium text-gray-800">{d.name}</td>
-                            <td className="px-4 py-2.5 text-gray-600 text-xs">{d.role}</td>
-                            <td className="px-4 py-2.5 text-gray-500 text-xs">{d.email}</td>
-                            <td className="px-4 py-2.5 text-gray-500 text-xs">{d.phone}</td>
-                            <td className="px-4 py-2.5"><Badge label={d.badge} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
+                          <tr key={di} className="border-t border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            <td className="px-4 py-2.5 font-medium text-gray-800 dark:text-gray-100">{d.name}</td>
+                            <td className="px-4 py-2.5 text-gray-600 dark:text-gray-300 text-xs">{d.role}</td>
+                            <td className="px-4 py-2.5 text-gray-500 dark:text-gray-400 text-xs bidi-ltr">{d.email}</td>
+                            <td className="px-4 py-2.5 text-gray-500 dark:text-gray-400 text-xs bidi-ltr">{d.phone}</td>
+                            <td className="px-4 py-2.5"><Badge label={d.badge === "Printed" ? t("eventOps.delegates.printed") : t("eventOps.delegates.pendingBadge")} color={d.badge === "Printed" ? "green" : "yellow"} /></td>
                             <td className="px-4 py-2.5">
                               {d.badge !== "Printed" && (
-                                <button onClick={() => printBadge(company.company, di, d)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                                  Print Badge
+                                <button onClick={() => printBadge(company.company, di, d)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors text-gray-500 dark:text-gray-400">
+                                  {t("eventOps.delegates.printBadge")}
                                 </button>
                               )}
                             </td>
@@ -943,7 +947,7 @@ const DelegateList = () => {
             </div>
           );
         })}
-        {companies.length === 0 && <p className="text-xs text-gray-400 text-center py-6">No companies match "{search}".</p>}
+        {companies.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6">{t("eventOps.delegates.noCompanyMatch", { search })}</p>}
       </div>
     </div>
   );
@@ -980,6 +984,7 @@ function downloadQrAsPng(svgEl, filename) {
 }
 
 const AttendanceCheckin = () => {
+  const { t } = useTranslation();
   const { data, update } = useEventOps();
   const toast = useToast();
   const [subTab, setSubTab] = useState(0);
@@ -1038,54 +1043,54 @@ const AttendanceCheckin = () => {
       if (idx === -1) return [...rows, filled];
       return rows.map((c, i) => (i === idx ? { ...c, ...filled } : c));
     });
-    toast(`${row.company} checked in via ${method}`, { type: "success" });
+    toast(t("eventOps.attendance.toastCheckedIn", { company: row.company, method }), { type: "success" });
   };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Expected" value={subTab === 1 ? students.length : compTotal} />
-        <StatCard label="Checked In" value={subTab === 1 ? studCheckedIn : compCheckedIn} color="#2959A6" />
-        <StatCard label="Pending" value={subTab === 1 ? students.length - studCheckedIn : compTotal - compCheckedIn} color="#f59e0b" />
+        <StatCard label={t("eventOps.attendance.expected")} value={subTab === 1 ? students.length : compTotal} />
+        <StatCard label={t("eventOps.attendance.checkedIn")} value={subTab === 1 ? studCheckedIn : compCheckedIn} />
+        <StatCard label={t("eventOps.attendance.pendingLabel")} value={subTab === 1 ? students.length - studCheckedIn : compTotal - compCheckedIn} />
       </div>
 
-      <SubTabBar tabs={["Companies", "Students", "Booth QR Codes"]} active={subTab} onChange={setSubTab} />
+      <SubTabBar tabs={[t("eventOps.attendance.subtabCompanies"), t("eventOps.attendance.subtabStudents"), t("eventOps.attendance.subtabBoothQr")]} active={subTab} onChange={setSubTab} />
 
       {subTab === 0 && (
         <div className="flex flex-col gap-3">
-        <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-          Companies check themselves in by scanning their booth QR on arrival (or tapping “I've arrived” on their Status page) — that's the normal flow. The buttons below are a manual override for when a company can't scan.
+        <p className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl px-4 py-3">
+          {t("eventOps.attendance.companiesHint")}
         </p>
-        <div className="overflow-x-auto rounded-xl border border-gray-100">
+        <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
           <table className="w-full text-sm min-w-[620px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                {["Booth", "Company", "Delegates", "Checked In", "Time", "Method", "Status", ""].map((h, i) => (
-                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5">{h}</th>
+              <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                {[t("eventOps.attendance.colBooth"), t("eventOps.requirements.company"), t("eventOps.attendance.colDelegates"), t("eventOps.attendance.colCheckedIn"), t("eventOps.attendance.colTime"), t("eventOps.attendance.colMethod"), t("applicants.columns.status"), ""].map((h, i) => (
+                  <th key={i} className="text-start text-xs font-semibold text-gray-500 dark:text-gray-400 px-4 py-2.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {companies.map((row, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                  <td className="px-4 py-3 text-xs font-mono text-gray-500">{row.booth}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{row.delegateCount}</td>
-                  <td className="px-4 py-3 text-center text-gray-600">{row.checkedIn}</td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{row.time}</td>
-                  <td className="px-4 py-3">{row.method && row.method !== "—" ? <Badge label={row.method} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 text-xs">—</span>}</td>
-                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <tr key={i} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors last:border-0">
+                  <td className="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400">{row.booth}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{row.company}</td>
+                  <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{row.delegateCount}</td>
+                  <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{row.checkedIn}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{row.time}</td>
+                  <td className="px-4 py-3">{row.method && row.method !== "—" ? <Badge label={row.method === "QR" ? t("eventOps.attendance.methodQr") : t("eventOps.attendance.methodManual")} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 dark:text-gray-600 text-xs">—</span>}</td>
+                  <td className="px-4 py-3"><Badge label={translateEnum("attendanceState", row.status)} color={statusColor(row.status)} /></td>
                   <td className="px-4 py-3">
                     {row.status !== "Present" && (
-                      <button onClick={() => checkInCompany(row, "Manual")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500" title="Manual override — use only if the company can't scan their booth QR">
-                        Check in manually
+                      <button onClick={() => checkInCompany(row, "Manual")} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors text-gray-500 dark:text-gray-400" title={t("eventOps.attendance.manualOverrideHint")}>
+                        {t("eventOps.attendance.checkInManually")}
                       </button>
                     )}
                   </td>
                 </tr>
               ))}
               {companies.length === 0 && (
-                <tr><td colSpan={8} className="px-4 py-6 text-center text-xs text-gray-400">No booths assigned yet. Assign booths to companies in the Venue &amp; Booths tab and they'll appear here for check-in.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-6 text-center text-xs text-gray-400 dark:text-gray-500">{t("eventOps.attendance.noBoothsYet")}</td></tr>
               )}
             </tbody>
           </table>
@@ -1094,27 +1099,27 @@ const AttendanceCheckin = () => {
       )}
 
       {subTab === 1 && (
-        <div className="overflow-x-auto rounded-xl border border-gray-100">
+        <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
           <table className="w-full text-sm min-w-[500px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                {["Student ID", "Name", "Time", "Method", "Status", ""].map((h, i) => (
-                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5">{h}</th>
+              <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                {[t("eventOps.attendance.colStudentId"), t("applicants.columns.name"), t("eventOps.attendance.colTime"), t("eventOps.attendance.colMethod"), t("applicants.columns.status"), ""].map((h, i) => (
+                  <th key={i} className="text-start text-xs font-semibold text-gray-500 dark:text-gray-400 px-4 py-2.5">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {students.map((row, i) => (
-                <tr key={i} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                  <td className="px-4 py-3 text-xs font-mono text-gray-500">{row.id}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{row.name}</td>
-                  <td className="px-4 py-3 text-xs text-gray-500">{row.time}</td>
-                  <td className="px-4 py-3">{row.method !== "—" ? <Badge label={row.method} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 text-xs">—</span>}</td>
-                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                <tr key={i} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors last:border-0">
+                  <td className="px-4 py-3 text-xs font-mono text-gray-500 dark:text-gray-400">{row.id}</td>
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{row.name}</td>
+                  <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{row.time}</td>
+                  <td className="px-4 py-3">{row.method !== "—" ? <Badge label={row.method === "QR" ? t("eventOps.attendance.methodQr") : t("eventOps.attendance.methodManual")} color={row.method === "QR" ? "blue" : "gray"} /> : <span className="text-gray-300 dark:text-gray-600 text-xs">—</span>}</td>
+                  <td className="px-4 py-3"><Badge label={translateEnum("attendanceState", row.status)} color={statusColor(row.status)} /></td>
                   <td className="px-4 py-3">
                     {row.status !== "Checked In" && (
-                      <button onClick={() => checkInStudent(row.id)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 transition-colors text-gray-500">
-                        Check In
+                      <button onClick={() => checkInStudent(row.id)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors text-gray-500 dark:text-gray-400">
+                        {t("eventOps.attendance.checkIn")}
                       </button>
                     )}
                   </td>
@@ -1127,24 +1132,23 @@ const AttendanceCheckin = () => {
 
       {subTab === 2 && (
         <div className="flex flex-col gap-3">
-          <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-            Each assigned booth has a printed QR code on its table. When a company representative scans it on event day,
-            their attendance is confirmed automatically. Companies see the same code in their own settings page.
+          <p className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl px-4 py-3">
+            {t("eventOps.attendance.qrHint")}
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {booths.map((b) => (
-              <div key={b.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2">
+              <div key={b.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col items-center gap-2">
                 <div ref={(el) => { if (el) qrRefs.current[b.id] = el.querySelector("svg"); }}>
                   <QRCodeSVG value={boothQrValue(b)} size={96} fgColor="#111827" />
                 </div>
-                <p className="font-bold text-sm text-gray-800">{b.number}</p>
-                <p className="text-xs text-gray-500 text-center truncate w-full">{b.company}</p>
-                <span className="text-[10px] font-mono text-gray-400">{boothQrValue(b)}</span>
+                <p className="font-bold text-sm text-gray-800 dark:text-gray-100">{b.number}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center truncate w-full">{b.company}</p>
+                <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 bidi-ltr">{boothQrValue(b)}</span>
                 <button
                   onClick={() => qrRefs.current[b.id] && downloadQrAsPng(qrRefs.current[b.id], `booth-${b.number}-qr.png`)}
-                  className="text-[11px] font-medium border border-gray-200 rounded-lg px-2 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors"
+                  className="text-[11px] font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 text-gray-500 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors"
                 >
-                  Download
+                  {t("eventOps.attendance.download")}
                 </button>
               </div>
             ))}
@@ -1169,6 +1173,7 @@ const taskStatusColor = (s) => (s === "Done" ? "green" : s === "In Progress" ? "
 
 // ── Sub-tab: Support Staff ──
 const SupportStaffPanel = () => {
+  const { t } = useTranslation();
   const { data, addSupportStaff, updateSupportStaff, removeSupportStaff, addSupportTask, setSupportTaskStatus, removeSupportTask } = useEventOps();
   const toast = useToast();
   const staff = data.supportStaff || [];
@@ -1176,10 +1181,10 @@ const SupportStaffPanel = () => {
   const [taskDrafts, setTaskDrafts] = useState({}); // staffId -> title being typed
 
   const handleAdd = () => {
-    if (!form.name.trim()) { toast("Name is required", { type: "error" }); return; }
+    if (!form.name.trim()) { toast(t("eventOps.staff.toastNameRequired"), { type: "error" }); return; }
     addSupportStaff(form.name.trim(), form.role, form.phone.trim());
     setForm({ name: "", role: SUPPORT_ROLES[0], phone: "" });
-    toast(`Added ${form.name.trim()}`, { type: "success" });
+    toast(t("eventOps.staff.toastAdded", { name: form.name.trim() }), { type: "success" });
   };
 
   const handleAddTask = (staffId) => {
@@ -1200,30 +1205,28 @@ const SupportStaffPanel = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard label="Support Staff" value={staff.length} />
-        <StatCard label="Open Tasks" value={openTasks} color="#f59e0b" />
-        <StatCard label="Total Tasks" value={totalTasks} color="#2959A6" />
+        <StatCard label={t("eventOps.staff.supportStaff")} value={staff.length} />
+        <StatCard label={t("eventOps.staff.openTasks")} value={openTasks} />
+        <StatCard label={t("eventOps.staff.totalTasks")} value={totalTasks} />
       </div>
 
-      <p className="text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
-        Add the people who handle services on the day — printing, bringing supplies, setup, runners — and assign them tasks.
-        Each task cycles through <span className="font-semibold">Pending → In Progress → Done</span>. This is for staff you manage
-        directly; temporary door helpers who scan students in live under the <span className="font-semibold">Check-in Staff</span> tab.
+      <p className="text-xs text-gray-500 dark:text-gray-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-xl px-4 py-3">
+        <Trans i18nKey="eventOps.staff.supportHint" components={{ b: <span className="font-semibold" /> }} />
       </p>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
-        <p className="text-sm font-semibold text-gray-700">New Support Staff</p>
+      <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("eventOps.staff.newSupportStaff")}</p>
         <div className="flex gap-2 items-start flex-wrap">
-          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Full name"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[160px] focus:outline-none focus:ring-1 focus:ring-green-500" />
+          <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder={t("eventOps.staff.fullName")}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm flex-1 min-w-[160px] bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
           <div className="min-w-[180px]">
-            <CompactSelect value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} options={SUPPORT_ROLES} placeholder="Select role" />
+            <CompactSelect value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))} options={SUPPORT_ROLES} placeholder={t("eventOps.staff.selectRole")} tOption={(v) => translateEnum("supportRole", v)} />
           </div>
           <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-            onKeyDown={(e) => e.key === "Enter" && handleAdd()} placeholder="Phone (optional)"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[140px] focus:outline-none focus:ring-1 focus:ring-green-500" />
-          <button onClick={handleAdd} disabled={!form.name.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-            Add Staff
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()} placeholder={t("eventOps.staff.phoneOptional")} dir="ltr"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm flex-1 min-w-[140px] bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
+          <button onClick={handleAdd} disabled={!form.name.trim()} className="text-xs font-semibold text-primary-contrast rounded-lg px-4 py-2 disabled:opacity-50 bg-primary">
+            {t("eventOps.staff.addStaff")}
           </button>
         </div>
       </div>
@@ -1232,50 +1235,50 @@ const SupportStaffPanel = () => {
         {staff.map((s) => {
           const done = s.tasks?.filter((t) => t.status === "Done").length || 0;
           return (
-            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+            <div key={s.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{s.name}</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{s.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge label={s.role || "Support"} color="gray" />
-                    {s.phone && <span className="text-[11px] text-gray-400">{s.phone}</span>}
+                    <Badge label={s.role ? translateEnum("supportRole", s.role) : t("eventOps.staff.support")} color="gray" />
+                    {s.phone && <span className="text-[11px] text-gray-400 dark:text-gray-500 bidi-ltr">{s.phone}</span>}
                   </div>
                 </div>
-                <button onClick={() => { removeSupportStaff(s.id); toast(`Removed ${s.name}`, { type: "info" }); }}
-                  className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors shrink-0">
-                  Remove
+                <button onClick={() => { removeSupportStaff(s.id); toast(t("eventOps.staff.toastRemoved", { name: s.name }), { type: "info" }); }}
+                  className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2.5 py-1 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors shrink-0">
+                  {t("common.remove")}
                 </button>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">Tasks</span>
-                <span className="text-[11px] text-gray-400">{done}/{s.tasks?.length || 0} done</span>
+                <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t("eventOps.staff.tasks")}</span>
+                <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("eventOps.staff.doneCount", { done, total: s.tasks?.length || 0 })}</span>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                {(s.tasks || []).map((t) => (
-                  <div key={t.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-1.5">
-                    <button onClick={() => cycleStatus(s.id, t)} title="Click to advance status" className="shrink-0">
-                      <Badge label={t.status} color={taskStatusColor(t.status)} />
+                {(s.tasks || []).map((t2) => (
+                  <div key={t2.id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-lg px-2.5 py-1.5">
+                    <button onClick={() => cycleStatus(s.id, t2)} title={t("eventOps.staff.clickToAdvance")} className="shrink-0">
+                      <Badge label={translateEnum("taskStatus", t2.status)} color={taskStatusColor(t2.status)} />
                     </button>
-                    <span className={`text-xs flex-1 min-w-0 truncate ${t.status === "Done" ? "line-through text-gray-400" : "text-gray-700"}`}>{t.title}</span>
-                    <button onClick={() => removeSupportTask(s.id, t.id)} className="text-gray-300 hover:text-red-500 shrink-0 text-sm leading-none">×</button>
+                    <span className={`text-xs flex-1 min-w-0 truncate ${t2.status === "Done" ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}`}>{t2.title}</span>
+                    <button onClick={() => removeSupportTask(s.id, t2.id)} className="text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 shrink-0 text-sm leading-none">×</button>
                   </div>
                 ))}
-                {(s.tasks?.length || 0) === 0 && <p className="text-[11px] text-gray-400 italic">No tasks assigned yet.</p>}
+                {(s.tasks?.length || 0) === 0 && <p className="text-[11px] text-gray-400 dark:text-gray-500 italic">{t("eventOps.staff.noTasksYet")}</p>}
               </div>
 
               <div className="flex gap-2 items-center">
                 <input value={taskDrafts[s.id] || ""} onChange={(e) => setTaskDrafts((d) => ({ ...d, [s.id]: e.target.value }))}
-                  onKeyDown={(e) => e.key === "Enter" && handleAddTask(s.id)} placeholder="Assign a task…"
-                  className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs flex-1 focus:outline-none focus:ring-1 focus:ring-green-500" />
+                  onKeyDown={(e) => e.key === "Enter" && handleAddTask(s.id)} placeholder={t("eventOps.staff.assignTask")}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-xs flex-1 bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
                 <button onClick={() => handleAddTask(s.id)} disabled={!(taskDrafts[s.id] || "").trim()}
-                  className="text-xs font-semibold text-white rounded-lg px-3 py-1.5 disabled:opacity-40" style={{ background: "#0E7F41" }}>Add</button>
+                  className="text-xs font-semibold text-primary-contrast rounded-lg px-3 py-1.5 disabled:opacity-40 bg-primary">{t("common.add")}</button>
               </div>
             </div>
           );
         })}
-        {staff.length === 0 && <p className="text-xs text-gray-400 lg:col-span-2 text-center py-6">No support staff added yet.</p>}
+        {staff.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-500 lg:col-span-2 text-center py-6">{t("eventOps.staff.noStaffYet")}</p>}
       </div>
     </div>
   );
@@ -1283,6 +1286,7 @@ const SupportStaffPanel = () => {
 
 // ── Sub-tab: Check-in Staff (the original code-gated volunteers) ──
 const CheckinStaffPanel = () => {
+  const { t } = useTranslation();
   const { data, addStaffer, removeStaffer } = useEventOps();
   const toast = useToast();
   const staff = data.attendanceStaff || [];
@@ -1292,13 +1296,13 @@ const CheckinStaffPanel = () => {
 
   const handleAdd = () => {
     if (!form.name.trim() || !form.email.trim()) {
-      toast("Name and email are both required", { type: "error" });
+      toast(t("eventOps.checkinStaff.toastRequired"), { type: "error" });
       return;
     }
     const code = addStaffer(form.name.trim(), form.email.trim());
     setRevealedCode({ name: form.name.trim(), code });
     setForm({ name: "", email: "" });
-    toast(`Account created for ${form.name.trim()}`, { type: "success" });
+    toast(t("eventOps.checkinStaff.toastCreated", { name: form.name.trim() }), { type: "success" });
   };
 
   const totalCheckins = checkinLog.length;
@@ -1307,68 +1311,67 @@ const CheckinStaffPanel = () => {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard label="Staff Accounts" value={staff.length} sub={`${activeCount} active`} />
-        <StatCard label="Students Checked In" value={totalCheckins} color="#2959A6" />
-        <StatCard label="Awaiting First Login" value={staff.filter((s) => s.status === "invited").length} color="#f59e0b" />
+        <StatCard label={t("eventOps.checkinStaff.staffAccounts")} value={staff.length} sub={t("eventOps.checkinStaff.activeCount", { count: activeCount })} />
+        <StatCard label={t("eventOps.checkinStaff.studentsCheckedIn")} value={totalCheckins} />
+        <StatCard label={t("eventOps.checkinStaff.awaitingFirstLogin")} value={staff.filter((s) => s.status === "invited").length} />
       </div>
 
-      <p className="text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-        Create an account with a name and email — you'll get a short access code to share with them.
-        They log in at
-        <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/student-checkin</a>
-        with that code, fill in their own remaining details, and can then check students in without a CASTO or company account.
-        Each account's check-ins are logged separately below — no one sees anyone else's activity.
+      <p className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-xl px-4 py-3">
+        {t("eventOps.checkinStaff.createHint")}
+        <a href="/student-checkin" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 dark:text-blue-400 hover:underline mx-1 bidi-ltr">/student-checkin</a>
+        {t("eventOps.checkinStaff.createHint2")}
         <button
-          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/student-checkin`); toast("Check-in link copied", { type: "success", duration: 1800 }); }}
-          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 rounded-lg px-2 py-1 text-blue-700 hover:bg-blue-100 transition-colors align-middle"
+          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/student-checkin`); toast(t("eventOps.checkinStaff.toastLinkCopied"), { type: "success", duration: 1800 }); }}
+          className="ms-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 dark:border-blue-500/30 rounded-lg px-2 py-1 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors align-middle"
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-          Copy link
+          {t("eventOps.checkinStaff.copyLink")}
         </button>
         <br />
-        Students who lost their ticket can retrieve their own QR code at
-        <a href="/my-qr-code" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline mx-1">/my-qr-code</a>
-        using the University ID they applied with.
+        {t("eventOps.checkinStaff.studentTicketHint")}
+        <a href="/my-qr-code" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 dark:text-blue-400 hover:underline mx-1 bidi-ltr">/my-qr-code</a>
+        {t("eventOps.checkinStaff.studentTicketHint2")}
         <button
-          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/my-qr-code`); toast("Student ticket link copied", { type: "success", duration: 1800 }); }}
-          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 rounded-lg px-2 py-1 text-blue-700 hover:bg-blue-100 transition-colors align-middle"
+          onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/my-qr-code`); toast(t("eventOps.checkinStaff.toastTicketLinkCopied"), { type: "success", duration: 1800 }); }}
+          className="ms-2 inline-flex items-center gap-1 text-[11px] font-semibold border border-blue-200 dark:border-blue-500/30 rounded-lg px-2 py-1 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors align-middle"
         >
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-          Copy link
+          {t("eventOps.checkinStaff.copyLink")}
         </button>
       </p>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
-        <p className="text-sm font-semibold text-gray-700">New Staff Account</p>
+      <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("eventOps.checkinStaff.newAccount")}</p>
         <div className="flex gap-2 items-start flex-wrap">
           <input
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="Full name"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[180px] focus:outline-none focus:ring-1 focus:ring-green-500"
+            placeholder={t("eventOps.staff.fullName")}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm flex-1 min-w-[180px] bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
           />
           <input
             value={form.email}
             onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             type="email"
-            placeholder="Email address"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:ring-1 focus:ring-green-500"
+            dir="ltr"
+            placeholder={t("eventOps.checkinStaff.emailPlaceholder")}
+            className="border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm flex-1 min-w-[200px] bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <button onClick={handleAdd} disabled={!form.name.trim() || !form.email.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-            Create Account
+          <button onClick={handleAdd} disabled={!form.name.trim() || !form.email.trim()} className="text-xs font-semibold text-primary-contrast rounded-lg px-4 py-2 disabled:opacity-50 bg-primary">
+            {t("eventOps.checkinStaff.createAccount")}
           </button>
         </div>
       </div>
 
       {revealedCode && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between gap-3">
+        <div className="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 rounded-xl p-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold text-green-800">Access code for {revealedCode.name}</p>
-            <p className="text-2xl font-mono font-bold text-green-700 tracking-widest">{revealedCode.code}</p>
-            <p className="text-[11px] text-green-600 mt-1">Share this with them now — it won't be shown again here.</p>
+            <p className="text-xs font-semibold text-green-800 dark:text-green-300">{t("eventOps.checkinStaff.accessCodeFor", { name: revealedCode.name })}</p>
+            <p className="text-2xl font-mono font-bold text-green-700 dark:text-green-400 tracking-widest bidi-ltr">{revealedCode.code}</p>
+            <p className="text-[11px] text-green-600 dark:text-green-400 mt-1">{t("eventOps.checkinStaff.shareNowHint")}</p>
           </div>
-          <button onClick={() => setRevealedCode(null)} className="text-xs font-medium text-green-700 hover:text-green-900">Dismiss</button>
+          <button onClick={() => setRevealedCode(null)} className="text-xs font-medium text-green-700 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300">{t("eventOps.checkinStaff.dismiss")}</button>
         </div>
       )}
 
@@ -1376,30 +1379,30 @@ const CheckinStaffPanel = () => {
         {staff.map((s) => {
           const theirCheckins = checkinLog.filter((c) => c.byId === s.id);
           return (
-            <div key={s.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-2.5">
+            <div key={s.id} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-2.5">
               <div className="flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-800 truncate">{s.name}</p>
-                    <Badge label={s.status === "active" ? "Active" : "Invited"} color={s.status === "active" ? "green" : "yellow"} />
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 truncate">{s.name}</p>
+                    <Badge label={s.status === "active" ? t("eventOps.checkinStaff.active") : t("eventOps.checkinStaff.invited")} color={s.status === "active" ? "green" : "yellow"} />
                   </div>
-                  <p className="text-xs text-gray-500 truncate">{s.email}</p>
-                  {s.phone && <p className="text-[11px] text-gray-400">{s.phone}</p>}
-                  <p className="text-xs font-mono text-gray-400 mt-0.5">Code: {s.code}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate bidi-ltr">{s.email}</p>
+                  {s.phone && <p className="text-[11px] text-gray-400 dark:text-gray-500 bidi-ltr">{s.phone}</p>}
+                  <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mt-0.5 bidi-ltr">{t("eventOps.checkinStaff.code", { code: s.code })}</p>
                 </div>
-                <button onClick={() => removeStaffer(s.id)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 text-red-500 hover:bg-red-50 transition-colors shrink-0">
-                  Revoke
+                <button onClick={() => removeStaffer(s.id)} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2.5 py-1 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors shrink-0">
+                  {t("eventOps.checkinStaff.revoke")}
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-gray-400">Checked in {theirCheckins.length} student{theirCheckins.length === 1 ? "" : "s"}</span>
+                <span className="text-[11px] text-gray-400 dark:text-gray-500">{t("eventOps.checkinStaff.checkedInCount", { count: theirCheckins.length })}</span>
               </div>
               {theirCheckins.length > 0 && (
-                <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pr-1">
+                <div className="flex flex-col gap-1 max-h-32 overflow-y-auto pe-1">
                   {theirCheckins.slice(0, 8).map((c) => (
-                    <div key={c.id} className="flex items-center justify-between text-xs bg-gray-50 rounded-lg px-2.5 py-1.5">
-                      <span className="text-gray-700 truncate">{c.name || c.uniId}</span>
-                      <span className="text-gray-400 text-[10px] shrink-0">{formatWhen(c.at)}</span>
+                    <div key={c.id} className="flex items-center justify-between text-xs bg-gray-50 dark:bg-gray-800 rounded-lg px-2.5 py-1.5">
+                      <span className="text-gray-700 dark:text-gray-300 truncate">{c.name || c.uniId}</span>
+                      <span className="text-gray-400 dark:text-gray-500 text-[10px] shrink-0">{formatWhen(c.at)}</span>
                     </div>
                   ))}
                 </div>
@@ -1407,7 +1410,7 @@ const CheckinStaffPanel = () => {
             </div>
           );
         })}
-        {staff.length === 0 && <p className="text-xs text-gray-400 col-span-2 text-center py-6">No staff accounts created yet.</p>}
+        {staff.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-500 col-span-2 text-center py-6">{t("eventOps.checkinStaff.noAccountsYet")}</p>}
       </div>
     </div>
   );
@@ -1416,11 +1419,12 @@ const CheckinStaffPanel = () => {
 // ── Wrapper: Support Staff + Check-in Staff sub-tabs ──
 const MANAGE_STAFF_SUBTAB_KEY = "event_ops_manage_staff_subtab";
 const ManageStaff = () => {
+  const { t } = useTranslation();
   const [sub, setSub] = useState(() => Number(localStorage.getItem(MANAGE_STAFF_SUBTAB_KEY)) || 0);
   useEffect(() => { try { localStorage.setItem(MANAGE_STAFF_SUBTAB_KEY, String(sub)); } catch { /* quota */ } }, [sub]);
   return (
     <div className="flex flex-col gap-4">
-      <SubTabBar tabs={["Support Staff", "Check-in Staff"]} active={sub} onChange={setSub} />
+      <SubTabBar tabs={[t("eventOps.staff.supportStaff"), t("eventOps.checkinStaff.tabLabel")]} active={sub} onChange={setSub} />
       {sub === 0 ? <SupportStaffPanel /> : <CheckinStaffPanel />}
     </div>
   );
@@ -1434,6 +1438,7 @@ const ManageStaff = () => {
 const SCHEDULE_LOCATIONS = ["Main Entrance", "Main Hall", "Exhibition Floor", "Cafeteria", "Main Stage"];
 
 const ScheduleSlots = () => {
+  const { t } = useTranslation();
   const { data, update } = useEventOps();
   const toast = useToast();
   const slots = data.schedule;
@@ -1447,7 +1452,7 @@ const ScheduleSlots = () => {
 
   const handleAdd = () => {
     if (!form.title.trim() || !form.start) {
-      toast("Session title and start time are both required", { type: "error" });
+      toast(t("eventOps.schedule.toastRequired"), { type: "error" });
       return;
     }
     update("schedule", `Added time slot "${form.title}"`, (prev, who) =>
@@ -1460,18 +1465,18 @@ const ScheduleSlots = () => {
   const cancelEdit = () => { setEditingId(null); setEditForm({}); };
   const saveEdit = () => {
     if (!editForm.title?.trim() || !editForm.start) {
-      toast("Session title and start time are both required", { type: "error" });
+      toast(t("eventOps.schedule.toastRequired"), { type: "error" });
       return;
     }
     update("schedule", `Edited time slot "${editForm.title}"`, (prev, who) =>
       prev.map((s) => (s.id === editingId ? { ...s, ...editForm, capacity: Number(editForm.capacity) || 0, ...who } : s)));
-    toast("Time slot updated", { type: "success" });
+    toast(t("eventOps.schedule.toastUpdated"), { type: "success" });
     cancelEdit();
   };
 
   const removeSlot = (slot) => {
     update("schedule", `Removed time slot "${slot.title}"`, (prev) => prev.filter((s) => s.id !== slot.id));
-    toast(`Removed "${slot.title}"`, { type: "info" });
+    toast(t("eventOps.schedule.toastRemoved", { title: slot.title }), { type: "info" });
     if (editingId === slot.id) cancelEdit();
   };
 
@@ -1489,43 +1494,43 @@ const ScheduleSlots = () => {
       <div className="flex justify-between items-center flex-wrap gap-2">
         <div className="flex gap-2 flex-wrap">
           {["Ended", "Live", "Upcoming"].map((s) => (
-            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Badge label={`${slots.filter(sl => sl.status === s).length} ${s}`} color={statusColor(s)} />
+            <span key={s} className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+              <Badge label={`${slots.filter(sl => sl.status === s).length} ${translateEnum("eventState", s)}`} color={statusColor(s)} />
             </span>
           ))}
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-white rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0" style={{ background: "#0E7F41" }}>
-          {showForm ? "Cancel" : "+ Add Slot"}
+        <button onClick={() => setShowForm((v) => !v)} className="text-xs font-semibold text-primary-contrast rounded-xl px-3 py-2 hover:opacity-90 transition-opacity flex-shrink-0 bg-primary">
+          {showForm ? t("common.cancel") : t("eventOps.schedule.addSlot")}
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
-          <p className="text-sm font-semibold text-gray-700">New Time Slot</p>
+        <div className="bg-surface-raised rounded-xl p-4 border border-blue-100 dark:border-blue-500/20 flex flex-col gap-3">
+          <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{t("eventOps.schedule.newSlot")}</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { label: "Start", el: <input type="time" className={inputCls} value={form.start} onChange={F("start")} /> },
-              { label: "End", el: <input type="time" className={inputCls} value={form.end} onChange={F("end")} /> },
-              { label: "Host", el: <input className={inputCls} placeholder="Host / team" value={form.host} onChange={F("host")} /> },
-              { label: "Location", el: <CompactSelect value={form.location} onChange={F("location")} options={SCHEDULE_LOCATIONS} placeholder="Select area" /> },
+              { label: t("eventOps.schedule.start"), el: <input type="time" dir="ltr" className={inputCls} value={form.start} onChange={F("start")} /> },
+              { label: t("eventOps.schedule.end"), el: <input type="time" dir="ltr" className={inputCls} value={form.end} onChange={F("end")} /> },
+              { label: t("eventOps.schedule.host"), el: <input className={inputCls} placeholder={t("eventOps.schedule.hostPlaceholder")} value={form.host} onChange={F("host")} /> },
+              { label: t("eventOps.schedule.location"), el: <CompactSelect value={form.location} onChange={F("location")} options={SCHEDULE_LOCATIONS} placeholder={t("eventOps.schedule.selectArea")} tOption={(v) => translateEnum("scheduleLocation", v)} /> },
             ].map(({ label, el }) => (
-              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 font-medium">{label}</label>{el}</div>
+              <div key={label} className="flex flex-col gap-1"><label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</label>{el}</div>
             ))}
             <div className="flex flex-col gap-1 md:col-span-2">
-              <label className="text-xs text-gray-500 font-medium">Session Title</label>
-              <input className={inputCls} placeholder="e.g. Opening Ceremony" value={form.title} onChange={F("title")} />
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.sessionTitle")}</label>
+              <input className={inputCls} placeholder={t("eventOps.schedule.sessionTitlePlaceholder")} value={form.title} onChange={F("title")} />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Capacity</label>
-              <input type="number" className={inputCls} placeholder="0" value={form.capacity} onChange={F("capacity")} />
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.capacity")}</label>
+              <input type="number" dir="ltr" className={inputCls} placeholder="0" value={form.capacity} onChange={F("capacity")} />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs text-gray-500 font-medium">Status</label>
-              <CompactSelect value={form.status} onChange={F("status")} options={["Upcoming", "Live", "Ended"]} />
+              <label className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t("applicants.columns.status")}</label>
+              <CompactSelect value={form.status} onChange={F("status")} options={["Upcoming", "Live", "Ended"]} tOption={(v) => translateEnum("eventState", v)} />
             </div>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleAdd} disabled={!form.title.trim() || !form.start} className="text-sm font-semibold text-white rounded-xl px-4 py-2 disabled:opacity-50" style={{ background: "#0E7F41" }}>Save Slot</button>
+            <button onClick={handleAdd} disabled={!form.title.trim() || !form.start} className="text-sm font-semibold text-primary-contrast rounded-xl px-4 py-2 disabled:opacity-50 bg-primary">{t("eventOps.schedule.saveSlot")}</button>
           </div>
         </div>
       )}
@@ -1534,59 +1539,58 @@ const ScheduleSlots = () => {
         {sorted.map((slot) => (
           <div key={slot.id} className="flex gap-4 items-start">
             <div className="flex flex-col items-center pt-1 flex-shrink-0 w-14">
-              <span className="text-xs font-bold text-gray-700">{slot.start}</span>
-              <div className="w-px flex-1 bg-gray-200 my-1 min-h-[20px]" />
-              <span className="text-xs text-gray-400">{slot.end}</span>
+              <span className="text-xs font-bold text-gray-700 dark:text-gray-300 bidi-ltr">{slot.start}</span>
+              <div className="w-px flex-1 bg-gray-200 dark:bg-gray-600 my-1 min-h-[20px]" />
+              <span className="text-xs text-gray-400 dark:text-gray-500 bidi-ltr">{slot.end}</span>
             </div>
             <div className={`flex-1 rounded-xl border p-4 flex flex-col gap-2 min-w-0 ${
-              slot.status === "Live" ? "border-green-300 bg-green-50"
-              : slot.status === "Ended" ? "border-gray-200 bg-gray-50"
-              : "border-blue-200 bg-blue-50"}`}>
+              slot.status === "Live" ? "border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
+              : slot.status === "Ended" ? "border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800"
+              : "border-blue-200 dark:border-blue-500/40 bg-blue-50 dark:bg-blue-500/10"}`}>
               {editingId === slot.id ? (
                 /* Inline editor — change the time or any detail of an existing slot */
                 <div className="flex flex-col gap-2.5">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Start</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.start || ""} onChange={EF("start")} /></div>
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">End</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.end || ""} onChange={EF("end")} /></div>
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Host</label><input className={`text-xs ${inputCls}`} value={editForm.host || ""} onChange={EF("host")} /></div>
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Location</label><CompactSelect className="text-xs" value={editForm.location || ""} onChange={EF("location")} options={SCHEDULE_LOCATIONS} placeholder="Select area" /></div>
-                    <div className="flex flex-col gap-1 col-span-2"><label className="text-[11px] text-gray-500 font-medium">Title</label><input className={`text-xs ${inputCls}`} value={editForm.title || ""} onChange={EF("title")} /></div>
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Capacity</label><input type="number" className={`text-xs ${inputCls}`} value={editForm.capacity ?? ""} onChange={EF("capacity")} /></div>
-                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Status</label><CompactSelect className="text-xs" value={editForm.status || "Upcoming"} onChange={EF("status")} options={["Upcoming", "Live", "Ended"]} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.start")}</label><input type="time" dir="ltr" className={`text-xs ${inputCls}`} value={editForm.start || ""} onChange={EF("start")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.end")}</label><input type="time" dir="ltr" className={`text-xs ${inputCls}`} value={editForm.end || ""} onChange={EF("end")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.host")}</label><input className={`text-xs ${inputCls}`} value={editForm.host || ""} onChange={EF("host")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.location")}</label><CompactSelect className="text-xs" value={editForm.location || ""} onChange={EF("location")} options={SCHEDULE_LOCATIONS} placeholder={t("eventOps.schedule.selectArea")} tOption={(v) => translateEnum("scheduleLocation", v)} /></div>
+                    <div className="flex flex-col gap-1 col-span-2"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.sessionTitle")}</label><input className={`text-xs ${inputCls}`} value={editForm.title || ""} onChange={EF("title")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("eventOps.schedule.capacity")}</label><input type="number" dir="ltr" className={`text-xs ${inputCls}`} value={editForm.capacity ?? ""} onChange={EF("capacity")} /></div>
+                    <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">{t("applicants.columns.status")}</label><CompactSelect className="text-xs" value={editForm.status || "Upcoming"} onChange={EF("status")} options={["Upcoming", "Live", "Ended"]} tOption={(v) => translateEnum("eventState", v)} /></div>
                   </div>
                   <div className="flex justify-end gap-2">
-                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 hover:text-gray-700 px-3 py-1.5">Cancel</button>
-                    <button onClick={saveEdit} className="text-xs font-semibold text-white rounded-lg px-3 py-1.5" style={{ background: "#0E7F41" }}>Save</button>
+                    <button onClick={cancelEdit} className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-1.5">{t("common.cancel")}</button>
+                    <button onClick={saveEdit} className="text-xs font-semibold text-primary-contrast rounded-lg px-3 py-1.5 bg-primary">{t("common.save")}</button>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="font-semibold text-gray-800 text-sm">{slot.title}</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-100 text-sm">{slot.title}</span>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge label={slot.status} color={statusColor(slot.status)} />
-                      <button onClick={() => cycleStatus(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
-                        Next status
+                      <Badge label={translateEnum("eventState", slot.status)} color={statusColor(slot.status)} />
+                      <button onClick={() => cycleStatus(slot)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-0.5 hover:bg-white dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60">
+                        {t("eventOps.schedule.nextStatus")}
                       </button>
-                      <button onClick={() => startEdit(slot)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-0.5 hover:bg-white transition-colors text-gray-500 bg-white/60">
-                        Edit
+                      <button onClick={() => startEdit(slot)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-0.5 hover:bg-white dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60">
+                        {t("common.edit")}
                       </button>
-                      <button onClick={() => removeSlot(slot)} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-0.5 text-red-500 hover:bg-red-50 transition-colors bg-white/60">
-                        Remove
+                      <button onClick={() => removeSlot(slot)} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2.5 py-0.5 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors bg-white/60 dark:bg-gray-800/60">
+                        {t("common.remove")}
                       </button>
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                    {slot.host && <span>Host: <span className="font-medium text-gray-700">{slot.host}</span></span>}
-                    {slot.location && <span>Location: <span className="font-medium text-gray-700">{slot.location}</span></span>}
-                    {slot.capacity > 0 && <span>Registered: <span className="font-medium text-gray-700">{slot.registered} / {slot.capacity}</span></span>}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                    {slot.host && <span>{t("eventOps.schedule.hostLabel")} <span className="font-medium text-gray-700 dark:text-gray-300">{slot.host}</span></span>}
+                    {slot.location && <span>{t("eventOps.schedule.locationLabel")} <span className="font-medium text-gray-700 dark:text-gray-300">{translateEnum("scheduleLocation", slot.location)}</span></span>}
+                    {slot.capacity > 0 && <span>{t("eventOps.schedule.registeredLabel")} <span className="font-medium text-gray-700 dark:text-gray-300 bidi-ltr">{slot.registered} / {slot.capacity}</span></span>}
                     <LastEdited row={slot} />
                   </div>
                   {slot.capacity > 0 && (
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div className="h-1.5 rounded-full transition-all duration-500" style={{
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                      <div className={`h-1.5 rounded-full transition-all duration-500 ${slot.status === "Live" ? "bg-primary" : slot.status === "Ended" ? "bg-gray-400 dark:bg-gray-500" : "bg-secondary"}`} style={{
                         width: `${Math.min(100, Math.round((slot.registered / slot.capacity) * 100))}%`,
-                        background: slot.status === "Live" ? "#0E7F41" : slot.status === "Ended" ? "#9ca3af" : "#2959A6"
                       }} />
                     </div>
                   )}
@@ -1603,6 +1607,7 @@ const ScheduleSlots = () => {
 // ─── Tab: Access Passes ───────────────────────────────────────────────────────
 
 const AccessPasses = () => {
+  const { t } = useTranslation();
   const { data, update, companies: allCompanyNames } = useEventOps();
   const toast = useToast();
   const passes = data.passes;
@@ -1632,13 +1637,13 @@ const AccessPasses = () => {
     const code = `ENT-${company.slice(0, 3).toUpperCase()}-${seq}`;
     update("passes", `Issued entry pass ${code} for ${company}`, (prev, who) =>
       [...prev, { id: Date.now(), company, delegate: "Unassigned", type: "Entry", code, issued: new Date().toISOString().slice(0, 10), status: "Active", ...who }]);
-    toast(`Entry pass issued for ${company}`, { type: "success" });
+    toast(t("eventOps.passes.toastIssued", { company }), { type: "success" });
   };
 
   const setStatus = (row, status) => {
     update("passes", `${status === "Revoked" ? "Revoked" : "Reactivated"} pass ${row.code} (${row.company})`, (prev, who) =>
       prev.map((p) => (p.id === row.id ? { ...p, status, ...who } : p)));
-    toast(`Pass ${row.code} ${status.toLowerCase()}`, { type: status === "Revoked" ? "warning" : "success" });
+    toast(status === "Revoked" ? t("eventOps.passes.toastRevoked", { code: row.code }) : t("eventOps.passes.toastReactivated", { code: row.code }), { type: status === "Revoked" ? "warning" : "success" });
   };
 
   const startEditParking = (row) => {
@@ -1649,83 +1654,84 @@ const AccessPasses = () => {
   const saveParking = (row) => {
     update("passes", `Set parking slot ${parkingForm.slot || "—"} for ${row.company}`, (prev, who) =>
       prev.map((p) => (p.id === row.id ? { ...p, slot: parkingForm.slot, location: parkingForm.location, mapUrl: parkingForm.mapUrl.trim(), ...who } : p)));
-    toast("Parking assignment saved", { type: "success" });
+    toast(t("eventOps.passes.toastParkingSaved"), { type: "success" });
     setEditingParking(null);
   };
+
+  const typeLabel = (ty) => ty === "All" ? t("eventOps.passes.typeAll") : ty === "Entry" ? t("eventOps.passes.typeEntry") : t("eventOps.passes.typeParking");
 
   return (
     <div className="flex flex-col gap-5">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard label="Total Issued" value={passes.length} />
-        <StatCard label="Entry Passes" value={passes.filter(p => p.type === "Entry").length} color="#2959A6" />
-        <StatCard label="Parking Passes" value={passes.filter(p => p.type === "Parking").length} color="#f59e0b" />
+        <StatCard label={t("eventOps.passes.totalIssued")} value={passes.length} />
+        <StatCard label={t("eventOps.passes.entryPasses")} value={passes.filter(p => p.type === "Entry").length} />
+        <StatCard label={t("eventOps.passes.parkingPasses")} value={passes.filter(p => p.type === "Parking").length} />
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-2 flex-wrap">
-          {types.map((t) => (
-            <button key={t} onClick={() => setFilter(t)} className={`text-xs font-semibold rounded-full px-3 py-1.5 transition-all duration-150 ${filter === t ? "text-white shadow-sm" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}
-              style={filter === t ? { background: "#0E7F41" } : {}}>
-              {t} {t !== "All" && `(${passes.filter(p => p.type === t).length})`}
+          {types.map((ty) => (
+            <button key={ty} onClick={() => setFilter(ty)} className={`text-xs font-semibold rounded-full px-3 py-1.5 transition-all duration-150 ${filter === ty ? "text-primary-contrast shadow-sm bg-primary" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"}`}>
+              {typeLabel(ty)} {ty !== "All" && `(${passes.filter(p => p.type === ty).length})`}
             </button>
           ))}
         </div>
-        <SubTabBar tabs={["Table", "By Company"]} active={view} onChange={setView} />
+        <SubTabBar tabs={[t("eventOps.passes.viewTable"), t("eventOps.passes.viewByCompany")]} active={view} onChange={setView} />
       </div>
 
       {view === 0 ? (
-        <div className="overflow-x-auto rounded-xl border border-gray-100">
+        <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-gray-700">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                {["Company", "Delegate", "Type", "Parking Slot & Location", "Code", "Issued", "Status", "Last change", ""].map((h, i) => (
-                  <th key={i} className="text-left text-xs font-semibold text-gray-500 px-4 py-2.5 whitespace-nowrap">{h}</th>
+              <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                {[t("eventOps.requirements.company"), t("eventOps.passes.delegate"), t("eventOps.passes.type"), t("eventOps.passes.parkingSlotLocation"), t("eventOps.passes.code"), t("eventOps.passes.issued"), t("applicants.columns.status"), t("eventOps.equipment.colLastChange"), ""].map((h, i) => (
+                  <th key={i} className="text-start text-xs font-semibold text-gray-500 dark:text-gray-400 px-4 py-2.5 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {shown.map((row) => (
-                <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors last:border-0">
-                  <td className="px-4 py-3 font-medium text-gray-800">{row.company}</td>
-                  <td className="px-4 py-3 text-gray-700">{row.delegate}</td>
-                  <td className="px-4 py-3"><Badge label={row.type} color={row.type === "Parking" ? "yellow" : "blue"} /></td>
+                <tr key={row.id} className="border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors last:border-0">
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-100">{row.company}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{row.delegate}</td>
+                  <td className="px-4 py-3"><Badge label={typeLabel(row.type)} color={row.type === "Parking" ? "yellow" : "blue"} /></td>
                   <td className="px-4 py-3">
                     {row.type !== "Parking" ? (
-                      <span className="text-gray-300 text-xs">—</span>
+                      <span className="text-gray-300 dark:text-gray-600 text-xs">—</span>
                     ) : editingParking === row.id ? (
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-1.5">
-                          <input value={parkingForm.slot} onChange={(e) => setParkingForm((f) => ({ ...f, slot: e.target.value }))} placeholder="Slot e.g. P1-14" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-24 focus:outline-none focus:ring-1 focus:ring-green-500" />
-                          <input value={parkingForm.location} onChange={(e) => setParkingForm((f) => ({ ...f, location: e.target.value }))} placeholder="Exact location" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-40 focus:outline-none focus:ring-1 focus:ring-green-500" />
-                          <button onClick={() => saveParking(row)} className="text-xs font-semibold text-white rounded-lg px-2 py-1" style={{ background: "#0E7F41" }}>Save</button>
+                          <input value={parkingForm.slot} onChange={(e) => setParkingForm((f) => ({ ...f, slot: e.target.value }))} placeholder={t("eventOps.passes.slotPlaceholder")} className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs w-24 bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
+                          <input value={parkingForm.location} onChange={(e) => setParkingForm((f) => ({ ...f, location: e.target.value }))} placeholder={t("eventOps.passes.exactLocation")} className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs w-40 bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
+                          <button onClick={() => saveParking(row)} className="text-xs font-semibold text-primary-contrast rounded-lg px-2 py-1 bg-primary">{t("common.save")}</button>
                         </div>
                         {/* Google Maps link — paste a share/pin URL; the company
                             side renders a map preview + "Open in Maps". Placeholder
                             for now (no live embed API wired up yet). */}
-                        <input value={parkingForm.mapUrl} onChange={(e) => setParkingForm((f) => ({ ...f, mapUrl: e.target.value }))} placeholder="Google Maps link (optional)" className="border border-gray-200 rounded-lg px-2 py-1 text-xs w-full focus:outline-none focus:ring-1 focus:ring-green-500" />
+                        <input value={parkingForm.mapUrl} onChange={(e) => setParkingForm((f) => ({ ...f, mapUrl: e.target.value }))} placeholder={t("eventOps.passes.mapsLinkOptional")} dir="ltr" className="border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1 text-xs w-full bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary" />
                       </div>
                     ) : row.slot ? (
-                      <button onClick={() => startEditParking(row)} className="text-left hover:underline">
-                        <span className="font-mono text-xs font-semibold text-gray-700">{row.slot}</span>
-                        <span className="text-[11px] text-gray-400 block">{row.location}</span>
-                        {row.mapUrl && <span className="text-[10px] text-green-600 block">📍 Map linked</span>}
+                      <button onClick={() => startEditParking(row)} className="text-start hover:underline">
+                        <span className="font-mono text-xs font-semibold text-gray-700 dark:text-gray-300">{row.slot}</span>
+                        <span className="text-[11px] text-gray-400 dark:text-gray-500 block">{row.location}</span>
+                        {row.mapUrl && <span className="text-[10px] text-green-600 dark:text-green-400 block">📍 {t("eventOps.passes.mapLinked")}</span>}
                       </button>
                     ) : (
-                      <button onClick={() => startEditParking(row)} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors">
-                        Assign slot
+                      <button onClick={() => startEditParking(row)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 text-gray-500 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors">
+                        {t("eventOps.passes.assignSlot")}
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs font-mono">{row.code}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{row.issued}</td>
-                  <td className="px-4 py-3"><Badge label={row.status} color={statusColor(row.status)} /></td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs font-mono bidi-ltr">{row.code}</td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{row.issued}</td>
+                  <td className="px-4 py-3"><Badge label={translateEnum("passStatus", row.status)} color={statusColor(row.status)} /></td>
                   <td className="px-4 py-3"><LastEdited row={row} /></td>
                   <td className="px-4 py-3">
                     {row.status === "Active" && (
-                      <button onClick={() => setStatus(row, "Revoked")} className="text-xs font-medium border border-red-200 rounded-lg px-2.5 py-1 hover:bg-red-50 text-red-500 transition-colors">Revoke</button>
+                      <button onClick={() => setStatus(row, "Revoked")} className="text-xs font-medium border border-red-200 dark:border-red-500/30 rounded-lg px-2.5 py-1 hover:bg-red-50 dark:hover:bg-red-500/10 text-red-500 dark:text-red-400 transition-colors">{t("eventOps.passes.revoke")}</button>
                     )}
                     {row.status === "Revoked" && (
-                      <button onClick={() => setStatus(row, "Active")} className="text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700 text-gray-500 transition-colors">Reactivate</button>
+                      <button onClick={() => setStatus(row, "Active")} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-2.5 py-1 hover:bg-green-50 dark:hover:bg-green-500/10 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 text-gray-500 dark:text-gray-400 transition-colors">{t("eventOps.passes.reactivate")}</button>
                     )}
                   </td>
                 </tr>
@@ -1739,45 +1745,45 @@ const AccessPasses = () => {
           <input
             value={companySearch}
             onChange={(e) => setCompanySearch(e.target.value)}
-            placeholder="Search company…"
-            className="w-full sm:w-72 pl-8 pr-3 h-9 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-green-500"
+            placeholder={t("eventOps.delegates.searchCompany")}
+            className="w-full sm:w-72 ps-8 pe-3 h-9 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-surface-card text-fg focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <svg className="absolute start-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {byCompany.map(([company, rows]) => (
-            <div key={company} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+            <div key={company} className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-gray-800 text-sm truncate"><Highlight text={company} query={companySearch} /></p>
+                <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate"><Highlight text={company} query={companySearch} /></p>
                 {rows.length > 0
-                  ? <Badge label={`${rows.length} passes`} color="blue" />
-                  : <Badge label="No passes yet" color="gray" />}
+                  ? <Badge label={t("eventOps.passes.passesCount", { count: rows.length })} color="blue" />
+                  : <Badge label={t("eventOps.passes.noPassesYet")} color="gray" />}
               </div>
               {rows.length === 0 && (
-                <button onClick={() => issueEntryPass(company)} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-2 text-gray-500 hover:border-green-300 hover:text-green-700 transition-colors self-start">
-                  + Issue entry pass
+                <button onClick={() => issueEntryPass(company)} className="text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-500 dark:text-gray-400 hover:border-green-300 dark:hover:border-green-500/40 hover:text-green-700 dark:hover:text-green-400 transition-colors self-start">
+                  {t("eventOps.passes.issueEntryPass")}
                 </button>
               )}
               <div className="flex flex-col gap-2">
                 {rows.map((p) => (
-                  <div key={p.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                  <div key={p.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-lg p-2.5">
                     <QRCodeSVG value={`jobfair:pass:${p.code}`} size={44} fgColor="#111827" className="shrink-0 bg-white rounded p-0.5" />
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-gray-700 truncate">{p.delegate}</p>
-                      <p className="text-[10px] font-mono text-gray-400">{p.code}</p>
-                      {p.type === "Parking" && p.slot && <p className="text-[10px] text-amber-600 mt-0.5">Slot {p.slot} · {p.location}</p>}
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">{p.delegate}</p>
+                      <p className="text-[10px] font-mono text-gray-400 dark:text-gray-500 bidi-ltr">{p.code}</p>
+                      {p.type === "Parking" && p.slot && <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">{t("eventOps.passes.slotLine", { slot: p.slot, location: p.location })}</p>}
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge label={p.type} color={p.type === "Parking" ? "yellow" : "blue"} />
-                      <Badge label={p.status} color={statusColor(p.status)} />
+                      <Badge label={typeLabel(p.type)} color={p.type === "Parking" ? "yellow" : "blue"} />
+                      <Badge label={translateEnum("passStatus", p.status)} color={statusColor(p.status)} />
                     </div>
                   </div>
                 ))}
               </div>
-              {rows.length > 0 && <p className="text-[10px] text-gray-400">This exact view is what {company} sees in their settings page.</p>}
+              {rows.length > 0 && <p className="text-[10px] text-gray-400 dark:text-gray-500">{t("eventOps.passes.companyViewNote", { company })}</p>}
             </div>
           ))}
-          {byCompany.length === 0 && <p className="text-xs text-gray-400 text-center py-6 col-span-2">No companies match "{companySearch}".</p>}
+          {byCompany.length === 0 && <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-6 col-span-2">{t("eventOps.delegates.noCompanyMatch", { search: companySearch })}</p>}
         </div>
         </>
       )}
@@ -1788,16 +1794,18 @@ const AccessPasses = () => {
 
 // ─── Tab definitions (operational modules only) ───────────────────────────────
 
+// `labelKey` is looked up under eventOps.tabs.* at render time; `label` stays
+// as the English fallback for any code path that doesn't have access to `t()`.
 const OPERATIONS_TABS = [
-  { id: "venue",        label: "Venue & Booths",        component: VenueMapping },
-  { id: "banners",      label: "Banners & Branding",    component: BannerBranding },
-  { id: "requirements", label: "Special Requirements",  component: SpecialRequirements },
-  { id: "equipment",    label: "Equipment & Logistics", component: EquipmentLogistics },
-  { id: "delegates",    label: "Delegate List",         component: DelegateList },
-  { id: "attendance",   label: "Attendance",            component: AttendanceCheckin },
-  { id: "manageStaff",  label: "Manage Staff",          component: ManageStaff },
-  { id: "schedule",     label: "Schedule",              component: ScheduleSlots },
-  { id: "passes",       label: "Access Passes",         component: AccessPasses },
+  { id: "venue",        labelKey: "venue",        label: "Venue & Booths",        component: VenueMapping },
+  { id: "banners",      labelKey: "banners",      label: "Banners & Branding",    component: BannerBranding },
+  { id: "requirements", labelKey: "requirements", label: "Special Requirements",  component: SpecialRequirements },
+  { id: "equipment",    labelKey: "equipment",    label: "Equipment & Logistics", component: EquipmentLogistics },
+  { id: "delegates",    labelKey: "delegates",    label: "Delegate List",         component: DelegateList },
+  { id: "attendance",   labelKey: "attendance",   label: "Attendance",            component: AttendanceCheckin },
+  { id: "manageStaff",  labelKey: "manageStaff",  label: "Manage Staff",          component: ManageStaff },
+  { id: "schedule",     labelKey: "schedule",     label: "Schedule",              component: ScheduleSlots },
+  { id: "passes",       labelKey: "passes",       label: "Access Passes",         component: AccessPasses },
 ];
 
 // ─── Main component: Event Operations ──────────────────────────────────────────
@@ -1810,6 +1818,7 @@ const OPERATIONS_TAB_KEY = "event_ops_active_tab";
 const SEEN_REQUESTS_KEY = "event_ops_seen_company_requests";
 
 const EventOperations = () => {
+  const { t } = useTranslation();
   const { user } = useAuthContext();
   const { data, employee, team, setActingAs, onPersistError } = useEventOps();
   const { notify } = useNotifications();
@@ -1857,10 +1866,10 @@ const EventOperations = () => {
   useEffect(() => {
     onPersistError((err, sections) => {
       const status = err?.response?.status;
-      const reason = status === 401 || status === 403 ? "you may need to sign back in" : "retrying…";
-      toast(`Couldn't save changes to ${sections.join(", ")} — ${reason}`, { type: "error" });
+      const reason = status === 401 || status === 403 ? t("eventOps.main.reasonSignIn") : t("eventOps.main.reasonRetrying");
+      toast(t("eventOps.main.toastSaveFailed", { sections: sections.join(", "), reason }), { type: "error" });
     });
-  }, [onPersistError, toast]);
+  }, [onPersistError, toast, t]);
 
   // Rana (Event Lead) sees every module, matching her "final point of
   // contact" responsibility and the same employee.id === "rana" check the
@@ -1893,7 +1902,7 @@ const EventOperations = () => {
   const ActiveComponent = OPERATIONS_TABS.find((t) => t.id === activeTab)?.component || VenueMapping;
 
   return (
-    <PageContainer user={user} title="Event Operations" collapsibleTopBar>
+    <PageContainer user={user} title={t("eventOps.main.pageTitle")} collapsibleTopBar>
       <div className="flex flex-col gap-3 flex-1 min-h-0">
         {/* Team view switcher — one CASTO account, one view per employee.
             Two stable zones: the member buttons wrap among themselves on the
@@ -1905,33 +1914,33 @@ const EventOperations = () => {
             whose short role changed the wrap point). */}
         <div className="flex items-start justify-between gap-3 shrink-0">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
-            <span className="text-[11px] text-gray-400 font-medium uppercase tracking-wide">Viewing as</span>
+            <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wide">{t("eventOps.main.viewingAs")}</span>
             {team.map((m) => (
               <button
                 key={m.id}
                 onClick={() => setActingAs(m.id)}
                 title={m.role}
-                className={`flex items-center gap-1.5 rounded-full pl-1 pr-3 py-1 text-xs font-semibold border transition-all ${
+                className={`flex items-center gap-1.5 rounded-full ps-1 pe-3 py-1 text-xs font-semibold border transition-all ${
                   employee.id === m.id
-                    ? "bg-[#0E7F41] text-white border-[#0E7F41] shadow-sm"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-green-300"
+                    ? "bg-primary text-primary-contrast border-primary shadow-sm"
+                    : "bg-surface-card text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-500/40"
                 }`}
               >
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${employee.id === m.id ? "bg-white/25 text-white" : "bg-gray-100 text-gray-500"}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${employee.id === m.id ? "bg-white/25 text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"}`}>
                   {m.name[0]}
                 </span>
                 {m.name}
               </button>
             ))}
           </div>
-          <a href="/event-admin" className="text-xs font-semibold text-gray-500 hover:text-green-700 transition-colors shrink-0 mt-1">
-            Admin →
+          <a href="/event-admin" className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-green-700 dark:hover:text-green-400 transition-colors shrink-0 mt-1">
+            {t("eventOps.main.adminLink")}
           </a>
         </div>
         {/* Status line on its own row so its variable length can never reflow
             the member buttons above. */}
-        <p className="text-[11px] text-gray-400 -mt-1 shrink-0 hidden lg:block">
-          {employee.role} — changes are recorded under {employee.name}
+        <p className="text-[11px] text-gray-400 dark:text-gray-500 -mt-1 shrink-0 hidden lg:block">
+          {t("eventOps.main.recordedUnder", { role: employee.role, name: employee.name })}
         </p>
 
         {/* Tab bar — employee's modules first, marked with a dot. Uses the
@@ -1947,8 +1956,8 @@ const EventOperations = () => {
               return (
                 <>
                   <TabIcon id={tab.id} />
-                  <span>{tab.label}</span>
-                  {mine && <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white" : "bg-[#0E7F41]"}`} title={`Assigned to ${employee.name}`} />}
+                  <span>{t(`eventOps.tabs.${tab.labelKey}`)}</span>
+                  {mine && <span className={`w-1.5 h-1.5 rounded-full ${active ? "bg-white" : "bg-primary"}`} title={t("eventOps.main.assignedTo", { name: employee.name })} />}
                 </>
               );
             }}
@@ -1959,7 +1968,7 @@ const EventOperations = () => {
             on activeTab so switching modules fades the panel in (matching the
             company Status/Settings tab content transition). */}
         <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl">
-          <div key={activeTab} className="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 animate-panelIn">
+          <div key={activeTab} className="bg-surface-card rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 dark:border-gray-700 animate-panelIn">
             <ActiveComponent />
           </div>
         </div>
