@@ -15,7 +15,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
     const { t } = useTranslation();
     const headerClass = "flex items-center truncate";
     const baseClickable = "flex items-center truncate cursor-pointer hover:text-blue-600 transition-all duration-200 px-1.5 py-0.5 rounded-md -ms-1.5";
-    const activeClass = "bg-blue-100 text-blue-700";
+    const activeClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300";
     const getClickableClass = (columnName) => `${baseClickable} ${sortColumn === columnName ? activeClass : ''}`;
 
     // Responsive visibility classes
@@ -35,7 +35,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
             <h2 className={getClickableClass('Major')} onClick={() => onSort?.('Major')}><span>{t('applicants.columns.major')}</span><SortArrow isActive={sortColumn === 'Major'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('CV')} ${hideOnTablet}`} onClick={() => onSort?.('CV')}><span>{t('applicants.columns.cv')}</span><SortArrow isActive={sortColumn === 'CV'} isAscending={isAscending} /></h2>
             <h2 className={getClickableClass('Status')} onClick={() => onSort?.('Status')}><span>{t('applicants.columns.status')}</span><SortArrow isActive={sortColumn === 'Status'} isAscending={isAscending} /></h2>
-            <h2 className={`${headerClass} text-[#F3F6FF]`}>.</h2>
+            <h2 className={`${headerClass} text-surface`}>.</h2>
         </div>
     :
         <div className="row-manager grid py-1.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
@@ -47,7 +47,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
             <h2 className={`${getClickableClass('Sector')} ${hideOnTablet}`} onClick={() => onSort?.('Sector')}><span>{t('managersCols.sector')}</span><SortArrow isActive={sortColumn === 'Sector'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('No of App')} ${hideOnTablet}`} onClick={() => onSort?.('No of App')}><span>{t('managersCols.apps')}</span><SortArrow isActive={sortColumn === 'No of App'} isAscending={isAscending} /></h2>
             <h2 className={getClickableClass('Status')} onClick={() => onSort?.('Status')}><span>{t('managersCols.status')}</span><SortArrow isActive={sortColumn === 'Status'} isAscending={isAscending} /></h2>
-            <h2 className={`${headerClass} text-[#F3F6FF]`}>.</h2>
+            <h2 className={`${headerClass} text-surface`}>.</h2>
         </div>
 
 }
