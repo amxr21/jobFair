@@ -413,7 +413,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
     
                 <div className="flex items-center justify-end">
                     {uniId == 22105176 && <DeveloperBadge />}
-                    <button className="flex items-center justify-center w-5 h-5" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}}>
+                    <button className="flex items-center justify-center w-5 h-5 cursor-pointer text-gray-400 hover:text-gray-700 transition-colors" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}} title="Expand">
                         <ExpandIcon size="small" />
                     </button>
                         
@@ -454,7 +454,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                 <div className="flex items-center justify-center"><StatusBadge status={companyStatus || 'Pending'} /></div>
 
                 <div className="flex items-center justify-end">
-                    <button className="flex items-center justify-center w-5 h-5" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}}>
+                    <button className="flex items-center justify-center w-5 h-5 cursor-pointer text-gray-400 hover:text-gray-700 transition-colors" ref={expandApplicantBtn} onClick={() => {setIsClicked(true)}} title="Expand">
                         <ExpandIcon size="small" />
                     </button>
 

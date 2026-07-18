@@ -160,7 +160,7 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
                                 <div key={category.id} className="border-b border-gray-50 last:border-b-0">
                                     <button
                                         onClick={() => toggleCategory(category.id)}
-                                        className="w-full px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-medium text-gray-700 flex items-center justify-between transition-colors"
+                                        className="w-full px-3 py-2.5 bg-gray-50 hover:bg-gray-100 text-xs font-medium text-gray-700 flex items-center justify-between transition-colors cursor-pointer"
                                     >
                                         <div className="flex items-center gap-2">
                                             <span>{category.label}</span>

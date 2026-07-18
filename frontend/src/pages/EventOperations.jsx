@@ -182,7 +182,7 @@ const VenueMapping = () => {
       {["A", "B", "C"].map((zone) => (
         <div key={zone}>
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Zone {zone}</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {booths.filter((b) => b.zone === zone).map((booth) => (
               <div key={booth.id} ref={(el) => (cardRefs.current[booth.id] = el)} className={`rounded-xl border p-3 flex flex-col gap-2.5 ${
                 booth.status === "Assigned" ? "border-green-200 bg-green-50"
@@ -634,7 +634,7 @@ const EquipmentLogistics = () => {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Tables" value={total(["table"])} sub="Total requested" />
         <StatCard label="Chairs" value={total(["chair"])} sub="Total requested" color="#2959A6" />
         <StatCard label="Power / Cables" value={total(["power", "extension", "cable"])} sub="Strips & cables" color="#f59e0b" />
@@ -839,7 +839,7 @@ const DelegateList = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Total Delegates" value={totalDelegates} sub="Across all companies" />
         <StatCard label="Badges Printed" value={totalPrinted} sub={`${totalDelegates - totalPrinted} pending`} color="#2959A6" />
         <StatCard label="Companies" value={mergedAll.length} sub="All registered" color="#8b5cf6" />
@@ -1103,7 +1103,7 @@ const AttendanceCheckin = () => {
             Each assigned booth has a printed QR code on its table. When a company representative scans it on event day,
             their attendance is confirmed automatically. Companies see the same code in their own settings page.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {booths.map((b) => (
               <div key={b.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col items-center gap-2">
                 <div ref={(el) => { if (el) qrRefs.current[b.id] = el.querySelector("svg"); }}>
@@ -1474,7 +1474,7 @@ const ScheduleSlots = () => {
       {showForm && (
         <div className="bg-[#F3F6FF] rounded-xl p-4 border border-blue-100 flex flex-col gap-3">
           <p className="text-sm font-semibold text-gray-700">New Time Slot</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { label: "Start", el: <input type="time" className={inputCls} value={form.start} onChange={F("start")} /> },
               { label: "End", el: <input type="time" className={inputCls} value={form.end} onChange={F("end")} /> },
@@ -1517,7 +1517,7 @@ const ScheduleSlots = () => {
               {editingId === slot.id ? (
                 /* Inline editor — change the time or any detail of an existing slot */
                 <div className="flex flex-col gap-2.5">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                     <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Start</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.start || ""} onChange={EF("start")} /></div>
                     <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">End</label><input type="time" className={`text-xs ${inputCls}`} value={editForm.end || ""} onChange={EF("end")} /></div>
                     <div className="flex flex-col gap-1"><label className="text-[11px] text-gray-500 font-medium">Host</label><input className={`text-xs ${inputCls}`} value={editForm.host || ""} onChange={EF("host")} /></div>

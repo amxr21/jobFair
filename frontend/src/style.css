@@ -131,39 +131,6 @@ html {
 
 
 /* Modal open: spring slide from below */
-@keyframes modalSlideUp {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -44%) scale(0.97);
-    }
-    100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-/* Modal close: smooth fade + slight recession */
-@keyframes modalSlideDown {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -53%) scale(0.97);
-    }
-}
-
-@keyframes backdropFadeIn {
-    0%   { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-@keyframes backdropFadeOut {
-    0%   { opacity: 1; }
-    100% { opacity: 0; }
-}
-
 /* Placeholder for the contentEditable email composer (contentEditable has no
    native placeholder). Shows only while the editor is truly empty. */
 .email-compose-editor:empty::before {
@@ -174,30 +141,43 @@ html {
 .email-compose-editor ul { list-style: disc; padding-left: 1.25rem; }
 .email-compose-editor ol { list-style: decimal; padding-left: 1.25rem; }
 
+/* Modal box — transition-based (not keyframes) so it always interpolates
+   smoothly from its current state instead of snapping to a keyframe's 0%.
+   Default = the closed/pre-open state (faded, slightly down + scaled down);
+   .modal-open transitions it to rest; .modal-close transitions it back out.
+   Centering lives in transform, so every transform value keeps translate(-50%,-50%). */
 .expandDetails {
-    transform: translate(-50%, -50%);
     opacity: 0;
+    transform: translate(-50%, -50%) translateY(8px) scale(0.97);
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     will-change: transform, opacity;
 }
 
 .expandDetails.modal-open {
-    animation: modalSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 1;
+    transform: translate(-50%, -50%) translateY(0) scale(1);
 }
 
 .expandDetails.modal-close {
-    animation: modalSlideDown 0.22s cubic-bezier(0.4, 0, 1, 1) forwards;
+    opacity: 0;
+    transform: translate(-50%, -50%) translateY(6px) scale(0.98);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 1, 1),
+                transform 0.2s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .expandDetails-backdrop {
     opacity: 0;
+    transition: opacity 0.28s ease-out;
 }
 
 .expandDetails-backdrop.backdrop-open {
-    animation: backdropFadeIn 0.28s ease-out forwards;
+    opacity: 1;
 }
 
 .expandDetails-backdrop.backdrop-close {
-    animation: backdropFadeOut 0.22s ease-in forwards;
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
 }
 
 /* Side drawer (e.g. Activity Log panel) — slides in/out from the right,
