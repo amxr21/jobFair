@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (Tailwind v4): every `dark:` utility activates when a
+   `.dark` class is present on <html> (or any ancestor). The ThemeContext
+   toggles that class and persists the choice; default follows OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Tailwind v4 changed the default `border`/`divide` color from gray-200 to
    currentColor, which rendered every unprefixed `border` class (TopBar,
    logout button, etc.) black instead of the light gray it was under v3.
-   Restore the old default so bare `border` utilities keep matching. */
+   Restore the old default so bare `border` utilities keep matching. In dark
+   mode use a darker neutral so bare borders read correctly there too. */
 @layer base {
   *,
   ::after,
@@ -11,6 +17,57 @@
   ::backdrop {
     border-color: #e5e7eb;
   }
+  .dark *,
+  .dark ::after,
+  .dark ::before,
+  .dark ::backdrop {
+    border-color: #374151;
+  }
+  /* App-wide surface: light by default, dark neutral under .dark. Individual
+     components still opt into dark: utilities; this covers the root canvas so
+     there's never a white flash behind them. */
+  body {
+    background-color: #ffffff;
+    color: #111827;
+  }
+  .dark body {
+    background-color: #0b1220;
+    color: #e5e7eb;
+  }
+}
+
+/* ── Dark-mode auto-reversal for common utilities ──────────────────────────
+   Most of the app uses un-prefixed Tailwind utilities (bg-white, text-gray-800,
+   …) that predate dark mode. Rather than hand-add `dark:` to thousands of call
+   sites, these unlayered rules reverse the most common light surfaces and dark
+   text under `.dark`. Unlayered CSS beats Tailwind's @layer utilities, so these
+   win by default — but an explicit `dark:` variant a component sets ALSO wins
+   (variants raise specificity), so intentional per-component dark styling still
+   overrides these. Brand/status colors (green/blue/red/amber/etc.) are left
+   untouched; only neutral surfaces and gray text reverse. */
+.dark {
+  /* Light surfaces → dark panels */
+  .bg-white { background-color: #111827; }
+  .bg-gray-50 { background-color: #1a2234; }
+  .bg-gray-100 { background-color: #1f2937; }
+  .bg-gray-200 { background-color: #374151; }
+
+  /* Dark text → light text (readable on dark) */
+  .text-gray-900, .text-gray-800 { color: #f3f4f6; }
+  .text-gray-700 { color: #e5e7eb; }
+  .text-gray-600 { color: #d1d5db; }
+  .text-gray-500 { color: #9ca3af; }
+  .text-gray-400 { color: #6b7280; }
+  .text-black { color: #f3f4f6; }
+
+  /* Neutral borders */
+  .border-gray-100 { border-color: #1f2937; }
+  .border-gray-200 { border-color: #374151; }
+  .border-gray-300 { border-color: #4b5563; }
+
+  /* Hover surfaces used all over (rows, buttons) */
+  .hover\:bg-gray-50:hover { background-color: #1f2937; }
+  .hover\:bg-gray-100:hover { background-color: #263141; }
 }
 
 /* Custom Theme Colors */

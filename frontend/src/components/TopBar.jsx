@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 
+import { useTranslation } from "react-i18next";
 import { ManagerIcon, CastoIcon, VisitorIcon } from "./Icons";
 import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
+import LanguageToggle from "./LanguageToggle";
 
 const TopBar = ({user}) => {
-    
+    const { t } = useTranslation();
+
     const [time, setTime] = useState(getLiveTime)
     const [day, setDay] = useState('')
     const [date, setDate] = useState('')
@@ -61,7 +65,7 @@ const TopBar = ({user}) => {
     
 
     return (
-        <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-1.5 md:py-2 rounded-md transition-all duration-300">
+        <div id="TopBar" className="w-full border flex flex-row items-center justify-between px-3 md:px-4 py-1.5 md:py-2 rounded-md transition-all duration-300 dark:bg-gray-900 dark:border-gray-700">
             <div className="user flex flex-row gap-2 items-center">
                 <div className="avatar flex items-center justify-center w-8 h-8 rounded-md shrink-0">
                     {
@@ -73,15 +77,17 @@ const TopBar = ({user}) => {
                     }
                 </div>
                 <div className="name min-w-0">
-                    <h2 className="text-sm md:text-base font-bold truncate">{user ? user.email.split('@')[0] == 'casto' ? "CASTO Office" : user?.companyName : "Visitor"}</h2>
-                    <h6 className="text-[9px] md:text-[10px] font-extralight text-gray-400">{user ? "Manager mode" : "Guest mode"}</h6>
+                    <h2 className="text-sm md:text-base font-bold truncate dark:text-gray-100">{user ? user.email.split('@')[0] == 'casto' ? t("topbar.castoOffice") : user?.companyName : t("topbar.visitor")}</h2>
+                    <h6 className="text-[9px] md:text-[10px] font-extralight text-gray-400 dark:text-gray-500">{user ? t("topbar.managerMode") : t("topbar.guestMode")}</h6>
                 </div>
             </div>
             <div className="flex items-center gap-2 md:gap-3">
+                <LanguageToggle />
+                <ThemeToggle />
                 {user && <NotificationBell />}
                 <div className="hidden md:block time text-right">
-                    <h4 className="time text-xl font-bold">{time}</h4>
-                    <p className="date text-[10px] font-extralight text-gray-400">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
+                    <h4 className="time text-xl font-bold dark:text-gray-100">{time}</h4>
+                    <p className="date text-[10px] font-extralight text-gray-400 dark:text-gray-500">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
                 </div>
             </div>
         </div>

@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "applicants": "Applicants",
+    "myStatus": "My Status",
+    "settings": "Settings",
+    "survey": "Survey",
+    "managers": "Managers",
+    "statistics": "Statistics",
+    "surveyResults": "Survey Results",
+    "eventSettings": "Event Settings"
+  },
+  "topbar": {
+    "castoOffice": "CASTO Office",
+    "visitor": "Visitor",
+    "managerMode": "Manager mode",
+    "guestMode": "Guest mode"
+  },
+  "theme": {
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "lang": {
+    "toggleToArabic": "العربية",
+    "toggleToEnglish": "English",
+    "label": "Language"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "remove": "Remove",
+    "add": "Add",
+    "loading": "Loading…",
+    "somethingWentWrong": "Something went wrong",
+    "reloadPage": "Reload page"
+  }
+}

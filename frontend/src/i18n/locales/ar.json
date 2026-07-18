@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "applicants": "المتقدمون",
+    "myStatus": "حالتي",
+    "settings": "الإعدادات",
+    "survey": "الاستبيان",
+    "managers": "الشركات",
+    "statistics": "الإحصائيات",
+    "surveyResults": "نتائج الاستبيان",
+    "eventSettings": "إعدادات الفعالية"
+  },
+  "topbar": {
+    "castoOffice": "مكتب CASTO",
+    "visitor": "زائر",
+    "managerMode": "وضع المدير",
+    "guestMode": "وضع الضيف"
+  },
+  "theme": {
+    "light": "الوضع الفاتح",
+    "dark": "الوضع الداكن"
+  },
+  "lang": {
+    "toggleToArabic": "العربية",
+    "toggleToEnglish": "English",
+    "label": "اللغة"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "edit": "تعديل",
+    "remove": "إزالة",
+    "add": "إضافة",
+    "loading": "جارٍ التحميل…",
+    "somethingWentWrong": "حدث خطأ ما",
+    "reloadPage": "إعادة تحميل الصفحة"
+  }
+}

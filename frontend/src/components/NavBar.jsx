@@ -3,6 +3,7 @@ import { OfficeLogo, PageLink, UniLogo, AccessButtons } from "./index";
 
 import { useEffect, useState, useRef, useLayoutEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../hooks/useAuthContext";
 import axios from "axios";
@@ -57,6 +58,7 @@ const SlidingPill = ({ containerRef }) => {
 
 const NavBar = ({ link }) => {
 
+    const { t } = useTranslation();
     const { user } = useAuthContext()
 
     const [userData, setUserData] = useState()
@@ -110,14 +112,14 @@ const NavBar = ({ link }) => {
                     {/* Main navigation group — one shared sliding pill glides between these */}
                     <div ref={mainGroupRef} className="relative flex flex-col gap-y-3">
                         <SlidingPill containerRef={mainGroupRef} />
-                        <PageLink link='' title={'Applicants'} icon={'applicants'} />
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={'My Status'} icon={'status'} />}
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={'Settings'} icon={'settings'} />}
+                        <PageLink link='' title={t('nav.applicants')} icon={'applicants'} />
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={t('nav.myStatus')} icon={'status'} />}
+                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={t('nav.settings')} icon={'settings'} />}
                         {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" &&
-                            <PageLink link='survey' title={'Survey'} icon={'surveyStatstics'} />}
-                        {isCASTOAdmin && <PageLink link='managers' title={'Managers'} icon={'managers'} />}
-                        {isCASTOAdmin && <PageLink link='statistics' title={'Statistics'} icon={'statistics'} />}
-                        {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={'Survey Results'} icon={'surveyResults'} />}
+                            <PageLink link='survey' title={t('nav.survey')} icon={'surveyStatstics'} />}
+                        {isCASTOAdmin && <PageLink link='managers' title={t('nav.managers')} icon={'managers'} />}
+                        {isCASTOAdmin && <PageLink link='statistics' title={t('nav.statistics')} icon={'statistics'} />}
+                        {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={t('nav.surveyResults')} icon={'surveyResults'} />}
                     </div>
                 </div>
 
@@ -126,7 +128,7 @@ const NavBar = ({ link }) => {
                     {isCASTOAdmin && (
                         <div ref={settingsGroupRef} className="relative flex flex-col gap-y-3 pt-3 border-t border-gray-100">
                             <SlidingPill containerRef={settingsGroupRef} />
-                            <PageLink link='event-settings' title={'Event Settings'} icon={'settings'} matchPaths={['event-admin', 'view-as', 'dev']} />
+                            <PageLink link='event-settings' title={t('nav.eventSettings')} icon={'settings'} matchPaths={['event-admin', 'view-as', 'dev']} />
                         </div>
                     )}
                     <AccessButtons />

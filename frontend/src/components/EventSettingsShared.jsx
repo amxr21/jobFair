@@ -1,4 +1,5 @@
 import { useRef, useLayoutEffect, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { formatWhen } from "../context/EventOpsContext";
 
 // Small presentational pieces shared between the Event Operations and Event
@@ -78,13 +79,17 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
   const btnRefs = useRef([]);
   const pillRef = useRef(null);
   const wrapRef = useRef(null);
+  // Re-measure the pill when the language flips: switching EN↔AR changes label
+  // widths and mirrors the layout (dir=rtl), but doesn't resize the container,
+  // so the ResizeObserver alone wouldn't catch it and the pill would stay put.
+  const { i18n } = useTranslation();
 
-  // Position the sliding pill under the active tab. This must survive being
-  // mounted while the container is briefly zero-width (page fade-in animation)
-  // or before web-fonts settle — a one-shot measurement on [active] alone read
-  // 0 in those cases and never recovered, leaving the pill (and the active
-  // tab's white-on-nothing label) looking broken/hidden. Re-measure on the next
-  // frame and whenever the bar resizes so it always lands correctly.
+  // Position the sliding pill under the active tab. `offsetLeft` is measured
+  // from the wrapper's left border and the pill is absolutely positioned in
+  // that same relative wrapper, so setting `left` lands correctly in both LTR
+  // and RTL. This must survive being mounted while the container is briefly
+  // zero-width (page fade-in) or before web-fonts settle — re-measure on the
+  // next frame and whenever the bar resizes or the language changes.
   const positionPill = useCallback(() => {
     const btn = btnRefs.current[active];
     const pill = pillRef.current;
@@ -98,7 +103,7 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
     // Second pass after layout/fonts settle (handles zero-width first paint)
     const raf = requestAnimationFrame(positionPill);
     return () => cancelAnimationFrame(raf);
-  }, [positionPill, tabs]);
+  }, [positionPill, tabs, i18n.language]);
 
   useEffect(() => {
     if (typeof ResizeObserver === "undefined" || !wrapRef.current) return;
@@ -139,6 +144,7 @@ export const PillTabs = ({ tabs, activeId, onSelect, renderInner }) => {
   const btnRefs = useRef({});
   const pillRef = useRef(null);
   const wrapRef = useRef(null);
+  const { i18n } = useTranslation(); // re-measure the pill on EN↔AR switch
 
   const positionPill = useCallback(() => {
     const btn = btnRefs.current[activeId];
@@ -153,7 +159,7 @@ export const PillTabs = ({ tabs, activeId, onSelect, renderInner }) => {
     positionPill();
     const raf = requestAnimationFrame(positionPill);
     return () => cancelAnimationFrame(raf);
-  }, [positionPill, tabs]);
+  }, [positionPill, tabs, i18n.language]);
 
   useEffect(() => {
     if (typeof ResizeObserver === "undefined" || !wrapRef.current) return;
