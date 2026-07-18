@@ -386,6 +386,7 @@ const MainBanner = ({link}) => {
         <>
         <PageContainer
             user={user}
+            noHorizontalPadding
             title={t("applicants.title")}
             titleExtra={user && (
                 <div className="flex flex-wrap gap-1.5 items-center">
@@ -458,26 +459,26 @@ const MainBanner = ({link}) => {
         >
             {/* Tabs for non-CASTO users — sliding pill */}
             {user?.email !== 'casto@sharjah.ac.ae' && (
-                <div className="relative flex mb-3 md:mb-4 bg-gray-100 p-1 rounded-xl w-fit">
+                <div className="relative flex mb-3 md:mb-4 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl w-fit">
                     {/* Sliding pill */}
                     <div
-                        className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm"
+                        className="absolute top-1 bottom-1 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
                         style={{
                             width: 'calc(50% - 4px)',
-                            left: activeTab === 'my' ? '4px' : 'calc(50%)',
-                            transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+                            insetInlineStart: activeTab === 'my' ? '4px' : 'calc(50%)',
+                            transition: 'inset-inline-start 0.22s cubic-bezier(0.4,0,0.2,1)',
                         }}
                     />
                     <button
                         onClick={() => { setActiveTab('my'); toast(t('applicants.viewingMine'), { type: 'info', duration: 1800 }); }}
                         className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'my' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
+                            activeTab === 'my' ? 'text-[#0E7F41] dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                     >
                         <span className="hidden md:inline">{t('applicants.myApplicants')}</span>
                         <span className="md:hidden">{t('applicants.mine')}</span>
                         <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
-                            activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
+                            activeTab === 'my' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                         }`}>
                             {finalList.length}
                         </span>
@@ -485,13 +486,13 @@ const MainBanner = ({link}) => {
                     <button
                         onClick={() => { setActiveTab('other'); toast(t('applicants.viewingOther'), { type: 'info', duration: 1800 }); }}
                         className={`relative z-10 px-2 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-colors duration-200 flex items-center gap-1.5 md:gap-2 ${
-                            activeTab === 'other' ? 'text-[#0E7F41]' : 'text-gray-500 hover:text-gray-700'
+                            activeTab === 'other' ? 'text-[#0E7F41] dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                         }`}
                     >
                         <span className="hidden md:inline">{t('applicants.otherApplicants')}</span>
                         <span className="md:hidden">{t('applicants.others')}</span>
                         <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-[10px] md:text-xs transition-colors duration-200 ${
-                            activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 text-gray-600'
+                            activeTab === 'other' ? 'bg-[#0E7F41] text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                         }`}>
                             {finalOtherList.length}
                         </span>

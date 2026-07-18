@@ -2,15 +2,27 @@ import { useRef, useState, useEffect } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import { INDUSTRY_FIELDS } from './MultiSelectInput';
+import { tIndustryField } from '../i18n/translateEnum';
 
 // This category is an artifact of the registration form, not a real industry field
 const EXCLUDED_FIELD = 'office and students fairs';
 
 const titleCase = (s) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 
+// The dataset's keys are lowercased/cleaned free text, so match them back to
+// the canonical INDUSTRY_FIELDS casing (case-insensitive) before translating —
+// a naive titleCase() can't recover multi-word/acronym casing like "IT Consulting".
+const CANONICAL_BY_LOWER = new Map(INDUSTRY_FIELDS.map((f) => [f.toLowerCase(), f]));
+const resolveLabel = (rawLabel) => {
+    const canonical = CANONICAL_BY_LOWER.get(rawLabel.toLowerCase());
+    return canonical ? tIndustryField(canonical) : titleCase(rawLabel);
+};
+
 const BarChartElement = ({ dataset }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { isDark } = useTheme();
+    const isRtl = i18n.dir() === 'rtl';
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 550, height: 300 });
 
@@ -45,7 +57,7 @@ const BarChartElement = ({ dataset }) => {
         .slice(0, 8);
 
     const labels = entries.map(([label]) => {
-        const clean = titleCase(label);
+        const clean = resolveLabel(label);
         return clean.length > 24 ? clean.slice(0, 22) + '…' : clean;
     });
     const values = entries.map(([, value]) => value);
@@ -64,10 +76,12 @@ const BarChartElement = ({ dataset }) => {
                     yAxis={[{
                         scaleType: 'band',
                         data: labels,
+                        position: isRtl ? 'right' : 'left',
                         tickLabelStyle: { fontSize: 11, fill: isDark ? '#cbd5e1' : '#374151' },
                     }]}
                     xAxis={[{
                         tickMinStep: 1,
+                        reverse: isRtl,
                         valueFormatter: (v) => (Number.isInteger(v) ? String(v) : ''),
                         tickLabelStyle: { fontSize: 11, fill: isDark ? '#cbd5e1' : '#374151' },
                     }]}
@@ -76,7 +90,7 @@ const BarChartElement = ({ dataset }) => {
                         color: isDark ? '#34C775' : '#0E7F41',
                         valueFormatter: (v) => t("statistics.companyCount", { count: v }),
                     }]}
-                    margin={{ left: 150, right: 24, top: 8, bottom: 24 }}
+                    margin={isRtl ? { left: 24, right: 150, top: 8, bottom: 24 } : { left: 150, right: 24, top: 8, bottom: 24 }}
                     borderRadius={4}
                     slotProps={{ legend: { hidden: true } }}
                 />

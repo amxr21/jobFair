@@ -435,11 +435,11 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                         const owner = team?.find((m) => m.focus?.includes(id));
                         if (!owner) return null;
                         return (
-                            <div key={id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2">
-                                <span className="w-6 h-6 rounded-full bg-[#0E7F41] text-white text-[10px] font-bold flex items-center justify-center shrink-0">{owner.name[0]}</span>
+                            <div key={id} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-lg px-2.5 py-2">
+                                <span className="w-6 h-6 rounded-full bg-primary text-primary-contrast text-[10px] font-bold flex items-center justify-center shrink-0">{owner.name[0]}</span>
                                 <div className="min-w-0 text-[10px] leading-tight">
-                                    <p className="font-semibold text-gray-700">{MODULE_LABELS[id]}</p>
-                                    <p className="text-gray-500 truncate">{owner.name}{owner.email ? ` · ${owner.email}` : ""}</p>
+                                    <p className="font-semibold text-gray-700 dark:text-gray-300">{t('eventOps.tabs.' + id)}</p>
+                                    <p className="text-gray-500 dark:text-gray-400 truncate bidi-ltr">{owner.name}{owner.email ? ` · ${owner.email}` : ""}</p>
                                 </div>
                             </div>
                         );

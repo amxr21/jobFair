@@ -14,3 +14,5 @@ export const translateEnum = (group, value) => {
 export const tCity = (v) => translateEnum("city", v);
 export const tSector = (v) => translateEnum("sector", v);
 export const tStatus = (v) => translateEnum("status", v);
+export const tIndustryField = (v) => translateEnum("industryField", v);
+export const tMajor = (v) => translateEnum("major", v);

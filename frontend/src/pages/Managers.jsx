@@ -747,6 +747,7 @@ const Managers = ({link}) => {
         <>
         <PageContainer
             user={user}
+            noHorizontalPadding
             title={t("managers.pageTitle")}
             titleExtra={user?.email === "casto@sharjah.ac.ae" && (
                 <div className="flex flex-wrap gap-1.5 items-center">

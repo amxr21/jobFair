@@ -34,12 +34,12 @@ const CollapsibleTopBarWrapper = ({ user }) => {
     );
 };
 
-const PageContainer = ({ user, children, title, titleExtra, headerRight, showAccessButtons = false, collapsibleTopBar = false }) => {
+const PageContainer = ({ user, children, title, titleExtra, headerRight, showAccessButtons = false, collapsibleTopBar = false, noHorizontalPadding = false }) => {
     return (
         <div className="page-container flex flex-col gap-y-2 md:gap-y-2 flex-1 min-w-0 overflow-y-auto p-2 md:p-4 lg:p-0 max-h-[95vh]">
             {showAccessButtons && <AccessButtons otherClasses={'md:hidden'} />}
             {collapsibleTopBar ? <CollapsibleTopBarWrapper user={user} /> : <TopBar user={user} />}
-            <div id="Hero" className="bg-[#F3F6FF] dark:bg-gray-950 flex flex-col grow overflow-hidden rounded-lg p-2 md:p-3 lg:p-4 w-full animate-fadeIn">
+            <div id="Hero" className={`bg-[#F3F6FF] dark:bg-gray-950 flex flex-col grow overflow-hidden rounded-lg py-2 md:py-3 lg:py-4 w-full animate-fadeIn ${noHorizontalPadding ? "" : "px-2 md:px-3 lg:px-4"}`}>
 
                 {/* Header Section */}
                 {(title || titleExtra || headerRight) && (

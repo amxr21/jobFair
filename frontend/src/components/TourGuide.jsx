@@ -82,7 +82,18 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
         if (!show) return;
         let raf;
         let scrolled = false;
-        let settleFrames = 0;
+        // Keep forcing fresh measurements (ignore samePos/sameRect's "no-op" shortcut)
+        // until layout has truly settled — a cold-cache webfont swap (FOIT/FOUT) or a
+        // still-finishing scroll/transition can land an early rect that LOOKS stable
+        // for a frame or two but is actually about to shift, which is exactly the
+        // "unaligned, then correct after a refresh" symptom (a warm font cache on
+        // reload never hits this window). Also gated on document.fonts.ready so a
+        // slow font load can't sneak a stale measurement in as "final".
+        let settleFrames = 20;
+        let fontsReady = typeof document === 'undefined' || !document.fonts ? true : false;
+        if (!fontsReady) {
+            document.fonts.ready.then(() => { fontsReady = true; settleFrames = Math.max(settleFrames, 6); });
+        }
         const tick = () => {
             const el = document.querySelector(`[data-tour="${current?.target}"]`);
             if (el) {
@@ -92,12 +103,13 @@ export default function TourGuide({ show, onDone, variant = 'applicants' }) {
                 // containers), so keep re-measuring for a short settle window afterward
                 // instead of trusting the very next frame's rect as final — otherwise a
                 // mid-scroll rect can get frozen as the spotlight position.
-                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; settleFrames = 10; }
+                if (!scrolled) { el.scrollIntoView({ behavior: 'instant', block: 'center', inline: 'nearest' }); scrolled = true; }
+                const forceUpdate = settleFrames > 0 || !fontsReady;
                 const r = computePosition(el, boxRef.current);
-                if (r) setPos(prev => (settleFrames > 0 || !samePos(prev, r) ? r : prev));
+                if (r) setPos(prev => (forceUpdate || !samePos(prev, r) ? r : prev));
                 const br = el.getBoundingClientRect();
                 const next = { top: br.top, left: br.left, width: br.width, height: br.height };
-                setSpotRect(prev => (settleFrames > 0 || !sameRect(prev, next) ? next : prev));
+                setSpotRect(prev => (forceUpdate || !sameRect(prev, next) ? next : prev));
                 if (settleFrames > 0) settleFrames--;
             } else {
                 // Target not in the DOM (data still loading / element hidden): center the

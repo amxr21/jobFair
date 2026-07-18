@@ -122,9 +122,17 @@ const AdvancedAnalytics = ({ applicants, companies }) => {
         const parent = el.parentElement;
         const parentRect = parent.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
+        const isRtl = document.documentElement.dir === 'rtl';
+        // Measure in the same logical direction the pill is positioned with
+        // (inset-inline-start): in RTL that's the distance from the
+        // container's RIGHT edge, not the physical left — mixing the two
+        // stretched/misplaced the pill under RTL.
+        const start = isRtl
+            ? (parentRect.right - elRect.right) + parent.scrollLeft
+            : (elRect.left - parentRect.left) + parent.scrollLeft;
         setPillStyle({
             width: elRect.width,
-            left: elRect.left - parentRect.left + parent.scrollLeft,
+            left: start,
             opacity: 1,
         });
     }, [activeTab]);

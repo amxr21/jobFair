@@ -341,7 +341,7 @@ const TeamPanel = ({ open, onClose }) => {
     setInviting(true);
     try {
       await inviteTeamMember(inviteForm.name.trim(), inviteForm.email.trim(), inviteForm.role.trim(), inviteForm.focus, "");
-      const mods = inviteForm.focus.map((id) => MODULE_LABELS[id] || id);
+      const mods = inviteForm.focus.map((id) => t('eventOps.tabs.' + id) || id);
       notify(t("eventAdmin.team.notifyJoined", { name: inviteForm.name.trim() }), {
         type: "reassign",
         detail: t("eventAdmin.team.notifyJoinedDetail", { role: inviteForm.role.trim() || t("eventAdmin.team.officer"), modules: mods.length ? t("eventAdmin.team.ownsModules", { modules: mods.join(", ") }) : "", who: employee.name }),
@@ -358,7 +358,7 @@ const TeamPanel = ({ open, onClose }) => {
 
   const handleRemoveMember = async (member) => {
     try {
-      const mods = (member.focus || []).map((id) => MODULE_LABELS[id] || id);
+      const mods = (member.focus || []).map((id) => t('eventOps.tabs.' + id) || id);
       await removeTeamMember(member.id);
       notify(t("eventAdmin.team.notifyRemoved", { name: member.name }), {
         type: "reassign",
@@ -423,8 +423,8 @@ const TeamPanel = ({ open, onClose }) => {
     // which modules this officer gained and which they lost.
     const member = team.find((m) => m.id === reassigning);
     const before = member?.focus || [];
-    const added = draftFocus.filter((id) => !before.includes(id)).map((id) => MODULE_LABELS[id] || id);
-    const removed = before.filter((id) => !draftFocus.includes(id)).map((id) => MODULE_LABELS[id] || id);
+    const added = draftFocus.filter((id) => !before.includes(id)).map((id) => t('eventOps.tabs.' + id) || id);
+    const removed = before.filter((id) => !draftFocus.includes(id)).map((id) => t('eventOps.tabs.' + id) || id);
 
     updateTeamFocus(reassigning, draftFocus);
 
@@ -469,7 +469,7 @@ const TeamPanel = ({ open, onClose }) => {
                   <span className="w-8 h-8 rounded-full bg-primary text-primary-contrast text-xs font-bold flex items-center justify-center shrink-0">{m.name[0]}</span>
                   <div>
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{m.name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{m.role}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t(`eventAdmin.team.roles.${m.id}.role`, { defaultValue: m.role })}</p>
                   </div>
                 </div>
                 {canReassign && !isEditing && (
@@ -486,11 +486,11 @@ const TeamPanel = ({ open, onClose }) => {
                 )}
               </div>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-2.5">{m.responsibilities}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed mt-2.5">{t(`eventAdmin.team.roles.${m.id}.responsibilities`, { defaultValue: m.responsibilities })}</p>
 
               <div className="flex flex-wrap gap-1.5 mt-2.5">
                 {m.focus.map((id) => (
-                  <span key={id} className="text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2 py-0.5">{MODULE_LABELS[id] || id}</span>
+                  <span key={id} className="text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-2 py-0.5">{t('eventOps.tabs.' + id) || id}</span>
                 ))}
               </div>
 
@@ -505,7 +505,7 @@ const TeamPanel = ({ open, onClose }) => {
                           return (
                             <button key={id} type="button" onClick={() => toggleModule(id)}
                               className={`text-xs font-medium rounded-full px-2.5 py-1 border transition-colors ${checked ? "bg-primary text-primary-contrast border-primary" : "bg-surface-card text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500/40"}`}>
-                              {MODULE_LABELS[id]}
+                              {t('eventOps.tabs.' + id)}
                             </button>
                           );
                         })}
@@ -609,7 +609,7 @@ const TeamPanel = ({ open, onClose }) => {
                         inviteForm.focus.includes(mod) ? "bg-primary text-primary-contrast border-primary" : "border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-green-300 dark:hover:border-green-500/40"
                       }`}
                     >
-                      {MODULE_LABELS[mod]}
+                      {t('eventOps.tabs.' + mod)}
                     </button>
                   ))}
                 </div>
