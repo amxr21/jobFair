@@ -6,6 +6,7 @@ import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, Scrol
 import { tCity, tSector, tStatus } from "../i18n/translateEnum";
 import { useAuthContext } from "../hooks/useAuthContext";
 import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
+import { pageHelpSeenKey } from "../components/PageHelp";
 import { useToast } from "../components/Toast";
 import Modal from "../components/Modal";
 import LoadListError from "../components/LoadListError";
@@ -726,6 +727,10 @@ const Managers = ({link}) => {
     useEffect(() => {
         if (!user || isLoading) return;
         if (localStorage.getItem(MANAGERS_TOUR_KEY)) return;
+        // The tour is about to explain this whole page, so the separate "?"
+        // auto-popup would just stack on top of it a moment later on a true
+        // first visit. Pre-mark it seen for this session so only the tour shows.
+        try { sessionStorage.setItem(pageHelpSeenKey('/managers'), '1'); } catch { /* ignore */ }
         const id = setTimeout(() => setShowTour(true), 400);
         return () => clearTimeout(id);
     }, [user, isLoading]);

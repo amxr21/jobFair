@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import QRCode from "qrcode.react";
 import { Link } from "react-router-dom"
 import "../style.css"
@@ -7,6 +8,7 @@ import { useLogout } from "../hooks/useLogout"
 import { useAuthContext } from "../hooks/useAuthContext";
 
 const AccessButtons = ({otherClasses}) => {
+    const { t } = useTranslation();
     const [ visible, setVisible ] = useState(false);
 
     const { logout } = useLogout();
@@ -96,9 +98,9 @@ const AccessButtons = ({otherClasses}) => {
                         {user && 
                         (
                             // <div className="flex grow items-center justify-center p-3 gap-x-5 border border-2 rounded-xl" onClick={handleLogout}>
-                            <Link to={'/login'} className="flex flex-col md:flex-row grow items-center justify-center p-2 xl:p-3 gap-x-5 py-2 border-2 rounded-xl" onClick={handleLogout}>
+                            <Link to={'/login'} className="flex flex-col md:flex-row grow items-center justify-center p-2 xl:p-3 gap-x-5 py-2 border-2 dark:border-gray-600 rounded-xl text-fg" onClick={handleLogout}>
                                 <LogOutIcon />
-                                <div onClick={handleLogout} className="!text-sm" type="submit">Log out</div>
+                                <div onClick={handleLogout} className="!text-sm" type="submit">{t('nav.logOut')}</div>
                             </Link>
                             // </div>
                         )
@@ -125,11 +127,11 @@ const AccessButtons = ({otherClasses}) => {
                         ?
                         visible
                         ?
-                        <div className="qrcode flex items-center p-2 bg-white shadow-2xl rounded-md absolute h-40 -bottom-14 left-0 py-4 px-6 z-[9999]">
+                        <div className="qrcode flex items-center p-2 bg-white shadow-2xl rounded-md absolute h-40 -bottom-14 start-0 py-4 px-6 z-[9999]">
                             <QRCode value={user?.user_id}/>
                         </div>
                         :
-                        <div className="hidden absolute qrcode items-center top-12 p-2 bg-white shadow-2xl rounded-md h-48 -right-5 py-6 px-8 z-50">
+                        <div className="hidden absolute qrcode items-center top-12 p-2 bg-white shadow-2xl rounded-md h-48 -end-5 py-6 px-8 z-50">
                             <QRCode value={user?.user_id}/>
                         </div>
                         : ""
@@ -139,10 +141,10 @@ const AccessButtons = ({otherClasses}) => {
                 {!user && (
                 <div className="flex justify-between gap-x-4">
                     <Link to="/login" className="grow">
-                        <button className="text-center px-2 py-1 w-full border-[0.5px] bg-white rounded-md">Log in</button>
+                        <button className="text-center px-2 py-1 w-full border-[0.5px] dark:border-gray-600 bg-white dark:bg-gray-800 text-fg rounded-md">{t('nav.logIn')}</button>
                     </Link>
                     <Link to="/signup" className="grow">
-                        <button className="text-center px-2 py-1 w-full border-[0.5px] bg-white rounded-md">Sign up</button>
+                        <button className="text-center px-2 py-1 w-full border-[0.5px] dark:border-gray-600 bg-white dark:bg-gray-800 text-fg rounded-md">{t('nav.signUp')}</button>
                     </Link>
                 </div>
 

@@ -85,7 +85,7 @@ const TopBar = ({user}) => {
                 <LanguageToggle />
                 <ThemeToggle />
                 {user && <NotificationBell />}
-                <div className="hidden md:block time text-right">
+                <div className="hidden md:block time text-end">
                     <h4 className="time text-xl font-bold dark:text-gray-100">{time}</h4>
                     <p className="date text-[10px] font-extralight text-gray-400 dark:text-gray-500">{`${day}, ${date[0]} ${date[1]} ${date[2]}`}</p>
                 </div>

@@ -26,7 +26,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
 
     return userType != 'manager'
     ?
-        <div className="row grid py-1.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
+        <div className="row grid py-1.5 ps-3 md:ps-5 pe-4 md:pe-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
             <h2 className={headerClass}>#</h2>
             <h2 className={getClickableClass('Name')} onClick={() => onSort?.('Name')}><span>{t('applicants.columns.name')}</span><SortArrow isActive={sortColumn === 'Name'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('University ID')} ${hideOnMobile}`} onClick={() => onSort?.('University ID')}><span className="lg:inline hidden">{t('applicants.columns.university')}</span><span>{t('applicants.columns.id')}</span><SortArrow isActive={sortColumn === 'University ID'} isAscending={isAscending} /></h2>
@@ -38,7 +38,7 @@ const TableHeader = ({userType, sortColumn, isAscending, onSort}) => {
             <h2 className={`${headerClass} text-surface`}>.</h2>
         </div>
     :
-        <div className="row-manager grid py-1.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
+        <div className="row-manager grid py-1.5 ps-3 md:ps-5 pe-4 md:pe-6 rounded-lg font-semibold text-[11px] xl:text-xs items-center">
             <h2 className={headerClass}>#</h2>
             <h2 className={getClickableClass('Company Name')} onClick={() => onSort?.('Company Name')}><span className="md:inline hidden">{t('managersCols.company')}</span><span>{t('managersCols.name')}</span><SortArrow isActive={sortColumn === 'Company Name'} isAscending={isAscending} /></h2>
             <h2 className={`${getClickableClass('Company Email')} ${hideOnMobile}`} onClick={() => onSort?.('Company Email')}><span>{t('managersCols.email')}</span><SortArrow isActive={sortColumn === 'Company Email'} isAscending={isAscending} /></h2>

@@ -12,13 +12,18 @@
       "status": "الحالة",
       "stats": "الإحصائيات",
       "survey": "الاستبيان"
-    }
+    },
+    "logOut": "تسجيل الخروج",
+    "logIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب"
   },
   "topbar": {
     "castoOffice": "مكتب CASTO",
     "visitor": "زائر",
     "managerMode": "وضع المدير",
-    "guestMode": "وضع الضيف"
+    "guestMode": "وضع الضيف",
+    "hide": "إخفاء الشريط العلوي",
+    "show": "إظهار الشريط العلوي"
   },
   "theme": { "light": "الوضع الفاتح", "dark": "الوضع الداكن" },
   "lang": { "label": "اللغة" },
@@ -104,6 +109,46 @@
       "major": "التخصص",
       "cv": "السيرة الذاتية",
       "status": "الحالة"
+    },
+    "filterDropdown": {
+      "filterApplicants": "تصفية المتقدمين",
+      "clearAll": "مسح الكل",
+      "categories": {
+        "status": "حالة الحضور",
+        "major": "التخصص",
+        "nationality": "الجنسية",
+        "city": "المدينة",
+        "studyLevel": "المستوى الدراسي",
+        "cgpaRange": "نطاق المعدل التراكمي",
+        "expectedGraduation": "التخرج المتوقع",
+        "experience": "الخبرة",
+        "languages": "اللغات",
+        "technicalSkills": "المهارات التقنية",
+        "hasCV": "حالة السيرة الذاتية",
+        "shortlisted": "القائمة المختصرة",
+        "rejected": "مرفوض",
+        "flagged": "مُعلَّم"
+      },
+      "values": {
+        "3.0 - 3.49": "3.0 - 3.49",
+        "2.5 - 2.99": "2.5 - 2.99",
+        "2.0 - 2.49": "2.0 - 2.49",
+        "Below 2.0": "أقل من 2.0",
+        "Confirmed": "مؤكَّد",
+        "Registered": "مسجَّل",
+        "Has CV": "لديه سيرة ذاتية",
+        "No CV": "بدون سيرة ذاتية",
+        "Shortlisted": "في القائمة المختصرة",
+        "Not Shortlisted": "ليس في القائمة المختصرة",
+        "Rejected": "مرفوض",
+        "Not Rejected": "غير مرفوض",
+        "Has Experience": "لديه خبرة",
+        "No Experience": "بدون خبرة",
+        "Has Skills": "لديه مهارات",
+        "No Skills": "بدون مهارات",
+        "Flagged": "مُعلَّم",
+        "Not Flagged": "غير مُعلَّم"
+      }
     }
   },
   "managersCols": {
@@ -456,6 +501,147 @@
       "exportReports": "تصدير التقارير",
       "exportCompaniesCsv": "تصدير ملف الشركات CSV",
       "exportStudentsCsv": "تصدير ملف الطلاب CSV"
+    }
+  },
+  "importCompanies": {
+    "title": "استيراد الشركات من إكسل",
+    "subtitleSelect": "ارفع جدول بيانات لإضافة الشركات دفعة واحدة",
+    "subtitlePreview_zero": "لا صفوف صالحة، {{errorCount}} بها أخطاء",
+    "subtitlePreview_one": "صف واحد صالح، {{errorCount}} بها أخطاء",
+    "subtitlePreview_two": "صفان صالحان، {{errorCount}} بها أخطاء",
+    "subtitlePreview_few": "{{count}} صفوف صالحة، {{errorCount}} بها أخطاء",
+    "subtitlePreview_many": "{{count}} صفًا صالحًا، {{errorCount}} بها أخطاء",
+    "subtitlePreview_other": "{{count}} صف صالح، {{errorCount}} بها أخطاء",
+    "subtitleConflicts_zero": "لا صفوف تطابق شركات موجودة",
+    "subtitleConflicts_one": "صف واحد يطابق شركة موجودة",
+    "subtitleConflicts_two": "صفان يطابقان شركات موجودة",
+    "subtitleConflicts_few": "{{count}} صفوف تطابق شركات موجودة",
+    "subtitleConflicts_many": "{{count}} صفًا يطابق شركات موجودة",
+    "subtitleConflicts_other": "{{count}} صف يطابق شركات موجودة",
+    "subtitleDone": "اكتمل الاستيراد",
+    "close": "إغلاق",
+    "downloadTemplate": "تنزيل القالب (.xlsx)",
+    "clickToChoose": "انقر لاختيار ملف",
+    "acceptedFormats": ".xlsx أو .xls أو .csv — الأعمدة المطلوبة: {{columns}}",
+    "errors": {
+      "missingColumn": "العمود {{column}} مفقود",
+      "invalidEmail": "صيغة البريد الإلكتروني غير صحيحة",
+      "invalidSector": "يجب أن يكون القطاع أحد: {{sectors}}",
+      "noRows": "الملف لا يحتوي على صفوف.",
+      "readFailed": "تعذّرت قراءة الملف — تأكد من أنه بصيغة .xlsx أو .xls أو .csv صالحة."
+    },
+    "table": {
+      "row": "#",
+      "company": "الشركة",
+      "email": "البريد الإلكتروني",
+      "status": "الحالة",
+      "valid": "صالح",
+      "errorRowsNote": "يتم تخطي الصفوف التي بها أخطاء تلقائيًا — سيتم استيراد الصفوف الصالحة فقط."
+    },
+    "conflicts": {
+      "rowLabel": "الصف {{rowIndex}}:",
+      "matchesExisting": "يطابق الشركة الموجودة",
+      "sameEmail": "نفس البريد الإلكتروني",
+      "similarName": "اسم مشابه",
+      "updateExisting": "تحديث الشركة الموجودة",
+      "keepExisting": "الإبقاء على الموجودة (تخطي هذا الصف)"
+    },
+    "results": {
+      "tempPassword": "· كلمة مرور مؤقتة: {{password}}",
+      "requestFailed": "(فشل الطلب)",
+      "status": {
+        "created": "تم الإنشاء",
+        "updated": "تم التحديث",
+        "skipped": "تم التخطي",
+        "error": "خطأ"
+      }
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "done": "تم",
+      "continue_zero": "متابعة (لا صفوف)",
+      "continue_one": "متابعة (صف واحد)",
+      "continue_two": "متابعة (صفان)",
+      "continue_few": "متابعة ({{count}} صفوف)",
+      "continue_many": "متابعة ({{count}} صفًا)",
+      "continue_other": "متابعة ({{count}} صف)",
+      "import": "استيراد",
+      "importing": "جارٍ الاستيراد…"
+    }
+  },
+  "emailCompose": {
+    "titlePrefix": "مراسلة {{company}}",
+    "fallbackCompany": "الشركة",
+    "subtitle": "يفتح في تطبيق البريد الخاص بك ·",
+    "close": "إغلاق",
+    "subject": "الموضوع",
+    "subjectPlaceholder": "عنوان الرسالة",
+    "message": "الرسالة",
+    "bold": "غامق",
+    "bulletList": "قائمة نقطية",
+    "numberedList": "قائمة مرقّمة",
+    "formattingNote": "يتم تبسيط التنسيق إلى نص عادي لتطبيق البريد لديك.",
+    "writePlaceholder": "اكتب رسالتك…",
+    "cancel": "إلغاء",
+    "openInMailApp": "فتح في تطبيق البريد"
+  },
+  "activityLog": {
+    "booths": {
+      "assigned": "تم تخصيص الجناح {{number}} لـ {{label}}",
+      "cleared": "تم إخلاء الجناح {{number}}"
+    },
+    "banners": {
+      "moved": "تم نقل {{material}} الخاص بـ {{company}} إلى \"{{status}}\"",
+      "updatedDetails": "تم تحديث تفاصيل الهوية البصرية لـ {{company}}",
+      "uploadedArtwork": "تم رفع التصميم الفني لـ {{company}}"
+    },
+    "requirements": {
+      "added": "تمت إضافة متطلب لـ {{company}}: {{description}}",
+      "marked": "تم تحديد متطلب {{company}} كـ {{status}}"
+    },
+    "equipment": {
+      "added": "تمت إضافة طلب {{item}} لـ {{entity}}",
+      "fulfilled": "تم توفير {{item}} لـ {{entity}}",
+      "markedUnfulfilled": "تم تحديد {{item}} لـ {{entity}} كغير موفَّر",
+      "edited": "تم تعديل {{item}} لـ {{entity}}",
+      "removed": "تمت إزالة {{item}} لـ {{entity}}",
+      "approved": "تمت الموافقة على {{item}} الذي طلبه {{requestedBy}}",
+      "declined": "تم رفض {{item}} الذي طلبه {{requestedBy}}"
+    },
+    "delegates": {
+      "printedBadge": "تمت طباعة شارة {{name}} ({{company}})"
+    },
+    "attendance": {
+      "checkedInStudent": "تم تسجيل دخول الطالب {{id}} (يدويًا)",
+      "checkedInCompany": "تم تسجيل دخول {{company}} عند الجناح {{booth}} ({{method}})",
+      "selfCheckedIn": "سجّلت {{company}} دخولها ذاتيًا عبر رمز QR الخاص بالجناح"
+    },
+    "schedule": {
+      "added": "تمت إضافة الموعد \"{{title}}\"",
+      "edited": "تم تعديل الموعد \"{{title}}\"",
+      "removed": "تمت إزالة الموعد \"{{title}}\"",
+      "setStatus": "تم تعيين \"{{title}}\" إلى {{status}}"
+    },
+    "passes": {
+      "issued": "تم إصدار تصريح الدخول {{code}} لـ {{company}}",
+      "revoked": "تم إلغاء التصريح {{code}} ({{company}})",
+      "reactivated": "تمت إعادة تفعيل التصريح {{code}} ({{company}})",
+      "setParkingSlot": "تم تعيين موقف السيارات {{slot}} لـ {{company}}"
+    },
+    "attendanceStaff": {
+      "created": "تم إنشاء حساب موظف لـ {{name}} ({{email}})",
+      "revokedCode": "تم إلغاء رمز دخول تسجيل حضور",
+      "updatedProfileNamed": "قام {{name}} بتحديث ملفه الشخصي",
+      "updatedProfile": "قام أحد الموظفين بتحديث ملفه الشخصي"
+    },
+    "supportStaff": {
+      "addedWithRole": "تمت إضافة موظف الدعم {{name}} ({{role}})",
+      "added": "تمت إضافة موظف الدعم {{name}}",
+      "updatedDetails": "تم تحديث تفاصيل موظف الدعم",
+      "removed": "تمت إزالة أحد موظفي الدعم",
+      "assignedTask": "تم تعيين المهمة \"{{title}}\"",
+      "setTaskStatus": "تم تعيين حالة المهمة إلى {{status}}",
+      "removedTask": "تمت إزالة مهمة"
     }
   },
   "eventOps": {
@@ -1153,7 +1339,64 @@
       "signIn": "يرجى تسجيل الدخول مرة أخرى",
       "retry": "سنواصل المحاولة"
     },
-    "notSetUpYet": "لم يجهّز مكتب CASTO جناحك أو هويتك البصرية أو تصاريحك بعد. يوضّح كل قسم أدناه ما هو قادم — وسيُملأ تلقائيًا بمجرد أن يخصّصه مكتب CASTO. يمكنك مسبقًا الاطلاع على الجدول، واستخدام علامة تبويب <b>الطلبات</b> لطلب معدات أو رفع متطلب أو إرسال ملاحظة بخصوص موقف السيارات."
+    "notSetUpYet": "لم يجهّز مكتب CASTO جناحك أو هويتك البصرية أو تصاريحك بعد. يوضّح كل قسم أدناه ما هو قادم — وسيُملأ تلقائيًا بمجرد أن يخصّصه مكتب CASTO. يمكنك مسبقًا الاطلاع على الجدول، واستخدام علامة تبويب <b>الطلبات</b> لطلب معدات أو رفع متطلب أو إرسال ملاحظة بخصوص موقف السيارات.",
+    "entryPasses": "تصاريح الدخول",
+    "parking": "موقف السيارات",
+    "eventSchedule": "جدول الفعالية",
+    "needHelp": "بحاجة إلى مساعدة؟",
+    "needHelpBody": "كل قسم أدناه يتبع مسؤولًا في CASTO — تواصل معه مباشرةً إذا احتجت إلى شيء.",
+    "empty2": {
+      "entryPasses": "لم تُصدَر تصاريح دخول بعد. بمجرد أن يصدرها مسؤول الدخول في CASTO، سيظهر هنا رمز الدخول لكل مندوب.",
+      "parking": "لم يُخصَّص موقف سيارات بعد. عندما يخصّص مكتب CASTO موقفًا، سيظهر هنا رقم الموقف وموقعه الدقيق ورابط الخريطة."
+    },
+    "slot": "الموقف {{slot}}",
+    "host": "المضيف: {{host}}",
+    "requestsSubmitted": "الطلبات المقدَّمة من هذه الشركة",
+    "noRequestsYet": "لم تُقدَّم أي طلبات بعد.",
+    "awaitingApproval": "بانتظار الموافقة",
+    "loadFailed": "تعذّر تحميل معلومات الشركة",
+    "confirmFailed": "تعذّر تأكيد الحضور. حاول مرة أخرى.",
+    "previewMode": "وضع المعاينة — هذا بالضبط ما تراه {{company}}. لا يمكن تغيير أي شيء هنا.",
+    "previewModeFallback": "هذه الشركة",
+    "status": {
+      "Confirmed": "مؤكَّد",
+      "Pending": "قيد الانتظار",
+      "Canceled": "ملغى"
+    },
+    "statusHeadline": {
+      "Confirmed": "تم تأكيد الحضور",
+      "Pending": "بانتظار التأكيد",
+      "Canceled": "تم إلغاء المشاركة"
+    },
+    "statusMessage": {
+      "Confirmed": "تم تأكيد حضورك! نتطلع لرؤيتك في معرض التوظيف.",
+      "Pending": "يرجى مراجعة بريدك الإلكتروني لرابط التأكيد، أو التواصل مع منسّق الفعالية إذا لم تستلمه.",
+      "Canceled": "تم إلغاء مشاركتك. يرجى التواصل مع منسّق الفعالية إذا كنت تعتقد أن هذا خطأ."
+    },
+    "confirming": "جارٍ التأكيد…",
+    "confirmMyAttendance": "تأكيد حضوري",
+    "totalApplicants": "إجمالي المتقدمين",
+    "openPositions": "الشواغر المتاحة",
+    "representatives": "الممثلون",
+    "manageSettings": {
+      "title": "إدارة إعدادات شركتك",
+      "subtitle": "تعديل ملفك الشخصي وحالة الحضور وصلاحية الدخول والتخصيص.",
+      "cta": "إدارة الإعدادات ←"
+    },
+    "contactInformation": "معلومات التواصل",
+    "noneListed": "لا يوجد",
+    "industryFields": "المجالات الصناعية",
+    "opportunityTypes": "أنواع الفرص",
+    "notSpecified": "غير محدد",
+    "preferredMajors": "التخصصات المفضلة",
+    "idealCandidateQualities": "صفات المرشح المثالي",
+    "surveyCompleted": "تم إكمال الاستبيان",
+    "surveyThankYou": "شكرًا لك على إكمال استبيان ما بعد الفعالية!",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "eventDay": "يوم الفعالية",
+      "requests": "الطلبات"
+    }
   },
   "barButtons": {
     "registerAnApplicant": "تسجيل متقدم",

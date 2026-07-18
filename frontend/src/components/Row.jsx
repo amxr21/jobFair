@@ -123,44 +123,42 @@ const ApplicantDetailModal = ({
     })();
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        <div className="flex flex-col h-full overflow-hidden bg-surface-card">
             {/* Header */}
-            <div style={{ padding: '14px 20px', borderBottom: '0.5px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#B5D4F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0C447C', fontSize: 13, fontWeight: 500, flexShrink: 0 }}>{initials}</div>
+            <div className="flex items-center justify-between shrink-0 px-5 py-3.5 border-b border-line">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/20 text-[#0C447C] dark:text-blue-300 flex items-center justify-center text-[13px] font-medium shrink-0">{initials}</div>
                     <div>
-                        <p style={{ fontSize: 15, fontWeight: 500, color: '#1A202C', lineHeight: 1.2 }}>{name || '—'}</p>
-                        <p style={{ fontSize: 12, color: '#8A94A6', marginTop: 1 }} className="bidi-ltr">{uniId} · {t("applicantProfile.age", { age })}</p>
+                        <p className="text-[15px] font-medium text-fg leading-tight">{name || '—'}</p>
+                        <p className="text-xs text-fg-subtle mt-0.5 bidi-ltr">{uniId} · {t("applicantProfile.age", { age })}</p>
                     </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 500, borderRadius: 20, padding: '3px 10px', ...(status ? { background: '#EAF3DE', color: '#27500A' } : { background: '#E8F4FF', color: '#185FA5' }) }}>
-                        {status && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#27500A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center gap-1 text-[11px] font-medium rounded-full px-2.5 py-1 ${status ? "bg-green-100 dark:bg-green-500/15 text-green-800 dark:text-green-300" : "bg-blue-100 dark:bg-blue-500/15 text-blue-800 dark:text-blue-300"}`}>
+                        {status && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                         {status ? t("enums.status.Confirmed") : t("enums.status.Registered")}
                     </span>
-                    <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 6, border: '0.5px solid #E2E8F0', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#F7FAFC'}
-                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'} aria-label={t("common.close")}>
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="#4A5568" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <button onClick={onClose} className="w-7 h-7 rounded-md border border-line bg-transparent hover:bg-surface-raised flex items-center justify-center transition-colors" aria-label={t("common.close")}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" className="text-fg-muted" strokeWidth="1.5" strokeLinecap="round"/></svg>
                     </button>
                 </div>
             </div>
 
             {/* Body */}
-            <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', overflowY: 'auto', maxHeight: 'calc(90vh - 70px)' }}>
+            <div className="grid overflow-y-auto" style={{ gridTemplateColumns: '220px 1fr', maxHeight: 'calc(90vh - 70px)' }}>
                 {/* Sidebar */}
-                <div style={{ padding: 16, borderRight: '0.5px solid #E2E8F0', display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div style={{ background: '#F7FAFC', borderRadius: 8, padding: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                        <div style={{ background: 'white', borderRadius: 4, padding: 6 }}>
-                            {qrCode ? <QRCode value={qrCode} size={80} /> : <div style={{ width: 80, height: 80, background: '#EDF2F7', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 9, color: '#A0AEC0' }}>{t("common.loading")}</span></div>}
+                <div className="flex flex-col gap-3.5 p-4 border-e border-line">
+                    <div className="bg-surface-raised rounded-lg p-3 flex flex-col items-center gap-2">
+                        <div className="bg-white rounded p-1.5">
+                            {qrCode ? <QRCode value={qrCode} size={80} /> : <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center"><span className="text-[9px] text-gray-400">{t("common.loading")}</span></div>}
                         </div>
-                        <p style={{ fontSize: 9, color: '#A0AEC0', textAlign: 'center', wordBreak: 'break-all', lineHeight: 1.4 }} className="bidi-ltr">{ticketId}</p>
+                        <p className="text-[9px] text-fg-subtle text-center leading-relaxed bidi-ltr" style={{ wordBreak: 'break-all' }}>{ticketId}</p>
                     </div>
                     <div>
-                        <p style={{ fontSize: 10, color: '#8A94A6', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 2 }}>{t("applicantProfile.graduation")}</p>
-                        <p style={{ fontSize: 13, fontWeight: 500, color: '#1A202C' }}>{graduationLabel}</p>
+                        <p className="text-[10px] text-fg-subtle uppercase tracking-wider mb-0.5">{t("applicantProfile.graduation")}</p>
+                        <p className="text-[13px] font-medium text-fg">{graduationLabel}</p>
                     </div>
-                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div className="mt-auto flex flex-col gap-1.5">
                         <BriefInfo ticketId={ticketId} id={uniId} shortName={name} ticketQrCodeSrc={qrCode}
                             emailRec={email} status={status} graduationYear={expectedToGraduate}
                             flag={flags} shortlistedByStatus={shortlistedBy} rejectedByStatus={rejectedBy}
@@ -168,17 +166,15 @@ const ApplicantDetailModal = ({
                         {user?.email === 'casto@sharjah.ac.ae' && (
                             !showDeleteConfirm
                                 ? <button onClick={() => setShowDeleteConfirm(true)}
-                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', borderRadius: 8, border: '0.5px solid #F09595', background: 'transparent', color: '#A32D2D', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#FCEBEB'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-300 dark:border-red-500/40 bg-transparent hover:bg-red-50 dark:hover:bg-red-500/10 text-red-700 dark:text-red-400 text-[13px] font-medium transition-colors">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     {t("common.delete")}
                                 </button>
-                                : <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                    <p style={{ fontSize: 11, color: '#A32D2D' }}>{t("applicantProfile.cannotBeUndone")}</p>
-                                    <div style={{ display: 'flex', gap: 4 }}>
-                                        <button onClick={handleDelete} disabled={isDeleting} style={{ flex: 1, padding: '6px', borderRadius: 6, border: 'none', background: '#A32D2D', color: 'white', fontSize: 11, fontWeight: 500, cursor: 'pointer', opacity: isDeleting ? 0.5 : 1 }}>{isDeleting ? '…' : t("common.confirm")}</button>
-                                        <button onClick={() => setShowDeleteConfirm(false)} style={{ flex: 1, padding: '6px', borderRadius: 6, border: '0.5px solid #E2E8F0', background: 'transparent', fontSize: 11, color: '#4A5568', cursor: 'pointer' }}>{t("common.cancel")}</button>
+                                : <div className="flex flex-col gap-1">
+                                    <p className="text-[11px] text-red-700 dark:text-red-400">{t("applicantProfile.cannotBeUndone")}</p>
+                                    <div className="flex gap-1">
+                                        <button onClick={handleDelete} disabled={isDeleting} className="flex-1 py-1.5 rounded-md border-none bg-red-700 dark:bg-red-600 text-white text-[11px] font-medium disabled:opacity-50 transition-opacity">{isDeleting ? '…' : t("common.confirm")}</button>
+                                        <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-1.5 rounded-md border border-line bg-transparent text-[11px] text-fg-muted hover:bg-surface-raised transition-colors">{t("common.cancel")}</button>
                                     </div>
                                 </div>
                         )}
@@ -186,37 +182,37 @@ const ApplicantDetailModal = ({
                 </div>
 
                 {/* Detail panel */}
-                <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="flex flex-col gap-5 p-5">
                     <section>
                         <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>} label={t("applicantProfile.contact")} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                             <InfoItem label={t("applicantProfile.email")} value={email} link={email ? `mailto:${email}` : undefined} />
                             <InfoItem label={t("applicantProfile.phone")} value={phoneNumber} />
                         </div>
                     </section>
                     <section>
                         <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5z"/></svg>} label={t("applicantProfile.academic")} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px 16px' }}>
+                        <div className="grid grid-cols-3 gap-x-4 gap-y-2">
                             <InfoItem label={t("applicantProfile.program")} value={studyLevel} />
                             <InfoItem label={t("applicants.columns.major")} value={major} />
                             <div className="min-w-0">
-                                <p style={{ fontSize: 11, color: '#8A94A6', marginBottom: 2 }}>{t("applicants.columns.cgpa")}</p>
-                                {gpaVal ? <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 500, background: '#EAF3DE', color: '#27500A', borderRadius: 20, padding: '2px 10px' }}>{gpaVal}</span> : <p style={{ fontSize: 13, fontWeight: 500, color: '#1A202C' }}>—</p>}
+                                <p className="text-[11px] text-fg-subtle mb-0.5">{t("applicants.columns.cgpa")}</p>
+                                {gpaVal ? <span className="inline-block text-xs font-medium bg-green-100 dark:bg-green-500/15 text-green-800 dark:text-green-300 rounded-full px-2.5 py-0.5">{gpaVal}</span> : <p className="text-[13px] font-medium text-fg">—</p>}
                             </div>
                         </div>
                     </section>
                     {(techSkills.length > 0 || nonTechSkills.length > 0) && (
                         <section>
                             <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z"/></svg>} label={t("applicantProfile.skills")} />
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                {techSkills.map((s, i) => <span key={i} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #B5D4F4', background: '#E6F1FB', color: '#0C447C' }}>{s}</span>)}
-                                {nonTechSkills.map((s, i) => <span key={i} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, border: '0.5px solid #CECBF6', background: '#EEEDFE', color: '#3C3489' }}>{s}</span>)}
+                            <div className="flex flex-wrap gap-1.5">
+                                {techSkills.map((s, i) => <span key={i} className="text-xs px-2.5 py-1 rounded-full border border-blue-200 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/15 text-[#0C447C] dark:text-blue-300">{s}</span>)}
+                                {nonTechSkills.map((s, i) => <span key={i} className="text-xs px-2.5 py-1 rounded-full border border-purple-200 dark:border-purple-500/30 bg-purple-50 dark:bg-purple-500/15 text-[#3C3489] dark:text-purple-300">{s}</span>)}
                             </div>
                         </section>
                     )}
                     <section>
                         <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/></svg>} label={t("applicantProfile.background")} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px 16px' }}>
+                        <div className="grid grid-cols-3 gap-x-4 gap-y-2">
                             <InfoItem label={t("applicants.columns.nationality")} value={nationality} />
                             <InfoItem label={t("managers.filters.city")} value={city} />
                             <InfoItem label={t("applicantProfile.languages")} value={languages && languages !== 'undefined' ? languages : null} />
@@ -225,22 +221,20 @@ const ApplicantDetailModal = ({
                     {experience && experience !== 'undefined' && experience.trim() && (
                         <section>
                             <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387"/></svg>} label={t("applicantProfile.experience")} />
-                            <div style={{ background: '#F7FAFC', borderRadius: 8, padding: '10px 14px', border: '0.5px solid #E2E8F0', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#E6F1FB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#185FA5" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
+                            <div className="flex items-start gap-2.5 bg-surface-raised rounded-lg px-3.5 py-2.5 border border-line">
+                                <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/15 flex items-center justify-center shrink-0">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-[#185FA5] dark:text-blue-300" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>
                                 </div>
-                                <p style={{ fontSize: 13, fontWeight: 500, color: '#1A202C', lineHeight: 1.5 }}>{experience}</p>
+                                <p className="text-[13px] font-medium text-fg leading-relaxed">{experience}</p>
                             </div>
                         </section>
                     )}
                     <section>
                         <SectionHeader icon={<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg>} label={t("applicantProfile.linksAndDocs")} />
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                        <div className="flex flex-wrap gap-2.5">
                             {portfolio && portfolio !== 'undefined' && (
                                 <a href={portfolio.startsWith('http') ? portfolio : `https://${portfolio}`} target="_blank" rel="noreferrer"
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, border: '0.5px solid #E2E8F0', fontSize: 12, fontWeight: 500, color: '#4A5568', textDecoration: 'none' }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#F7FAFC'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line text-xs font-medium text-fg-muted hover:bg-surface-raised no-underline transition-colors">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                                     LinkedIn
                                 </a>
@@ -402,7 +396,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
 
     return userType != 'manager'
         ?
-            <div id={ticketId} className={`row relative overflow-hidden grid py-2 pl-3 md:pl-5 pr-3 md:pr-5 mr-1 h-[46px] ${shortlistedBy?.length ? 'border border-blue-400' : rejectedBy?.length ? 'border border-red-400' : 'border border-transparent'} ${flags?.includes(user?.companyName) ? "border border-green-400 bg-white" :'bg-white'} rounded-lg items-center mb-1.5 text-[11px] xl:text-xs`}>
+            <div id={ticketId} className={`row relative overflow-hidden grid py-2 ps-3 md:ps-5 pe-3 md:pe-5 me-1 h-[46px] ${shortlistedBy?.length ? 'border border-blue-400' : rejectedBy?.length ? 'border border-red-400' : 'border border-transparent'} ${flags?.includes(user?.companyName) ? "border border-green-400 bg-white" :'bg-white'} rounded-lg items-center mb-1.5 text-[11px] xl:text-xs`}>
                 <h2 className="flex items-center truncate">{number}</h2>
                 <h2 className="flex items-center truncate"><HighlightText text={name} query={searchQuery} /></h2>
                 <h2 className={`${hideOnMobile} items-center truncate`}>{uniId == "" || uniId?.length != 8 || uniId == 18000000 ? '00000000' : uniId}</h2>
@@ -447,7 +441,7 @@ const ApplicantModal = ({visible, onClose, children}) => {
                 </div>
             </div>
         :
-            <div className="row-manager grid py-2 pl-3 md:pl-5 pr-3 md:pr-5 mr-1 h-[46px] bg-white border border-transparent rounded-lg items-center mb-1.5 text-[11px] xl:text-xs">
+            <div className="row-manager grid py-2 ps-3 md:ps-5 pe-3 md:pe-5 me-1 h-[46px] bg-white border border-transparent rounded-lg items-center mb-1.5 text-[11px] xl:text-xs">
                 <h2 className="flex items-center truncate">{number}</h2>
                 <h2 className="flex items-center truncate font-medium"><HighlightText text={companyName} query={searchQuery} /></h2>
                 <h2 className={`${hideOnMobile} items-center truncate`}>

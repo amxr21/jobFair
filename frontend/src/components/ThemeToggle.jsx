@@ -1,16 +1,19 @@
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../context/ThemeContext";
 
 // Light/dark toggle button. Matches the notification bell's shape (bordered,
 // 9x9 rounded) so it sits naturally beside it in the top bar. Shows a sun in
 // dark mode (tap to go light) and a moon in light mode (tap to go dark).
 const ThemeToggle = () => {
+    const { t } = useTranslation();
     const { isDark, toggleTheme } = useTheme();
+    const targetLabel = isDark ? t("theme.light") : t("theme.dark");
     return (
         <button
             onClick={toggleTheme}
             className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-gray-200 text-gray-500 hover:text-gray-800 hover:border-gray-300 hover:bg-gray-100 transition-colors dark:border-gray-700 dark:text-gray-400 dark:hover:text-gray-100 dark:hover:bg-gray-800"
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            title={isDark ? "Light mode" : "Dark mode"}
+            aria-label={targetLabel}
+            title={targetLabel}
         >
             {isDark ? (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">

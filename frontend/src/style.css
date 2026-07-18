@@ -384,8 +384,11 @@ html, body, #root {
     color: #9ca3af;
     pointer-events: none;
 }
-.email-compose-editor ul { list-style: disc; padding-left: 1.25rem; }
-.email-compose-editor ol { list-style: decimal; padding-left: 1.25rem; }
+.dark .email-compose-editor:empty::before {
+    color: #6b7280;
+}
+.email-compose-editor ul { list-style: disc; padding-inline-start: 1.25rem; }
+.email-compose-editor ol { list-style: decimal; padding-inline-start: 1.25rem; }
 
 /* Modal box — transition-based (not keyframes) so it always interpolates
    smoothly from its current state instead of snapping to a keyframe's 0%.
@@ -528,8 +531,8 @@ html, body, #root {
     .row {
         grid-template-columns: 0.15fr 1fr 1fr 0.5fr 0.15fr !important;
         column-gap: 0.5rem;
-        padding-left: 0.75rem !important;
-        padding-right: 0.5rem !important;
+        padding-inline-start: 0.75rem !important;
+        padding-inline-end: 0.5rem !important;
     }
 
     /* Hide uniId (3rd), nationality (4th), CGPA (5th), CV (7th) */
@@ -548,8 +551,8 @@ html, body, #root {
     .row-manager {
         grid-template-columns: 0.15fr 1fr 0.5fr 0.15fr !important;
         column-gap: 0.5rem;
-        padding-left: 0.75rem !important;
-        padding-right: 0.5rem !important;
+        padding-inline-start: 0.75rem !important;
+        padding-inline-end: 0.5rem !important;
     }
 
     .row-manager > h2:nth-child(3),
@@ -569,7 +572,7 @@ html, body, #root {
     z-index: -10;
     transform: rotate(45deg);
     width: 32px; height: 32px;
-    top: 38%; right: -10%; 
+    top: 38%; inset-inline-end: -10%;
 }
 .list {
     overflow-y: auto; /* Show scrollbar only when necessary */

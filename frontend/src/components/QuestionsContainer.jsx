@@ -358,7 +358,7 @@ const QuestionsContainer = () => {
                     <span className="text-xs font-semibold text-gray-500">Awaiting response</span>
                     <span className="text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2 py-0.5">{pending.length}</span>
                   </div>
-                  <div className="max-h-40 overflow-y-auto pr-1">
+                  <div className="max-h-40 overflow-y-auto pe-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-1">
                       {pending.map((c) => (
                         <div key={c.companyName} className="flex items-center gap-1.5 text-xs text-gray-600 py-0.5 truncate" title={c.companyName}>

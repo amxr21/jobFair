@@ -111,7 +111,7 @@ describe('EventOpsContext update() successive edits', () => {
         await waitFor(() => expect(probe.booths.some((b) => b.number === 'B01')).toBe(true));
 
         const assign = (boothId, company) =>
-            probe.update('booths', `Assigned ${company}`, (rows, who) =>
+            probe.update('booths', 'booths.assigned', { number: boothId, label: company }, (rows, who) =>
                 rows.map((b) => (b.id === boothId ? { ...b, company, status: 'Assigned', ...who } : b)));
 
         await act(async () => { await assign(1, 'First Co'); });

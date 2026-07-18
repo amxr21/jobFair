@@ -13,6 +13,7 @@ import axios from "axios";
 const SlidingPill = ({ containerRef }) => {
     const pillRef = useRef(null);
     const location = useLocation();
+    const { i18n } = useTranslation();
 
     const reposition = useCallback((animate = true) => {
         const container = containerRef.current;
@@ -39,7 +40,11 @@ const SlidingPill = ({ containerRef }) => {
         reposition(false);
         const id = requestAnimationFrame(() => reposition(true));
         return () => cancelAnimationFrame(id);
-    }, [location.pathname, reposition]);
+        // Also re-measure on language change: label widths/positions shift when
+        // switching EN<->AR (different text length, RTL flow), so the pill sized
+        // for the old layout would otherwise stay stuck until the next route
+        // change or window resize.
+    }, [location.pathname, i18n.resolvedLanguage, reposition]);
 
     useEffect(() => {
         const onResize = () => reposition(false);

@@ -14,6 +14,7 @@ import { API_URL } from "../config/api";
 import ImportCompaniesModal from "../components/ImportCompaniesModal";
 import CustomizeSettings from "../components/CustomizeSettings";
 import { Badge, StatCard, SubTabBar, PillTabs } from "../components/EventSettingsShared";
+import { translateEnum } from "../i18n/translateEnum";
 
 // ─── Tab: Post-Event Report ───────────────────────────────────────────────────
 // Every number here is computed from real data — applicants/companies fetched
@@ -143,6 +144,50 @@ const PostEventReporting = ({ applicants, companies }) => {
 };
 
 // ─── Activity panel (audit trail) ─────────────────────────────────────────────
+// Audit messages are stored as an i18n key + raw params (see EventOpsContext's
+// `update()`), not a pre-built string, so each entry translates for whichever
+// language is active right now — not whichever language was active when the
+// action happened. Entries written before this existed only have `message`
+// (a plain, already-English string); those are shown verbatim as a fallback,
+// since old persisted history can't be retroactively translated.
+// `status`/`material` params carry raw English enum values (e.g. "Fulfilled",
+// "Revoked") drawn from whichever enum applies to that section — try each in
+// turn since translateEnum() harmlessly falls back to the raw value on a miss.
+const STATUS_ENUM_GROUPS = ["requestStatus", "bannerStatus", "passStatus", "attendanceState", "taskStatus"];
+const translateStatusLike = (value) => {
+  if (typeof value !== "string") return value;
+  for (const group of STATUS_ENUM_GROUPS) {
+    const translated = translateEnum(group, value);
+    if (translated !== value) return translated;
+  }
+  return value;
+};
+
+const translateAuditEntry = (t, a) => {
+  if (!a.messageKey) return a.message || "";
+  const params = { ...(a.messageParams || {}) };
+  if ("status" in params) params.status = translateStatusLike(params.status);
+  return t(`activityLog.${a.messageKey}`, params);
+};
+
+// Audit `section` values don't line up 1:1 with the eventOps.tabs.* module
+// names (e.g. "booths" vs "venue", "attendanceStudents" vs "attendance") —
+// map each to the closest existing module label rather than adding a
+// duplicate translation namespace for the same concept.
+const AUDIT_SECTION_TAB = {
+  booths: "venue",
+  banners: "banners",
+  requirements: "requirements",
+  equipment: "equipment",
+  delegates: "delegates",
+  attendanceStudents: "attendance",
+  attendanceCompanies: "attendance",
+  attendanceStaff: "manageStaff",
+  supportStaff: "manageStaff",
+  schedule: "schedule",
+  passes: "passes",
+};
+const translateAuditSection = (t, section) => t(`eventOps.tabs.${AUDIT_SECTION_TAB[section] || section}`, section);
 
 const ActivityPanel = ({ open, onClose }) => {
   const { t } = useTranslation();
@@ -190,8 +235,8 @@ const ActivityPanel = ({ open, onClose }) => {
                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{a.by}</span>
                 <span className="text-[10px] text-gray-400 dark:text-gray-500 ms-auto">{formatWhen(a.at)}</span>
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-300">{a.message}</p>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{a.section}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-300">{translateAuditEntry(t, a)}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{translateAuditSection(t, a.section)}</p>
             </div>
           ))}
         </div>

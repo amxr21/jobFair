@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { Row, TableHeader, BarButtons, FlagButton, NoApplicants, LoadingApplicants, ScrollToTopButton, PageContainer, FilterDropdown } from "./index";
 import TourGuide, { APPLICANTS_TOUR_KEY } from "./TourGuide";
+import { pageHelpSeenKey } from "./PageHelp";
 import { useToast } from "./Toast";
 import LoadListError from "./LoadListError";
 
@@ -308,11 +309,24 @@ const MainBanner = ({link}) => {
     useEffect(() => {
         if (user) {
             fetchApplicants(1, searchQuery);
-            if (!localStorage.getItem(APPLICANTS_TOUR_KEY)) {
-                setTimeout(() => setShowTour(true), 800);
-            }
         }
     }, [user]); // Fetch applicants on initial load
+
+    // Gated on !isLoading (not a blind timer) so the tour's targets (search,
+    // table header, first row) are actually in the DOM before it measures them —
+    // a cold fetch taking longer than the old fixed delay left the tour
+    // reading a still-loading layout, which looked "unaligned until refresh"
+    // (see the same fix already applied to Managers.jsx's tour trigger).
+    useEffect(() => {
+        if (!user || isLoading) return;
+        if (localStorage.getItem(APPLICANTS_TOUR_KEY)) return;
+        // The tour is about to explain this whole page, so the separate "?"
+        // auto-popup would just stack on top of it a moment later on a true
+        // first visit. Pre-mark it seen for this session so only the tour shows.
+        try { sessionStorage.setItem(pageHelpSeenKey('/'), '1'); } catch { /* ignore */ }
+        const id = setTimeout(() => setShowTour(true), 400);
+        return () => clearTimeout(id);
+    }, [user, isLoading]);
 
     // Pagination handlers
     const handleNextPage = () => {
@@ -397,17 +411,17 @@ const MainBanner = ({link}) => {
                             placeholder={t("applicants.searchPlaceholder")}
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className={`pl-7 pr-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
+                            className={`ps-7 pe-6 h-7 md:h-8 text-xs border rounded-lg focus:outline-none focus:border-blue-500 w-28 md:w-44 lg:w-56 transition-all duration-200 ${
                                 searchQuery
                                     ? 'border-blue-500 bg-blue-50'
                                     : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
                             }`}
                         />
-                        <svg className="absolute left-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
+                        <svg className="absolute start-2 w-3 h-3 pointer-events-none" fill="none" stroke={searchQuery ? '#3B82F6' : '#0E7F41'} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         {searchQuery && (
-                            <button onClick={() => handleSearch('')} className="absolute right-1.5 text-gray-400 hover:text-gray-600">
+                            <button onClick={() => handleSearch('')} className="absolute end-1.5 text-gray-400 hover:text-gray-600">
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                             </button>
                         )}

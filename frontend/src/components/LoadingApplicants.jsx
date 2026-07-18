@@ -16,9 +16,9 @@ const LoadingApplicants = ({ userType = "applicant", rows = 8 }) => {
     return (
         <div className="flex flex-col gap-1 mt-1" aria-busy="true" aria-label={isManager ? t("common.loadingCompanies") : t("common.loadingApplicants")}>
             {Array.from({ length: rows }).map((_, i) => (
-                <div key={i} className={`${rowClass} grid items-center py-2.5 pl-3 md:pl-5 pr-4 md:pr-6 rounded-lg`}>
+                <div key={i} className={`${rowClass} grid items-center py-2.5 ps-3 md:ps-5 pe-4 md:pe-6 rounded-lg`}>
                     {Array.from({ length: columnCount }).map((_, c) => (
-                        <div key={c} className="pr-2">
+                        <div key={c} className="pe-2">
                             <Bar w={c === 0 ? "w-4" : c === columnCount - 1 ? "w-4" : "w-3/4"} />
                         </div>
                     ))}

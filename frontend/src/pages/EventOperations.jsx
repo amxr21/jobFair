@@ -148,7 +148,7 @@ const VenueMapping = () => {
   const cancelAssign = () => { setAssigningId(null); setFormCompany(""); setFormType("Standard"); };
   const saveAssign = (booth) => {
     const label = formCompany || null;
-    update("booths", `${label ? `Assigned booth ${booth.number} to ${label}` : `Cleared booth ${booth.number}`}`, (rows, who) =>
+    update("booths", label ? "booths.assigned" : "booths.cleared", { number: booth.number, label }, (rows, who) =>
       rows.map((b) => b.id === booth.id
         ? { ...b, company: label, type: formType, status: label ? "Assigned" : "Available", ...who }
         : b));
@@ -294,7 +294,7 @@ const BannerBranding = () => {
 
   const advance = (row) => {
     const next = BANNER_STEPS[stepIdx(row.status) + 1];
-    update("banners", `Moved ${row.company} ${row.material.toLowerCase()} to "${next}"`, (rows, who) =>
+    update("banners", "banners.moved", { company: row.company, material: row.material.toLowerCase(), status: next }, (rows, who) =>
       rows.map((b) => (b.id === row.id ? { ...b, status: next, ...who } : b)));
     toast(t("eventOps.banners.toastMarked", { company: row.company, status: translateEnum("bannerStatus", next) }), { type: "success" });
   };
@@ -302,7 +302,7 @@ const BannerBranding = () => {
   const startEdit = (row) => { setEditingId(row.id); setForm({ ...row, ...parseSize(row.size) }); };
   const saveEdit = () => {
     const size = composeSize(form.width, form.height);
-    update("banners", `Updated ${form.company} branding details`, (rows, who) =>
+    update("banners", "banners.updatedDetails", { company: form.company }, (rows, who) =>
       rows.map((b) => (b.id === editingId ? { ...b, ...form, size, quantity: Number(form.quantity) || 1, ...who } : b)));
     toast(t("eventOps.banners.toastSaved"), { type: "success" });
     setEditingId(null);
@@ -324,7 +324,7 @@ const BannerBranding = () => {
       const res = await axios.post(`${API_URL}/banners/${row.id}/artwork`, formData, {
         headers: { Authorization: storedUser?.token ? `Bearer ${storedUser.token}` : undefined },
       });
-      update("banners", `Uploaded artwork for ${row.company}`, (rows, who) =>
+      update("banners", "banners.uploadedArtwork", { company: row.company }, (rows, who) =>
         rows.map((b) => (b.id === row.id ? { ...b, artwork: res.data.artwork, ...who } : b)));
       if (editingId === row.id) setForm((f) => ({ ...f, artwork: res.data.artwork }));
       toast(t("eventOps.banners.toastUploaded"), { type: "success" });
@@ -494,7 +494,7 @@ const SpecialRequirements = () => {
       return;
     }
     const company = form.company || companies[0];
-    update("requirements", `Added requirement for ${company}: ${form.description.slice(0, 40)}`, (prev, who) =>
+    update("requirements", "requirements.added", { company, description: form.description.slice(0, 40) }, (prev, who) =>
       [...prev, { ...form, company, id: Date.now(), ...who }]);
     toast(t("eventOps.requirements.toastAdded"), { type: "success" });
     setForm({ company: "", description: "", category: "", priority: "Medium", status: "Open", notes: "" });
@@ -504,7 +504,7 @@ const SpecialRequirements = () => {
   const cycleStatus = (row) => {
     const cycle = ["Open", "In Progress", "Fulfilled"];
     const next = cycle[(cycle.indexOf(row.status) + 1) % cycle.length];
-    update("requirements", `Marked ${row.company} requirement as ${next}`, (prev, who) =>
+    update("requirements", "requirements.marked", { company: row.company, status: next }, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, status: next, ...who } : r)));
   };
 
@@ -604,7 +604,7 @@ const EquipmentLogistics = () => {
     }
     const entity = form.booth.trim() ? `${form.company} / ${form.booth.trim()}` : form.company;
     const qtyReq = Number(form.qtyReq) || 1;
-    update("equipment", `Added ${form.item} request for ${entity}`, (prev, who) =>
+    update("equipment", "equipment.added", { item: form.item, entity }, (prev, who) =>
       [...prev, { id: Date.now(), entity, item: form.item.trim(), qtyReq, qtyFul: 0, status: "Pending", requestedBy: null, ...who }]);
     toast(t("eventOps.equipment.toastAdded", { item: form.item.trim(), company: form.company }), { type: "success" });
     setForm({ company: "", booth: "", item: "", qtyReq: "1" });
@@ -612,14 +612,14 @@ const EquipmentLogistics = () => {
   };
 
   const fulfillItem = (row) => {
-    update("equipment", `Fulfilled ${row.item} for ${row.entity}`, (prev, who) =>
+    update("equipment", "equipment.fulfilled", { item: row.item, entity: row.entity }, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: r.qtyReq, status: "Fulfilled", ...who } : r)));
     toast(t("eventOps.equipment.toastFulfilled", { item: row.item }), { type: "success" });
   };
   // Reverses a fulfillment — resets to Pending since the exact prior partial
   // amount (if any) wasn't tracked separately from qtyFul
   const unfulfillItem = (row) => {
-    update("equipment", `Marked ${row.item} for ${row.entity} as unfulfilled`, (prev, who) =>
+    update("equipment", "equipment.markedUnfulfilled", { item: row.item, entity: row.entity }, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, qtyFul: 0, status: "Pending", ...who } : r)));
     toast(t("eventOps.equipment.toastUnfulfilled", { item: row.item }), { type: "warning" });
   };
@@ -638,13 +638,13 @@ const EquipmentLogistics = () => {
     const qtyReq = Number(editForm.qtyReq) || 1;
     const qtyFul = Math.min(Number(editForm.qtyFul) || 0, qtyReq);
     const status = qtyFul === 0 ? "Pending" : qtyFul >= qtyReq ? "Fulfilled" : "Partial";
-    update("equipment", `Edited ${editForm.item} for ${entity}`, (prev, who) =>
+    update("equipment", "equipment.edited", { item: editForm.item, entity }, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, entity, item: editForm.item.trim(), qtyReq, qtyFul, status, ...who } : r)));
     toast(t("eventOps.equipment.toastUpdated"), { type: "success" });
     cancelEdit();
   };
   const removeItem = (row) => {
-    update("equipment", `Removed ${row.item} for ${row.entity}`, (prev) => prev.filter((r) => r.id !== row.id));
+    update("equipment", "equipment.removed", { item: row.item, entity: row.entity }, (prev) => prev.filter((r) => r.id !== row.id));
     toast(t("eventOps.equipment.toastRemoved", { item: row.item }), { type: "info" });
     if (editingId === row.id) cancelEdit();
   };
@@ -654,12 +654,12 @@ const EquipmentLogistics = () => {
   // CASTO then fulfils; declining removes it.
   const pendingRequests = allRows.filter((r) => r.requestedBy);
   const approveRequest = (row) => {
-    update("equipment", `Approved ${row.item} requested by ${row.requestedBy}`, (prev, who) =>
+    update("equipment", "equipment.approved", { item: row.item, requestedBy: row.requestedBy }, (prev, who) =>
       prev.map((r) => (r.id === row.id ? { ...r, requestedBy: null, ...who } : r)));
     toast(t("eventOps.equipment.toastApproved", { item: row.item, requester: row.requestedBy }), { type: "success" });
   };
   const declineRequest = (row) => {
-    update("equipment", `Declined ${row.item} requested by ${row.requestedBy}`, (prev) => prev.filter((r) => r.id !== row.id));
+    update("equipment", "equipment.declined", { item: row.item, requestedBy: row.requestedBy }, (prev) => prev.filter((r) => r.id !== row.id));
     toast(t("eventOps.equipment.toastDeclined"), { type: "warning" });
   };
 
@@ -863,7 +863,7 @@ const DelegateList = () => {
       </body></html>`);
     win.document.close();
 
-    update("delegates", `Printed badge for ${d.name} (${company})`, (prev, who) =>
+    update("delegates", "delegates.printedBadge", { name: d.name, company }, (prev, who) =>
       prev.map((c) => c.company !== company ? c : {
         ...c, delegates: c.delegates.map((dd, di) => di !== dIdx ? dd : { ...dd, badge: "Printed", ...who })
       }));
@@ -1024,7 +1024,7 @@ const AttendanceCheckin = () => {
 
   const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 
-  const checkInStudent = (id) => update("attendanceStudents", `Checked in student ${id} (manual)`, (prev) =>
+  const checkInStudent = (id) => update("attendanceStudents", "attendance.checkedInStudent", { id }, (prev) =>
     prev.map((s) => s.id !== id ? s : { ...s, status: "Checked In", time: now(), method: "Manual" }));
 
   // Upsert: a company that has no attendance row yet (only a booth) gets one
@@ -1032,7 +1032,7 @@ const AttendanceCheckin = () => {
   // company name so it works whether or not the row already existed.
   const checkInCompany = (row, method) => {
     const eq = (a, b) => (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
-    update("attendanceCompanies", `Checked in ${row.company} at booth ${row.booth} (${method})`, (prev, who) => {
+    update("attendanceCompanies", "attendance.checkedInCompany", { company: row.company, booth: row.booth, method }, (prev, who) => {
       const rows = prev || [];
       const idx = rows.findIndex((c) => eq(c.company, row.company));
       const filled = {
@@ -1455,7 +1455,7 @@ const ScheduleSlots = () => {
       toast(t("eventOps.schedule.toastRequired"), { type: "error" });
       return;
     }
-    update("schedule", `Added time slot "${form.title}"`, (prev, who) =>
+    update("schedule", "schedule.added", { title: form.title }, (prev, who) =>
       [...prev, { ...form, id: Date.now(), capacity: Number(form.capacity) || 0, registered: 0, ...who }]);
     setForm({ start: "", end: "", title: "", host: "", location: "", capacity: "", status: "Upcoming" });
     setShowForm(false);
@@ -1468,14 +1468,14 @@ const ScheduleSlots = () => {
       toast(t("eventOps.schedule.toastRequired"), { type: "error" });
       return;
     }
-    update("schedule", `Edited time slot "${editForm.title}"`, (prev, who) =>
+    update("schedule", "schedule.edited", { title: editForm.title }, (prev, who) =>
       prev.map((s) => (s.id === editingId ? { ...s, ...editForm, capacity: Number(editForm.capacity) || 0, ...who } : s)));
     toast(t("eventOps.schedule.toastUpdated"), { type: "success" });
     cancelEdit();
   };
 
   const removeSlot = (slot) => {
-    update("schedule", `Removed time slot "${slot.title}"`, (prev) => prev.filter((s) => s.id !== slot.id));
+    update("schedule", "schedule.removed", { title: slot.title }, (prev) => prev.filter((s) => s.id !== slot.id));
     toast(t("eventOps.schedule.toastRemoved", { title: slot.title }), { type: "info" });
     if (editingId === slot.id) cancelEdit();
   };
@@ -1483,7 +1483,7 @@ const ScheduleSlots = () => {
   const cycleStatus = (slot) => {
     const cycle = ["Upcoming", "Live", "Ended"];
     const next = cycle[(cycle.indexOf(slot.status) + 1) % cycle.length];
-    update("schedule", `Set "${slot.title}" to ${next}`, (prev, who) =>
+    update("schedule", "schedule.setStatus", { title: slot.title, status: next }, (prev, who) =>
       prev.map((s) => (s.id === slot.id ? { ...s, status: next, ...who } : s)));
   };
 
@@ -1635,13 +1635,13 @@ const AccessPasses = () => {
   const issueEntryPass = (company) => {
     const seq = String(passes.filter((p) => p.company === company).length + 1).padStart(3, "0");
     const code = `ENT-${company.slice(0, 3).toUpperCase()}-${seq}`;
-    update("passes", `Issued entry pass ${code} for ${company}`, (prev, who) =>
+    update("passes", "passes.issued", { code, company }, (prev, who) =>
       [...prev, { id: Date.now(), company, delegate: "Unassigned", type: "Entry", code, issued: new Date().toISOString().slice(0, 10), status: "Active", ...who }]);
     toast(t("eventOps.passes.toastIssued", { company }), { type: "success" });
   };
 
   const setStatus = (row, status) => {
-    update("passes", `${status === "Revoked" ? "Revoked" : "Reactivated"} pass ${row.code} (${row.company})`, (prev, who) =>
+    update("passes", status === "Revoked" ? "passes.revoked" : "passes.reactivated", { code: row.code, company: row.company }, (prev, who) =>
       prev.map((p) => (p.id === row.id ? { ...p, status, ...who } : p)));
     toast(status === "Revoked" ? t("eventOps.passes.toastRevoked", { code: row.code }) : t("eventOps.passes.toastReactivated", { code: row.code }), { type: status === "Revoked" ? "warning" : "success" });
   };
@@ -1652,7 +1652,7 @@ const AccessPasses = () => {
   };
 
   const saveParking = (row) => {
-    update("passes", `Set parking slot ${parkingForm.slot || "—"} for ${row.company}`, (prev, who) =>
+    update("passes", "passes.setParkingSlot", { slot: parkingForm.slot || "—", company: row.company }, (prev, who) =>
       prev.map((p) => (p.id === row.id ? { ...p, slot: parkingForm.slot, location: parkingForm.location, mapUrl: parkingForm.mapUrl.trim(), ...who } : p)));
     toast(t("eventOps.passes.toastParkingSaved"), { type: "success" });
     setEditingParking(null);

@@ -12,13 +12,18 @@
       "status": "Status",
       "stats": "Stats",
       "survey": "Survey"
-    }
+    },
+    "logOut": "Log out",
+    "logIn": "Log in",
+    "signUp": "Sign up"
   },
   "topbar": {
     "castoOffice": "CASTO Office",
     "visitor": "Visitor",
     "managerMode": "Manager mode",
-    "guestMode": "Guest mode"
+    "guestMode": "Guest mode",
+    "hide": "Hide top bar",
+    "show": "Show top bar"
   },
   "theme": { "light": "Light mode", "dark": "Dark mode" },
   "lang": { "label": "Language" },
@@ -104,6 +109,46 @@
       "major": "Major",
       "cv": "CV",
       "status": "Status"
+    },
+    "filterDropdown": {
+      "filterApplicants": "Filter Applicants",
+      "clearAll": "Clear all",
+      "categories": {
+        "status": "Attendance Status",
+        "major": "Major",
+        "nationality": "Nationality",
+        "city": "City",
+        "studyLevel": "Study Level",
+        "cgpaRange": "CGPA Range",
+        "expectedGraduation": "Expected Graduation",
+        "experience": "Experience",
+        "languages": "Languages",
+        "technicalSkills": "Technical Skills",
+        "hasCV": "CV Status",
+        "shortlisted": "Shortlisted",
+        "rejected": "Rejected",
+        "flagged": "Flagged"
+      },
+      "values": {
+        "3.0 - 3.49": "3.0 - 3.49",
+        "2.5 - 2.99": "2.5 - 2.99",
+        "2.0 - 2.49": "2.0 - 2.49",
+        "Below 2.0": "Below 2.0",
+        "Confirmed": "Confirmed",
+        "Registered": "Registered",
+        "Has CV": "Has CV",
+        "No CV": "No CV",
+        "Shortlisted": "Shortlisted",
+        "Not Shortlisted": "Not Shortlisted",
+        "Rejected": "Rejected",
+        "Not Rejected": "Not Rejected",
+        "Has Experience": "Has Experience",
+        "No Experience": "No Experience",
+        "Has Skills": "Has Skills",
+        "No Skills": "No Skills",
+        "Flagged": "Flagged",
+        "Not Flagged": "Not Flagged"
+      }
     }
   },
   "managersCols": {
@@ -452,6 +497,135 @@
       "exportReports": "Export Reports",
       "exportCompaniesCsv": "Export Companies CSV",
       "exportStudentsCsv": "Export Students CSV"
+    }
+  },
+  "importCompanies": {
+    "title": "Import Companies from Excel",
+    "subtitleSelect": "Upload a spreadsheet to bulk-add companies",
+    "subtitlePreview_one": "{{count}} valid row, {{errorCount}} with errors",
+    "subtitlePreview_other": "{{count}} valid rows, {{errorCount}} with errors",
+    "subtitleConflicts_one": "{{count}} row matches existing companies",
+    "subtitleConflicts_other": "{{count}} rows match existing companies",
+    "subtitleDone": "Import complete",
+    "close": "Close",
+    "downloadTemplate": "Download template (.xlsx)",
+    "clickToChoose": "Click to choose a file",
+    "acceptedFormats": ".xlsx, .xls, or .csv — required columns: {{columns}}",
+    "errors": {
+      "missingColumn": "Missing {{column}}",
+      "invalidEmail": "Invalid email format",
+      "invalidSector": "Sector must be one of: {{sectors}}",
+      "noRows": "The file has no rows.",
+      "readFailed": "Couldn't read that file — make sure it's a valid .xlsx/.xls/.csv."
+    },
+    "table": {
+      "row": "#",
+      "company": "Company",
+      "email": "Email",
+      "status": "Status",
+      "valid": "Valid",
+      "errorRowsNote": "Rows with errors are skipped automatically — only valid rows will be imported."
+    },
+    "conflicts": {
+      "rowLabel": "Row {{rowIndex}}:",
+      "matchesExisting": "matches existing",
+      "sameEmail": "same email",
+      "similarName": "similar name",
+      "updateExisting": "Update existing",
+      "keepExisting": "Keep existing (skip this row)"
+    },
+    "results": {
+      "tempPassword": "· temp password: {{password}}",
+      "requestFailed": "(request failed)",
+      "status": {
+        "created": "created",
+        "updated": "updated",
+        "skipped": "skipped",
+        "error": "error"
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "done": "Done",
+      "continue_one": "Continue ({{count}} row)",
+      "continue_other": "Continue ({{count}} rows)",
+      "import": "Import",
+      "importing": "Importing…"
+    }
+  },
+  "emailCompose": {
+    "titlePrefix": "Email {{company}}",
+    "fallbackCompany": "company",
+    "subtitle": "Opens in your mail app ·",
+    "close": "Close",
+    "subject": "Subject",
+    "subjectPlaceholder": "Subject line",
+    "message": "Message",
+    "bold": "Bold",
+    "bulletList": "Bullet list",
+    "numberedList": "Numbered list",
+    "formattingNote": "Formatting is simplified to plain text for your mail app.",
+    "writePlaceholder": "Write your message…",
+    "cancel": "Cancel",
+    "openInMailApp": "Open in mail app"
+  },
+  "activityLog": {
+    "booths": {
+      "assigned": "Assigned booth {{number}} to {{label}}",
+      "cleared": "Cleared booth {{number}}"
+    },
+    "banners": {
+      "moved": "Moved {{company}} {{material}} to \"{{status}}\"",
+      "updatedDetails": "Updated {{company}} branding details",
+      "uploadedArtwork": "Uploaded artwork for {{company}}"
+    },
+    "requirements": {
+      "added": "Added requirement for {{company}}: {{description}}",
+      "marked": "Marked {{company}} requirement as {{status}}"
+    },
+    "equipment": {
+      "added": "Added {{item}} request for {{entity}}",
+      "fulfilled": "Fulfilled {{item}} for {{entity}}",
+      "markedUnfulfilled": "Marked {{item}} for {{entity}} as unfulfilled",
+      "edited": "Edited {{item}} for {{entity}}",
+      "removed": "Removed {{item}} for {{entity}}",
+      "approved": "Approved {{item}} requested by {{requestedBy}}",
+      "declined": "Declined {{item}} requested by {{requestedBy}}"
+    },
+    "delegates": {
+      "printedBadge": "Printed badge for {{name}} ({{company}})"
+    },
+    "attendance": {
+      "checkedInStudent": "Checked in student {{id}} (manual)",
+      "checkedInCompany": "Checked in {{company}} at booth {{booth}} ({{method}})",
+      "selfCheckedIn": "{{company}} self-checked in via booth QR"
+    },
+    "schedule": {
+      "added": "Added time slot \"{{title}}\"",
+      "edited": "Edited time slot \"{{title}}\"",
+      "removed": "Removed time slot \"{{title}}\"",
+      "setStatus": "Set \"{{title}}\" to {{status}}"
+    },
+    "passes": {
+      "issued": "Issued entry pass {{code}} for {{company}}",
+      "revoked": "Revoked pass {{code}} ({{company}})",
+      "reactivated": "Reactivated pass {{code}} ({{company}})",
+      "setParkingSlot": "Set parking slot {{slot}} for {{company}}"
+    },
+    "attendanceStaff": {
+      "created": "Created a staff account for {{name}} ({{email}})",
+      "revokedCode": "Revoked a check-in access code",
+      "updatedProfileNamed": "{{name}} updated their profile",
+      "updatedProfile": "A staffer updated their profile"
+    },
+    "supportStaff": {
+      "addedWithRole": "Added support staff {{name}} ({{role}})",
+      "added": "Added support staff {{name}}",
+      "updatedDetails": "Updated support staff details",
+      "removed": "Removed a support staff member",
+      "assignedTask": "Assigned task \"{{title}}\"",
+      "setTaskStatus": "Set a task to {{status}}",
+      "removedTask": "Removed a task"
     }
   },
   "eventOps": {
@@ -1109,7 +1283,64 @@
       "signIn": "please sign in again",
       "retry": "we'll keep retrying"
     },
-    "notSetUpYet": "The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <b>Requests</b> tab to ask for equipment, raise a requirement, or send a parking note."
+    "notSetUpYet": "The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <b>Requests</b> tab to ask for equipment, raise a requirement, or send a parking note.",
+    "entryPasses": "Entry Passes",
+    "parking": "Parking",
+    "eventSchedule": "Event Schedule",
+    "needHelp": "Need help?",
+    "needHelpBody": "Each area below is owned by a CASTO officer — reach out directly if something needs attention.",
+    "empty2": {
+      "entryPasses": "No entry passes issued yet. Once the CASTO access officer issues them, each delegate's entry QR code will appear here.",
+      "parking": "No parking assigned yet. When the CASTO office allocates a parking slot, your slot number, exact location, and a map link will show here."
+    },
+    "slot": "Slot {{slot}}",
+    "host": "Host: {{host}}",
+    "requestsSubmitted": "Requests submitted by this company",
+    "noRequestsYet": "No requests submitted yet.",
+    "awaitingApproval": "Awaiting approval",
+    "loadFailed": "Failed to load company information",
+    "confirmFailed": "Failed to confirm attendance. Please try again.",
+    "previewMode": "Preview mode — this is exactly what {{company}} sees. Nothing here can be changed.",
+    "previewModeFallback": "this company",
+    "status": {
+      "Confirmed": "Confirmed",
+      "Pending": "Pending",
+      "Canceled": "Canceled"
+    },
+    "statusHeadline": {
+      "Confirmed": "Attendance confirmed",
+      "Pending": "Awaiting confirmation",
+      "Canceled": "Participation canceled"
+    },
+    "statusMessage": {
+      "Confirmed": "Your attendance is confirmed! We look forward to seeing you at the Job Fair.",
+      "Pending": "Please check your email for the confirmation link, or contact the event coordinator if you have not received it.",
+      "Canceled": "Your participation has been canceled. Please contact the event coordinator if you believe this is an error."
+    },
+    "confirming": "Confirming…",
+    "confirmMyAttendance": "Confirm My Attendance",
+    "totalApplicants": "Total Applicants",
+    "openPositions": "Open Positions",
+    "representatives": "Representatives",
+    "manageSettings": {
+      "title": "Manage your company settings",
+      "subtitle": "Edit your profile, attendance status, login access, and customization.",
+      "cta": "Manage Settings →"
+    },
+    "contactInformation": "Contact Information",
+    "noneListed": "None listed",
+    "industryFields": "Industry Fields",
+    "opportunityTypes": "Opportunity Types",
+    "notSpecified": "Not specified",
+    "preferredMajors": "Preferred Majors",
+    "idealCandidateQualities": "Ideal Candidate Qualities",
+    "surveyCompleted": "Survey Completed",
+    "surveyThankYou": "Thank you for completing the post-event survey!",
+    "tabs": {
+      "overview": "Overview",
+      "eventDay": "Event Day",
+      "requests": "Requests"
+    }
   },
   "barButtons": {
     "registerAnApplicant": "Register an Applicant",

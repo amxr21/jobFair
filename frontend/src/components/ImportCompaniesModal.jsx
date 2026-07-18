@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import Modal from "./Modal";
@@ -76,6 +77,9 @@ const HEADER_ALIASES = {
     preferredqualities: "preferredQualities", qualities: "preferredQualities",
 };
 
+// Errors are structured (i18n key + params) rather than pre-built strings so
+// the preview table can translate them for whichever language is active,
+// same pattern as the EventOps activity log.
 function normalizeRow(rawRow, rowIndex) {
     const data = {};
     for (const key of Object.keys(rawRow)) {
@@ -85,10 +89,10 @@ function normalizeRow(rawRow, rowIndex) {
 
     const errors = [];
     for (const col of REQUIRED_COLUMNS) {
-        if (!data[col]) errors.push(`Missing ${col}`);
+        if (!data[col]) errors.push({ key: "importCompanies.errors.missingColumn", params: { column: col } });
     }
-    if (data.email && !EMAIL_RE.test(data.email)) errors.push("Invalid email format");
-    if (data.sector && !VALID_SECTORS.includes(data.sector)) errors.push(`Sector must be one of: ${VALID_SECTORS.join(", ")}`);
+    if (data.email && !EMAIL_RE.test(data.email)) errors.push({ key: "importCompanies.errors.invalidEmail" });
+    if (data.sector && !VALID_SECTORS.includes(data.sector)) errors.push({ key: "importCompanies.errors.invalidSector", params: { sectors: VALID_SECTORS.join(", ") } });
 
     return { rowIndex, data, errors };
 }
@@ -106,6 +110,7 @@ function downloadTemplate() {
 }
 
 const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
+    const { t } = useTranslation();
     const [stage, setStage] = useState("select"); // select | preview | conflicts | done
     const [parsedRows, setParsedRows] = useState([]);
     const [existingCompanies, setExistingCompanies] = useState([]);
@@ -151,13 +156,13 @@ const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
             const sheet = wb.Sheets[wb.SheetNames[0]];
             const raw = XLSX.utils.sheet_to_json(sheet, { defval: "" });
             if (!raw.length) {
-                setFileError("The file has no rows.");
+                setFileError(t("importCompanies.errors.noRows"));
                 return;
             }
             setParsedRows(raw.map((r, i) => normalizeRow(r, i + 1)));
             setStage("preview");
         } catch {
-            setFileError("Couldn't read that file — make sure it's a valid .xlsx/.xls/.csv.");
+            setFileError(t("importCompanies.errors.readFailed"));
         }
     };
 
@@ -189,7 +194,7 @@ const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
             setStage("done");
             onImported?.();
         } catch (error) {
-            setResults([{ rowIndex: "-", companyName: "(request failed)", status: "error", error: error.response?.data?.error || error.message }]);
+            setResults([{ rowIndex: "-", companyName: t("importCompanies.results.requestFailed"), status: "error", error: error.response?.data?.error || error.message }]);
             setStage("done");
         } finally {
             setIsSubmitting(false);
@@ -200,15 +205,15 @@ const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
         <Modal visible={visible} onClose={onClose} maxWidth="max-w-3xl" contentClassName="max-h-[85vh]">
             <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
                 <div>
-                    <h2 className="text-lg font-bold">Import Companies from Excel</h2>
+                    <h2 className="text-lg font-bold">{t("importCompanies.title")}</h2>
                     <p className="text-xs text-white/80 mt-0.5">
-                        {stage === "select" && "Upload a spreadsheet to bulk-add companies"}
-                        {stage === "preview" && `${validRows.length} valid row${validRows.length === 1 ? "" : "s"}, ${errorRows.length} with errors`}
-                        {stage === "conflicts" && `${conflicts.length} row${conflicts.length === 1 ? "" : "s"} match existing companies`}
-                        {stage === "done" && "Import complete"}
+                        {stage === "select" && t("importCompanies.subtitleSelect")}
+                        {stage === "preview" && t("importCompanies.subtitlePreview", { count: validRows.length, errorCount: errorRows.length })}
+                        {stage === "conflicts" && t("importCompanies.subtitleConflicts", { count: conflicts.length })}
+                        {stage === "done" && t("importCompanies.subtitleDone")}
                     </p>
                 </div>
-                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+                <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label={t("importCompanies.close")}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -219,71 +224,71 @@ const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
                 {stage === "select" && (
                     <div className="flex flex-col gap-4">
                         <button onClick={downloadTemplate} className="self-start text-xs font-semibold text-[#0E7F41] border border-[#0E7F41] rounded-lg px-3 py-1.5 hover:bg-[#0E7F41]/5 transition-colors">
-                            Download template (.xlsx)
+                            {t("importCompanies.downloadTemplate")}
                         </button>
-                        <label className="border-2 border-dashed border-gray-200 rounded-xl p-10 flex flex-col items-center gap-2 cursor-pointer hover:border-green-400 transition-colors">
-                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <label className="border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-xl p-10 flex flex-col items-center gap-2 cursor-pointer hover:border-green-400 transition-colors">
+                            <svg className="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                             </svg>
-                            <p className="text-sm font-semibold text-gray-600">Click to choose a file</p>
-                            <p className="text-xs text-gray-400">.xlsx, .xls, or .csv — required columns: {REQUIRED_COLUMNS.join(", ")}</p>
+                            <p className="text-sm font-semibold text-gray-600 dark:text-gray-300">{t("importCompanies.clickToChoose")}</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">{t("importCompanies.acceptedFormats", { columns: REQUIRED_COLUMNS.join(", ") })}</p>
                             <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => e.target.files[0] && handleFile(e.target.files[0])} />
                         </label>
-                        {fileError && <p className="text-xs text-red-600">{fileError}</p>}
+                        {fileError && <p className="text-xs text-red-600 dark:text-red-400">{fileError}</p>}
                     </div>
                 )}
 
                 {stage === "preview" && (
                     <div className="flex flex-col gap-3">
-                        <div className="overflow-x-auto border border-gray-100 rounded-lg">
+                        <div className="overflow-x-auto border border-gray-100 dark:border-gray-700 rounded-lg">
                             <table className="w-full text-xs">
-                                <thead className="bg-gray-50 text-gray-500">
+                                <thead className="bg-gray-50 dark:bg-gray-900/40 text-gray-500 dark:text-gray-400">
                                     <tr>
-                                        <th className="px-2 py-1.5 text-left">#</th>
-                                        <th className="px-2 py-1.5 text-left">Company</th>
-                                        <th className="px-2 py-1.5 text-left">Email</th>
-                                        <th className="px-2 py-1.5 text-left">Status</th>
+                                        <th className="px-2 py-1.5 text-start">{t("importCompanies.table.row")}</th>
+                                        <th className="px-2 py-1.5 text-start">{t("importCompanies.table.company")}</th>
+                                        <th className="px-2 py-1.5 text-start">{t("importCompanies.table.email")}</th>
+                                        <th className="px-2 py-1.5 text-start">{t("importCompanies.table.status")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {parsedRows.map((r) => (
-                                        <tr key={r.rowIndex} className="border-t border-gray-100">
-                                            <td className="px-2 py-1.5 text-gray-400">{r.rowIndex}</td>
-                                            <td className="px-2 py-1.5">{r.data.companyName || "—"}</td>
-                                            <td className="px-2 py-1.5">{r.data.email || "—"}</td>
+                                        <tr key={r.rowIndex} className="border-t border-gray-100 dark:border-gray-700">
+                                            <td className="px-2 py-1.5 text-gray-400 dark:text-gray-500">{r.rowIndex}</td>
+                                            <td className="px-2 py-1.5 text-fg" dir="auto">{r.data.companyName || "—"}</td>
+                                            <td className="px-2 py-1.5 text-fg bidi-ltr">{r.data.email || "—"}</td>
                                             <td className="px-2 py-1.5">
                                                 {r.errors.length === 0
-                                                    ? <span className="text-green-600 font-medium">Valid</span>
-                                                    : <span className="text-red-600">{r.errors.join("; ")}</span>}
+                                                    ? <span className="text-green-600 dark:text-emerald-400 font-medium">{t("importCompanies.table.valid")}</span>
+                                                    : <span className="text-red-600 dark:text-red-400">{r.errors.map((e) => t(e.key, e.params)).join("; ")}</span>}
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
-                        <p className="text-xs text-gray-400">Rows with errors are skipped automatically — only valid rows will be imported.</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{t("importCompanies.table.errorRowsNote")}</p>
                     </div>
                 )}
 
                 {stage === "conflicts" && (
                     <div className="flex flex-col gap-2.5">
                         {conflicts.map((c) => (
-                            <div key={c.rowIndex} className="border border-amber-200 bg-amber-50 rounded-lg p-3 flex flex-col gap-1.5">
-                                <p className="text-xs font-semibold text-gray-700">
-                                    Row {c.rowIndex}: <span className="text-gray-800">{c.data.companyName}</span> matches existing <span className="text-gray-800">{c.matchedCompany.companyName}</span> ({c.matchType === "email" ? "same email" : "similar name"})
+                            <div key={c.rowIndex} className="border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 rounded-lg p-3 flex flex-col gap-1.5">
+                                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                    {t("importCompanies.conflicts.rowLabel", { rowIndex: c.rowIndex })} <span className="text-gray-800 dark:text-gray-100" dir="auto">{c.data.companyName}</span> {t("importCompanies.conflicts.matchesExisting")} <span className="text-gray-800 dark:text-gray-100" dir="auto">{c.matchedCompany.companyName}</span> ({c.matchType === "email" ? t("importCompanies.conflicts.sameEmail") : t("importCompanies.conflicts.similarName")})
                                 </p>
                                 <div className="flex gap-4">
-                                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                    <label className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
                                         <input type="radio" name={`conflict-${c.rowIndex}`}
                                             checked={(conflictActions[c.rowIndex] || "update") === "update"}
                                             onChange={() => setConflictActions((prev) => ({ ...prev, [c.rowIndex]: "update" }))} />
-                                        Update existing
+                                        {t("importCompanies.conflicts.updateExisting")}
                                     </label>
-                                    <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                                    <label className="flex items-center gap-1.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
                                         <input type="radio" name={`conflict-${c.rowIndex}`}
                                             checked={conflictActions[c.rowIndex] === "skip"}
                                             onChange={() => setConflictActions((prev) => ({ ...prev, [c.rowIndex]: "skip" }))} />
-                                        Keep existing (skip this row)
+                                        {t("importCompanies.conflicts.keepExisting")}
                                     </label>
                                 </div>
                             </div>
@@ -295,31 +300,31 @@ const ImportCompaniesModal = ({ visible, onClose, link, user, onImported }) => {
                     <div className="flex flex-col gap-1.5">
                         {results.map((r, i) => (
                             <div key={i} className={`text-xs rounded-lg px-3 py-2 ${
-                                r.status === "error" ? "bg-red-50 text-red-700" : r.status === "skipped" ? "bg-gray-50 text-gray-500" : "bg-green-50 text-green-700"
+                                r.status === "error" ? "bg-red-50 dark:bg-red-500/15 text-red-700 dark:text-red-300" : r.status === "skipped" ? "bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400" : "bg-green-50 dark:bg-primary/15 text-green-700 dark:text-emerald-300"
                             }`}>
-                                <span className="font-semibold">{r.companyName}</span> — {r.status}
+                                <span className="font-semibold" dir="auto">{r.companyName}</span> — {t(`importCompanies.results.status.${r.status}`, r.status)}
                                 {r.status === "error" && `: ${r.error}`}
-                                {r.status === "created" && r.tempPassword && ` · temp password: ${r.tempPassword}`}
+                                {r.status === "created" && r.tempPassword && ` ${t("importCompanies.results.tempPassword", { password: r.tempPassword })}`}
                             </div>
                         ))}
                     </div>
                 )}
             </div>
 
-            <div className="px-5 py-3.5 border-t bg-gray-50 flex items-center justify-end gap-3 shrink-0">
-                <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">
-                    {stage === "done" ? "Done" : "Cancel"}
+            <div className="px-5 py-3.5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 flex items-center justify-end gap-3 shrink-0">
+                <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                    {stage === "done" ? t("importCompanies.buttons.done") : t("importCompanies.buttons.cancel")}
                 </button>
                 {stage === "preview" && (
                     <button onClick={goToConflictsOrSubmit} disabled={validRows.length === 0}
                         className="px-5 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Continue ({validRows.length} row{validRows.length === 1 ? "" : "s"})
+                        {t("importCompanies.buttons.continue", { count: validRows.length })}
                     </button>
                 )}
                 {stage === "conflicts" && (
                     <button onClick={handleSubmit} disabled={isSubmitting}
                         className="px-5 py-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white text-sm font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2">
-                        {isSubmitting ? <><CircularProgress size={14} sx={{ color: "white" }} />Importing…</> : "Import"}
+                        {isSubmitting ? <><CircularProgress size={14} sx={{ color: "white" }} />{t("importCompanies.buttons.importing")}</> : t("importCompanies.buttons.import")}
                     </button>
                 )}
             </div>

@@ -22,7 +22,8 @@ const HELP_META = {
     "/dev":              { icon: "🔧", related: [{ to: "/event-admin", labelKey: "eventAdmin" }] },
 };
 
-const seenKey = (path) => `pagehelp_seen_v1:${path}`;
+export const pageHelpSeenKey = (path) => `pagehelp_seen_v1:${path}`;
+const seenKey = pageHelpSeenKey;
 
 const PageHelp = ({ user }) => {
     const { t } = useTranslation();
