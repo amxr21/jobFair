@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 
 import { Row, TableHeader, PageContainer, LoadingApplicants, NoApplicants, ScrollToTopButton } from "../components/index";
+import { tCity, tSector, tStatus } from "../i18n/translateEnum";
 import { useAuthContext } from "../hooks/useAuthContext";
 import TourGuide, { MANAGERS_TOUR_KEY } from "../components/TourGuide";
 import { useToast } from "../components/Toast";
@@ -13,10 +15,27 @@ import { CircularProgress } from "@mui/material";
 
 // Company Filter Dropdown Component
 const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [activeFilters, setActiveFilters] = useState({});
     const [expandedCategories, setExpandedCategories] = useState({});
     const dropdownRef = useRef(null);
+
+    // Display a filter VALUE in the active language while keeping the raw DB
+    // value as the underlying key used for filtering. Fixed-option values use
+    // the enum helpers; hasApplicants/reminderSent are UI-only sentinels.
+    const displayValue = (category, value) => {
+        switch (category) {
+            case 'status': return tStatus(value);
+            case 'sector': return tSector(value);
+            case 'city': return tCity(value);
+            case 'hasApplicants':
+                return value === 'Has Applicants' ? t('managers.filters.hasApplicants') : t('managers.filters.noApplicants');
+            case 'reminderSent':
+                return value === 'Reminder Sent' ? t('managers.filters.reminderSentValue') : t('managers.filters.notSentValue');
+            default: return value;
+        }
+    };
 
     // Get unique values for each filter category from companies
     const getUniqueValues = (category) => {
@@ -56,12 +75,12 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
     };
 
     const filterCategories = [
-        { id: 'status', label: 'Attendance Status' },
-        { id: 'sector', label: 'Sector' },
-        { id: 'city', label: 'City' },
-        { id: 'fields', label: 'Industry Fields' },
-        { id: 'hasApplicants', label: 'Applicants' },
-        { id: 'reminderSent', label: 'Reminder Status' },
+        { id: 'status', label: t('managers.filters.attendanceStatus') },
+        { id: 'sector', label: t('managers.filters.sector') },
+        { id: 'city', label: t('managers.filters.city') },
+        { id: 'fields', label: t('managers.filters.industryFields') },
+        { id: 'hasApplicants', label: t('managers.filters.applicants') },
+        { id: 'reminderSent', label: t('managers.filters.reminderStatus') },
     ];
 
     // Close dropdown when clicking outside
@@ -118,32 +137,34 @@ const CompanyFilterDropdown = ({ filters, onFilterChange, companies }) => {
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label={t('managers.filters.title')}
+                title={t('managers.filters.title')}
                 className={`relative border rounded-lg w-7 h-7 md:w-8 md:h-8 flex items-center justify-center transition-all duration-200 ${
                     activeFilterCount > 0
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-[#0E7F41] bg-white opacity-50 hover:opacity-100'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/15'
+                        : 'border-primary bg-surface-card opacity-50 hover:opacity-100'
                 }`}
             >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke={activeFilterCount > 0 ? '#3B82F6' : '#0E7F41'} className="w-3 h-3 md:w-3.5 md:h-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={`w-3 h-3 md:w-3.5 md:h-3.5 ${activeFilterCount > 0 ? 'text-blue-500' : 'text-primary'}`}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" />
                 </svg>
                 {activeFilterCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
+                    <span className="absolute -top-1 -end-1 bg-blue-500 text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-bold">
                         {activeFilterCount}
                     </span>
                 )}
             </button>
 
             {isOpen && (
-                <div className="absolute top-9 right-0 z-50 bg-white rounded-xl shadow-2xl border border-gray-200 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
-                    <div className="p-3 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                        <h3 className="font-semibold text-sm">Filter Companies</h3>
+                <div className="absolute top-9 end-0 z-50 bg-surface-card rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-80 max-h-[450px] overflow-hidden animate-fadeIn">
+                    <div className="p-3 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-surface-card z-10">
+                        <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-100">{t('managers.filters.title')}</h3>
                         {activeFilterCount > 0 && (
                             <button
                                 onClick={clearAllFilters}
-                                className="text-xs text-red-500 hover:text-red-700"
+                                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                             >
-                                Clear all
+                                {t('managers.filters.clearAll')}
                             </button>
                         )}
                     </div>

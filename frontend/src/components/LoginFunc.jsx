@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLogin } from "../hooks/useLogin";
 import { AuthFormOverlay, Input } from "../components";
 
 const LoginFunc = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isVisible, setIsVisible] = useState(false);
@@ -24,11 +26,11 @@ const LoginFunc = () => {
   };
 
   return (
-    <div className="w-full h-full bg-white rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
+    <div className="w-full h-full bg-surface-card rounded-2xl shadow-lg flex flex-col overflow-hidden transition-all duration-300 ease-in-out">
       {/* Header */}
-      <div className="w-8/10 px-6 mx-auto py-6 border-b border-gray-100 shrink-0 transition-all duration-300 ease-in-out">
-        <h2 className="text-2xl font-semibold text-gray-800 text-center transition-all duration-300 ease-in-out">Log in to your account</h2>
-        <p className="text-sm text-gray-500 text-center mt-1 transition-all duration-300 ease-in-out">Enter your credentials to access your dashboard</p>
+      <div className="w-8/10 px-6 mx-auto py-6 border-b border-line-subtle shrink-0 transition-all duration-300 ease-in-out">
+        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100 text-center transition-all duration-300 ease-in-out">{t("auth.login.title")}</h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-1 transition-all duration-300 ease-in-out">{t("auth.login.subtitle")}</p>
       </div>
 
       {/* Form Content */}
@@ -38,7 +40,7 @@ const LoginFunc = () => {
             {/* Email Field */}
             <Input
               Id="email"
-              Name="Email"
+              Name={t("auth.fields.email")}
               Type="email"
               Value={email}
               handleChange={(e) => setEmail(e.target.value)}
@@ -47,29 +49,31 @@ const LoginFunc = () => {
 
             {/* Password Field with Toggle */}
             <div className="w-full transition-all duration-300 ease-in-out">
-              <label htmlFor="password" className="text-xs text-gray-600 ml-1 block mb-0.5 transition-all duration-300 ease-in-out">
-                Password <span className="text-red-500">*</span>
+              <label htmlFor="password" className="text-xs text-gray-600 dark:text-gray-300 ms-1 block mb-0.5 transition-all duration-300 ease-in-out">
+                {t("auth.fields.password")} <span className="text-red-500">*</span>
               </label>
               <div className="relative transition-all duration-300 ease-in-out">
                 <input
                   id="password"
                   type={isVisible ? "text" : "password"}
+                  dir="ltr"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className={`w-full px-2.5 py-1.5 pr-10 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 ease-in-out ${
+                  placeholder={t("auth.login.passwordPlaceholder")}
+                  className={`w-full px-2.5 py-1.5 pe-10 text-sm border rounded-lg bg-surface-card text-fg placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-300 ease-in-out ${
                     password.length > 0 && password.length < 6
                       ? "border-red-400 focus:ring-red-400"
                       : password.length >= 6
                       ? "border-green-400 focus:ring-green-400"
-                      : "border-gray-300 focus:ring-[#0E7F41] hover:border-gray-400"
+                      : "border-line focus:ring-primary hover:border-gray-400 dark:hover:border-gray-500"
                   }`}
                   required
                 />
                 <button
                   type="button"
                   onClick={handleShowingPass}
-                  className="absolute flex items-center justify-center right-1 inset-y-1 w-8 hover:bg-gray-100 rounded-md transition-all duration-300 ease-in-out"
+                  aria-label={isVisible ? t("auth.login.hidePassword") : t("auth.login.showPassword")}
+                  className="absolute flex items-center justify-center end-1 inset-y-1 w-8 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all duration-300 ease-in-out"
                 >
                   {isVisible ? (
                     <svg className="opacity-40 size-5 transition-all duration-300 ease-in-out" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -84,15 +88,15 @@ const LoginFunc = () => {
                 </button>
               </div>
               {password.length > 0 && password.length < 6 && (
-                <p className="text-xs text-red-500 mt-0.5 ml-1 transition-all duration-300 ease-in-out animate-fadeIn">
-                  Password must be at least 6 characters
+                <p className="text-xs text-red-500 mt-0.5 ms-1 transition-all duration-300 ease-in-out animate-fadeIn">
+                  {t("auth.validation.passwordMin")}
                 </p>
               )}
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2 transition-all duration-300 ease-in-out animate-fadeIn">
+              <div className="bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/30 text-red-700 dark:text-red-300 text-xs rounded-lg px-3 py-2 transition-all duration-300 ease-in-out animate-fadeIn">
                 {error}
               </div>
             )}
@@ -100,19 +104,19 @@ const LoginFunc = () => {
         </div>
 
         {/* Submit Button and Link */}
-        <div className="px-6 py-4 border-t border-gray-100 shrink-0 transition-all duration-300 ease-in-out">
+        <div className="px-6 py-4 border-t border-line-subtle shrink-0 transition-all duration-300 ease-in-out">
           <div className="max-w-md mx-auto transition-all duration-300 ease-in-out">
             <button
               disabled={isLoading}
               type="submit"
-              className="w-full flex items-center justify-center gap-2 bg-[#0E7F41] hover:bg-[#0a5f31] text-white font-medium h-10 rounded-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
+              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-contrast font-medium h-10 rounded-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md"
             >
-              {isLoading ? "Logging in..." : "Log In"}
+              {isLoading ? t("auth.login.loggingIn") : t("auth.login.submit")}
             </button>
-            <div className="text-center mt-4 text-sm text-gray-600 transition-all duration-300 ease-in-out">
-              <span>Don't have an account? </span>
-              <a href="/signup" className="text-[#0E7F41] hover:underline font-medium transition-all duration-300 ease-in-out">
-                Sign up here
+            <div className="text-center mt-4 text-sm text-gray-600 dark:text-gray-300 transition-all duration-300 ease-in-out">
+              <span>{t("auth.noAccount")} </span>
+              <a href="/signup" className="text-primary hover:underline font-medium transition-all duration-300 ease-in-out">
+                {t("auth.signUpHere")}
               </a>
             </div>
           </div>
@@ -121,12 +125,12 @@ const LoginFunc = () => {
 
       {/* Loading Overlay */}
       {isLoading && !isRedirecting && (
-        <AuthFormOverlay type="loading" message="Logging in..." />
+        <AuthFormOverlay type="loading" message={t("auth.login.loggingIn")} />
       )}
 
       {/* Redirect Overlay */}
       {isRedirecting && (
-        <AuthFormOverlay type="redirect" message="Login successful!" />
+        <AuthFormOverlay type="redirect" message={t("auth.login.success")} />
       )}
     </div>
   );

@@ -6,13 +6,13 @@ import { formatWhen } from "../context/EventOpsContext";
 // Admin pages (both split out of what used to be one EventSettings.jsx).
 
 export const BADGE_COLORS = {
-  green: "bg-green-100 text-green-700",
-  yellow: "bg-amber-100 text-amber-700",
-  red: "bg-red-100 text-red-600",
-  gray: "bg-gray-100 text-gray-500",
-  blue: "bg-blue-100 text-blue-700",
-  orange: "bg-orange-100 text-orange-700",
-  purple: "bg-purple-100 text-purple-700",
+  green: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300",
+  yellow: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  red: "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300",
+  gray: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300",
+  blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
+  orange: "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
+  purple: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300",
 };
 
 export const Badge = ({ label, color = "gray" }) => (
@@ -31,20 +31,25 @@ export const statusColor = (s) => ({
   Critical: "red", High: "orange", Medium: "yellow", Low: "gray",
 }[s] || "gray");
 
-export const StatCard = ({ label, value, sub, color = "#0E7F41" }) => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-1 min-w-0">
-    <p className="text-xs text-gray-500 font-medium truncate">{label}</p>
-    <p className="text-2xl font-bold truncate" style={{ color }}>{value}</p>
-    {sub && <p className="text-xs text-gray-400 truncate">{sub}</p>}
+export const StatCard = ({ label, value, sub, color }) => (
+  <div className="bg-surface-card rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex flex-col gap-1 min-w-0">
+    <p className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate">{label}</p>
+    {/* Default value color follows the brand (two-tier via token); callers may still
+        pass an explicit hex for status-colored stats. */}
+    <p className={`text-2xl font-bold truncate ${color ? "" : "text-primary"}`} style={color ? { color } : undefined}>{value}</p>
+    {sub && <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{sub}</p>}
   </div>
 );
 
 // "Who touched this last" — shown on every editable row/card
-export const LastEdited = ({ row }) => (
-  <span className="text-[10px] text-gray-400 whitespace-nowrap" title={row?.updatedAt}>
-    Updated by <span className="font-medium text-gray-500">{row?.updatedBy || "—"}</span> · {formatWhen(row?.updatedAt)}
-  </span>
-);
+export const LastEdited = ({ row }) => {
+  const { t } = useTranslation();
+  return (
+    <span className="text-[10px] text-gray-400 dark:text-gray-500 whitespace-nowrap" title={row?.updatedAt}>
+      {t("common.updatedBy")} <span className="font-medium text-gray-500 dark:text-gray-400">{row?.updatedBy || "—"}</span> · {formatWhen(row?.updatedAt)}
+    </span>
+  );
+};
 
 export const CheckIcon = () => (
   <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" /></svg>
@@ -54,7 +59,7 @@ export const ChevronIcon = ({ open }) => (
   <svg className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
 );
 
-export const inputCls = "border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 bg-white";
+export const inputCls = "border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary bg-surface-card text-fg";
 
 // Highlights the matched substring of a search query — same yellow mark used on
 // the Applicants/Companies lists, so every search bar across the app behaves
@@ -67,7 +72,7 @@ export const Highlight = ({ text, query }) => {
     <>
       {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase()
-          ? <mark key={i} className="bg-yellow-200 text-yellow-900 rounded-[2px] px-[1px]">{part}</mark>
+          ? <mark key={i} className="bg-yellow-200 text-yellow-900 dark:bg-yellow-500/30 dark:text-yellow-200 rounded-[2px] px-[1px]">{part}</mark>
           : part
       )}
     </>
@@ -113,18 +118,18 @@ export const SubTabBar = ({ tabs, active, onChange }) => {
   }, [positionPill]);
 
   return (
-    <div ref={wrapRef} className="relative flex bg-gray-100 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto shrink-0">
+    <div ref={wrapRef} className="relative flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 gap-1 w-fit max-w-full overflow-x-auto shrink-0">
       <div
         ref={pillRef}
-        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none"
-        style={{ background: "#0E7F41", left: 0, width: 0 }}
+        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none bg-primary"
+        style={{ left: 0, width: 0 }}
       />
       {tabs.map((t, i) => (
         <button
           key={t}
           ref={(el) => (btnRefs.current[i] = el)}
           onClick={() => onChange(i)}
-          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors duration-150 ${active === i ? "text-white" : "text-gray-500 hover:text-gray-700"}`}
+          className={`relative z-10 px-4 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap transition-colors duration-150 ${active === i ? "text-primary-contrast" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"}`}
         >{t}</button>
       ))}
     </div>
@@ -169,11 +174,11 @@ export const PillTabs = ({ tabs, activeId, onSelect, renderInner }) => {
   }, [positionPill]);
 
   return (
-    <div ref={wrapRef} className="relative flex bg-white border border-gray-200 rounded-xl p-1 gap-1 min-w-max">
+    <div ref={wrapRef} className="relative flex bg-surface-card border border-gray-200 dark:border-gray-700 rounded-xl p-1 gap-1 min-w-max">
       <div
         ref={pillRef}
-        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none"
-        style={{ background: "#0E7F41", left: 0, width: 0, opacity: 0 }}
+        className="tab-pill absolute top-1 bottom-1 rounded-lg pointer-events-none bg-primary"
+        style={{ left: 0, width: 0, opacity: 0 }}
       />
       {tabs.map((tab) => {
         const active = activeId === tab.id;
@@ -183,7 +188,7 @@ export const PillTabs = ({ tabs, activeId, onSelect, renderInner }) => {
             ref={(el) => (btnRefs.current[tab.id] = el)}
             onClick={() => onSelect(tab.id)}
             className={`relative z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors duration-150 ${
-              active ? "text-white" : "text-gray-500 hover:text-gray-700"
+              active ? "text-primary-contrast" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
             }`}
           >
             {renderInner ? renderInner(tab, active) : <span>{tab.label}</span>}

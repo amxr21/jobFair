@@ -1,9 +1,12 @@
+import { useTranslation } from "react-i18next";
 import UniLogoWhite from "../assets/images/uniLogo-white.svg";
 import CastoLogoWhite from "../assets/images/castoLogo-white.svg";
 import CareerFairBg from "../assets/images/career-fair-bg.jpg";
 import AuthText from "./AuthText";
 
 const AuthPageLayout = ({ variant = "login", children }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="fixed inset-0 flex w-screen h-screen overflow-hidden z-50 transition-all duration-300 ease-in-out">
       {/* Background Image with Green Overlay */}
@@ -20,8 +23,8 @@ const AuthPageLayout = ({ variant = "login", children }) => {
         <div className="hidden md:flex md:w-1/2 flex-col justify-center gap-36 px-6 lg:px-20 py-4 transition-all duration-300 ease-in-out">
           <AuthText variant={variant} />
           <div className="flex gap-8 items-center transition-all duration-300 ease-in-out">
-            <img src={UniLogoWhite} alt="University Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
-            <img src={CastoLogoWhite} alt="CASTO Logo" className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
+            <img src={UniLogoWhite} alt={t("auth.universityLogoAlt")} className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
+            <img src={CastoLogoWhite} alt={t("auth.castoLogoAlt")} className="h-full w-auto transition-transform duration-300 ease-in-out hover:scale-105" />
           </div>
         </div>
 

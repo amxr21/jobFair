@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useTranslation, Trans } from "react-i18next";
 import { QRCodeSVG } from "qrcode.react";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL } from "../config/api";
@@ -10,15 +11,33 @@ import CompanyRequestForm from "../components/CompanyRequestForm";
 import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsContext";
 import { SubTabBar } from "../components/EventSettingsShared";
 import { useToast } from "../components/Toast";
+import { tCity, tSector, translateEnum } from "../i18n/translateEnum";
+import i18n from "../i18n";
 
 const BANNER_STEPS = ["Not Submitted", "Submitted", "Approved", "Printed", "Placed"];
 
 const TONE_CLASSES = {
-    green: "bg-green-100 text-green-700", yellow: "bg-amber-100 text-amber-700",
-    red: "bg-red-100 text-red-600", gray: "bg-gray-100 text-gray-500",
-    blue: "bg-blue-100 text-blue-700", purple: "bg-purple-100 text-purple-700",
+    green: "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300",
+    yellow: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+    red: "bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300",
+    gray: "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300",
+    blue: "bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
+    purple: "bg-purple-100 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300",
 };
 const toneClass = (tone) => TONE_CLASSES[tone] || TONE_CLASSES.gray;
+
+// Translate a fixed-option badge value that may belong to any of several enum
+// groups (banner/request/attendance/pass/event). DB value stays English; only
+// the label shown is localized. Falls back to the raw value if unknown.
+const tBadge = (value) => {
+    if (value == null || value === "") return value;
+    for (const group of ["bannerStatus", "requestStatus", "attendanceState", "passStatus", "eventState"]) {
+        const key = `enums.${group}.${value}`;
+        const translated = i18n.t(key);
+        if (translated !== key) return translated;
+    }
+    return value;
+};
 
 const MiniBadge = ({ label, tone = "gray" }) => (
     <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${toneClass(tone)}`}>{label}</span>
@@ -31,8 +50,8 @@ const MiniBadge = ({ label, tone = "gray" }) => (
 // Everything on the company side is view-only; this never implies the company
 // can create it themselves — only CASTO can.
 const AwaitingCasto = ({ text }) => (
-    <div className="flex items-center gap-2 text-[11px] text-gray-400 bg-gray-50 border border-dashed border-gray-200 rounded-lg px-3 py-2.5">
-        <svg className="w-3.5 h-3.5 shrink-0 text-gray-300" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <div className="flex items-center gap-2 text-[11px] text-gray-400 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border border-dashed border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5">
+        <svg className="w-3.5 h-3.5 shrink-0 text-gray-300 dark:text-gray-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
         <span>{text}</span>
     </div>
 );
@@ -43,6 +62,7 @@ const AwaitingCasto = ({ text }) => (
 // NOT wired up yet — it needs a Maps Embed API key + billing — so this renders
 // a styled placeholder in its place, ready to swap for the real embed later.
 const ParkingMapPreview = ({ mapUrl }) => {
+    const { t } = useTranslation();
     if (!mapUrl) return null;
     return (
         <div className="mt-1.5">
@@ -50,12 +70,12 @@ const ParkingMapPreview = ({ mapUrl }) => {
                 <iframe src={`https://www.google.com/maps/embed/v1/place?key=${KEY}&q=...`} />
                 once a Maps Embed API key is available. */}
             <div className="relative h-16 rounded-lg overflow-hidden border border-amber-200 bg-[repeating-linear-gradient(45deg,#fef3c7,#fef3c7_8px,#fde68a_8px,#fde68a_16px)] flex items-center justify-center">
-                <span className="text-amber-700/80 text-[10px] font-semibold bg-white/70 rounded px-1.5 py-0.5">Map preview</span>
+                <span className="text-amber-700/80 text-[10px] font-semibold bg-white/70 rounded px-1.5 py-0.5">{t("common.mapPreview")}</span>
                 <span className="absolute text-lg" style={{ filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.2))" }}>📍</span>
             </div>
             <a href={mapUrl} target="_blank" rel="noopener noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 hover:text-amber-800 hover:underline">
-                📍 Open in Maps
+                📍 {t("common.openInMaps")}
             </a>
         </div>
     );
@@ -67,7 +87,9 @@ const ParkingMapPreview = ({ mapUrl }) => {
 // a green-tinted map placeholder ready to swap for the real embed. `mapUrl`
 // (when CASTO provides one) powers the "Open in Maps" link; otherwise the link
 // is hidden and only the placeholder shows.
-const VenueMapPreview = ({ label, mapUrl }) => (
+const VenueMapPreview = ({ label, mapUrl }) => {
+    const { t } = useTranslation();
+    return (
     <div className="w-full">
         {/* Replace with:
             <iframe src={`https://www.google.com/maps/embed/v1/place?key=${KEY}&q=...`} />
@@ -75,7 +97,7 @@ const VenueMapPreview = ({ label, mapUrl }) => (
         <div className="relative h-28 rounded-xl overflow-hidden border border-green-200 bg-[repeating-linear-gradient(45deg,#ecfdf3,#ecfdf3_10px,#d1fae5_10px,#d1fae5_20px)]">
             {/* faux streets */}
             <div className="absolute inset-0 opacity-40">
-                <div className="absolute left-0 right-0 top-1/3 h-1.5 bg-white/70" />
+                <div className="absolute inset-inline-0 top-1/3 h-1.5 bg-white/70" />
                 <div className="absolute top-0 bottom-0 left-1/2 w-1.5 bg-white/70" />
             </div>
             {/* pin */}
@@ -83,16 +105,17 @@ const VenueMapPreview = ({ label, mapUrl }) => (
                 <span className="text-2xl" style={{ filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.25))" }}>📍</span>
                 {label && <span className="text-[10px] font-bold text-green-800 bg-white/85 rounded-full px-2 py-0.5">{label}</span>}
             </div>
-            <span className="absolute top-1.5 left-2 text-[9px] font-semibold text-green-700/70 bg-white/70 rounded px-1.5 py-0.5">Venue map</span>
+            <span className="absolute top-1.5 start-2 text-[9px] font-semibold text-green-700/70 bg-white/70 rounded px-1.5 py-0.5">{t("companyStatus.venueMap")}</span>
         </div>
         {mapUrl && (
             <a href={mapUrl} target="_blank" rel="noopener noreferrer"
                 className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-green-700 hover:text-green-800 hover:underline">
-                📍 Open in Google Maps
+                📍 {t("companyStatus.openInGoogleMaps")}
             </a>
         )}
     </div>
-);
+    );
+};
 
 const statusTone = (s) => ({
     Placed: "green", Printed: "green", Approved: "green", Submitted: "yellow", "Not Submitted": "gray",
@@ -108,11 +131,11 @@ const ContactCard = ({ moduleId, team }) => {
     const owner = team?.find((m) => m.focus?.includes(moduleId));
     if (!owner) return null;
     return (
-        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-2.5 py-2 mt-2">
-            <span className="w-6 h-6 rounded-full bg-[#0E7F41] text-white text-[10px] font-bold flex items-center justify-center shrink-0">{owner.name[0]}</span>
+        <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-lg px-2.5 py-2 mt-2">
+            <span className="w-6 h-6 rounded-full bg-primary text-primary-contrast text-[10px] font-bold flex items-center justify-center shrink-0">{owner.name[0]}</span>
             <div className="min-w-0 text-[10px] leading-tight">
-                <p className="font-semibold text-gray-700 truncate">{owner.name} · {owner.role}</p>
-                {owner.email && <a href={`mailto:${owner.email}`} className="text-blue-600 hover:underline truncate block">{owner.email}</a>}
+                <p className="font-semibold text-gray-700 dark:text-gray-300 truncate">{owner.name} · {owner.role}</p>
+                {owner.email && <a href={`mailto:${owner.email}`} className="text-blue-600 dark:text-blue-400 hover:underline truncate block bidi-ltr">{owner.email}</a>}
             </div>
         </div>
     );
@@ -121,6 +144,7 @@ const ContactCard = ({ moduleId, team }) => {
 // Everything CASTO manages for this company in Event Settings, mirrored live
 // here in full detail — its own tab so it doesn't get lost below the profile.
 const EventDaySection = ({ companyName, readOnly = false }) => {
+    const { t } = useTranslation();
     const { companyView, team, data, companySelfCheckIn, isCompanyCheckedIn, refetchEventOps, onPersistError } = useEventOps();
     const toast = useToast();
     const view = companyView(companyName);
@@ -146,14 +170,14 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
         if (readOnly) return;
         onPersistError((err) => {
             const status = err?.response?.status;
-            const reason = status === 401 || status === 403 ? "please sign in again" : "we'll keep retrying";
-            toast(`Couldn't save your last change — ${reason}.`, { type: "error" });
+            const reason = status === 401 || status === 403 ? t("companyStatus.saveError.signIn") : t("companyStatus.saveError.retry");
+            toast(t("companyStatus.saveError.message", { reason }), { type: "error" });
         });
-    }, [onPersistError, toast, readOnly]);
+    }, [onPersistError, toast, readOnly, t]);
 
     const handleSelfCheckIn = () => {
         companySelfCheckIn(companyName);
-        toast("You're checked in — welcome to the Job Fair!", { type: "success" });
+        toast(t("companyStatus.checkedInToast"), { type: "success" });
     };
 
     if (!view) return null;
@@ -167,63 +191,62 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
     return (
         <div className="flex flex-col gap-3">
             {!hasAnything && (
-                <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-xs text-blue-700">
+                <div className="flex items-start gap-2.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 rounded-lg px-4 py-3 text-xs text-blue-700 dark:text-blue-300">
                     <svg className="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <strong>Requests</strong> tab to ask for equipment, raise a requirement, or send a parking note.</span>
+                    <span><Trans i18nKey="companyStatus.notSetUpYet" components={{ b: <strong /> }} /></span>
                 </div>
             )}
 
             {/* My Booth — redesigned: a location panel (booth id, zone, venue
                 map placeholder, check-in) beside a framed check-in QR. Always
                 shown; placeholder until CASTO assigns one. */}
-            <SectionCard title="My Booth">
+            <SectionCard title={t("companyStatus.sections.booth")}>
                 {booth ? (
                     <div className="flex flex-col gap-3">
                         {/* Header row — booth badge, zone/type, attendance */}
                         <div className="flex items-center gap-3 flex-wrap">
-                            <span className="inline-flex items-center justify-center rounded-xl bg-[#0E7F41] text-white font-bold text-lg px-3.5 py-1.5 shadow-sm">
+                            <span className="inline-flex items-center justify-center rounded-xl bg-primary text-primary-contrast font-bold text-lg px-3.5 py-1.5 shadow-sm bidi-ltr">
                                 {booth.number}
                             </span>
                             <div className="min-w-0">
-                                <p className="text-sm font-bold text-gray-800">Zone {booth.zone}</p>
-                                <p className="text-xs text-gray-500">{booth.type} booth · {booth.ring === "center" ? "Center island" : "Outer ring"}</p>
+                                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t("companyStatus.booth.zone", { zone: booth.zone })}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{t("companyStatus.booth.typeLine", { type: booth.type, ring: booth.ring === "center" ? t("companyStatus.booth.centerIsland") : t("companyStatus.booth.outerRing") })}</p>
                             </div>
                             {attendance ? (
-                                <span className="flex items-center gap-1.5 ml-auto">
-                                    <MiniBadge label={attendance.status} tone={statusTone(attendance.status)} />
-                                    {attendance.time !== "—" && <span className="text-[11px] text-gray-400">since {attendance.time}</span>}
+                                <span className="flex items-center gap-1.5 ms-auto">
+                                    <MiniBadge label={tBadge(attendance.status)} tone={statusTone(attendance.status)} />
+                                    {attendance.time !== "—" && <span className="text-[11px] text-gray-400">{t("companyStatus.booth.since", { time: attendance.time })}</span>}
                                 </span>
-                            ) : <span className="ml-auto"><MiniBadge label="Attendance pending" tone="gray" /></span>}
+                            ) : <span className="ms-auto"><MiniBadge label={t("companyStatus.booth.attendancePending")} tone="gray" /></span>}
                         </div>
 
                         {/* Map (wide) + QR (compact) side by side, equal height */}
                         <div className="flex items-stretch gap-3">
                             <div className="flex-1 min-w-0">
-                                <VenueMapPreview label={`${booth.number} · Zone ${booth.zone}`} mapUrl={booth.mapUrl} />
+                                <VenueMapPreview label={`${booth.number} · ${t("companyStatus.booth.zone", { zone: booth.zone })}`} mapUrl={booth.mapUrl} />
                             </div>
-                            <div className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 rounded-xl border border-gray-100 p-2.5 shrink-0 w-[112px]">
+                            <div className="flex flex-col items-center justify-center gap-1.5 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-2.5 shrink-0 w-[112px]">
                                 <div className="bg-white border border-gray-200 rounded-lg p-1.5">
                                     <QRCodeSVG value={`jobfair:attendance:${booth.number}`} size={72} fgColor="#111827" />
                                 </div>
-                                <p className="text-[9px] text-gray-400 text-center leading-tight">Scan at your booth to confirm attendance.</p>
+                                <p className="text-[9px] text-gray-400 dark:text-gray-400 text-center leading-tight">{t("companyStatus.booth.scanHint")}</p>
                             </div>
                         </div>
 
                         {/* Check-in action — full width below */}
                         {!readOnly && (
                             checkedIn ? (
-                                <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 self-start">
+                                <div className="flex items-center gap-1.5 text-xs font-semibold text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg px-3 py-2 self-start">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                                    You're checked in — welcome!
+                                    {t("companyStatus.booth.checkedIn")}
                                 </div>
                             ) : (
                                 <button
                                     onClick={handleSelfCheckIn}
-                                    className="flex items-center gap-1.5 text-xs font-semibold text-white rounded-lg px-3.5 py-2 self-start hover:opacity-90 transition-opacity"
-                                    style={{ background: "#0E7F41" }}
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-primary-contrast rounded-lg px-3.5 py-2 self-start bg-primary hover:bg-primary-hover transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                                    I've arrived — check in
+                                    {t("companyStatus.booth.arrivedCheckIn")}
                                 </button>
                             )
                         )}
@@ -231,42 +254,42 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                     </div>
                 ) : (
                     <>
-                        <AwaitingCasto text="No booth assigned yet. Once the CASTO office assigns your booth, its number, zone, map location, and check-in QR code will appear here." />
+                        <AwaitingCasto text={t("companyStatus.empty.booth")} />
                         <ContactCard moduleId="venue" team={team} />
                     </>
                 )}
             </SectionCard>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <SectionCard title="Banners & Branding">
+                <SectionCard title={t("companyStatus.sections.banners")}>
                     {banners.length > 0 ? (
                         <div className="flex flex-col gap-3">
                             {banners.map((b) => {
                                 const si = BANNER_STEPS.indexOf(b.status);
                                 return (
-                                    <div key={b.id} className="flex flex-col gap-1.5 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
+                                    <div key={b.id} className="flex flex-col gap-1.5 pb-3 border-b border-gray-50 dark:border-gray-800 last:border-0 last:pb-0">
                                         <div className="flex items-start gap-3">
                                             {b.artwork ? (
                                                 <a href={b.artwork} target="_blank" rel="noreferrer" className="shrink-0">
-                                                    <img src={b.artwork} alt="Banner artwork" className="w-16 h-16 object-cover rounded-lg border border-gray-200" />
+                                                    <img src={b.artwork} alt={t("companyStatus.banners.artworkAlt")} className="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-700" />
                                                 </a>
                                             ) : (
-                                                <div className="w-16 h-16 rounded-lg border border-dashed border-gray-200 flex items-center justify-center text-[9px] text-gray-400 text-center shrink-0">
-                                                    No artwork yet
+                                                <div className="w-16 h-16 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 flex items-center justify-center text-[9px] text-gray-400 dark:text-gray-400 text-center shrink-0">
+                                                    {t("companyStatus.banners.noArtwork")}
                                                 </div>
                                             )}
                                             <div className="flex-1 min-w-0 flex flex-col gap-1">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <p className="text-xs font-semibold text-gray-700 truncate">{b.material} · {b.size} · ×{b.quantity}</p>
-                                                    <MiniBadge label={b.status} tone={statusTone(b.status)} />
+                                                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate">{b.material} · {b.size} · ×{b.quantity}</p>
+                                                    <MiniBadge label={tBadge(b.status)} tone={statusTone(b.status)} />
                                                 </div>
                                                 <div className="flex items-center gap-0.5">
                                                     {BANNER_STEPS.map((s, i) => (
-                                                        <div key={s} className={`h-1 flex-1 rounded-full ${i <= si ? "bg-green-500" : "bg-gray-200"}`} title={s} />
+                                                        <div key={s} className={`h-1 flex-1 rounded-full ${i <= si ? "bg-primary" : "bg-gray-200 dark:bg-gray-700"}`} title={tBadge(s)} />
                                                     ))}
                                                 </div>
-                                                <p className="text-[10px] text-gray-400">Deadline {b.deadline} · Last update by {b.updatedBy} · {formatWhen(b.updatedAt)}</p>
-                                                {b.notes && <p className="text-[10px] text-gray-400 italic">{b.notes}</p>}
+                                                <p className="text-[10px] text-gray-400 dark:text-gray-400">{t("companyStatus.banners.meta", { deadline: b.deadline, updatedBy: b.updatedBy, when: formatWhen(b.updatedAt) })}</p>
+                                                {b.notes && <p className="text-[10px] text-gray-400 dark:text-gray-400 italic">{b.notes}</p>}
                                             </div>
                                         </div>
                                     </div>
@@ -276,44 +299,44 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                         </div>
                     ) : (
                         <>
-                            <AwaitingCasto text="No banners or branding submitted yet. The CASTO branding officer will add your roll-ups, backdrops, and artwork here as they're processed." />
+                            <AwaitingCasto text={t("companyStatus.empty.banners")} />
                             <ContactCard moduleId="banners" team={team} />
                         </>
                     )}
                 </SectionCard>
 
-                <SectionCard title="Special Requirements">
+                <SectionCard title={t("companyStatus.sections.requirements")}>
                     {requirements.length > 0 ? (
                         <div className="flex flex-col gap-2">
                             {requirements.map((r) => (
-                                <div key={r.id} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 last:border-0 last:pb-0">
+                                <div key={r.id} className="flex flex-col gap-0.5 pb-2 border-b border-gray-50 dark:border-gray-800 last:border-0 last:pb-0">
                                     <div className="flex items-center justify-between gap-2 text-xs">
-                                        <span className="text-gray-700">{r.description}</span>
-                                        <MiniBadge label={r.status} tone={statusTone(r.status)} />
+                                        <span className="text-gray-700 dark:text-gray-300">{r.description}</span>
+                                        <MiniBadge label={tBadge(r.status)} tone={statusTone(r.status)} />
                                     </div>
-                                    {r.category && <span className="text-[10px] text-gray-400">{r.category}</span>}
-                                    {r.notes && <p className="text-[10px] text-gray-400 italic">{r.notes}</p>}
+                                    {r.category && <span className="text-[10px] text-gray-400 dark:text-gray-400">{r.category}</span>}
+                                    {r.notes && <p className="text-[10px] text-gray-400 dark:text-gray-400 italic">{r.notes}</p>}
                                 </div>
                             ))}
                             <ContactCard moduleId="requirements" team={team} />
                         </div>
                     ) : (
                         <>
-                            <AwaitingCasto text="No requirements yet. Use the Requests tab to raise one — it appears here with its status once the CASTO logistics officer picks it up." />
+                            <AwaitingCasto text={t("companyStatus.empty.requirements")} />
                             <ContactCard moduleId="requirements" team={team} />
                         </>
                     )}
                 </SectionCard>
 
-                <SectionCard title="Logistics & Equipment">
+                <SectionCard title={t("companyStatus.sections.equipment")}>
                     {equipment.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                             {equipment.map((r) => (
                                 <div key={r.id} className="flex items-center justify-between gap-2 text-xs">
-                                    <span className="text-gray-700 truncate">{r.item}</span>
+                                    <span className="text-gray-700 dark:text-gray-300 truncate">{r.item}</span>
                                     <span className="flex items-center gap-2 shrink-0">
-                                        <span className="font-mono text-gray-500">{r.qtyFul}/{r.qtyReq}</span>
-                                        <MiniBadge label={r.status} tone={statusTone(r.status)} />
+                                        <span className="font-mono text-gray-500 dark:text-gray-400 bidi-ltr">{r.qtyFul}/{r.qtyReq}</span>
+                                        <MiniBadge label={tBadge(r.status)} tone={statusTone(r.status)} />
                                     </span>
                                 </div>
                             ))}
@@ -321,7 +344,7 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
                         </div>
                     ) : (
                         <>
-                            <AwaitingCasto text="No equipment allocated yet. Tables, chairs, power, and screens the CASTO office assigns to your booth will be listed here." />
+                            <AwaitingCasto text={t("companyStatus.empty.equipment")} />
                             <ContactCard moduleId="equipment" team={team} />
                         </>
                     )}

@@ -68,24 +68,110 @@
   /* Hover surfaces used all over (rows, buttons) */
   .hover\:bg-gray-50:hover { background-color: #1f2937; }
   .hover\:bg-gray-100:hover { background-color: #263141; }
+
+  /* ── Light-tint surfaces (badges, pills, callout cards) ──────────────────
+     bg-*-50 / bg-*-100 read as harsh light blocks on dark. Map each to a dark,
+     low-alpha tint of the same hue so the color MEANING is preserved (a green
+     "Confirmed" badge stays green-ish) while sitting correctly on a dark page.
+     The matching text-*-700/800 is lightened so it stays legible on the tint. */
+  .bg-green-50, .bg-green-100 { background-color: rgba(16, 185, 129, 0.15); }
+  .bg-blue-50,  .bg-blue-100  { background-color: rgba(59, 130, 246, 0.15); }
+  .bg-amber-50, .bg-amber-100, .bg-yellow-50, .bg-yellow-100 { background-color: rgba(245, 158, 11, 0.15); }
+  .bg-red-50,   .bg-red-100   { background-color: rgba(239, 68, 68, 0.15); }
+  .bg-purple-50, .bg-purple-100 { background-color: rgba(139, 92, 246, 0.15); }
+  .bg-indigo-50, .bg-indigo-100 { background-color: rgba(99, 102, 241, 0.15); }
+  .bg-cyan-50,  .bg-cyan-100  { background-color: rgba(6, 182, 212, 0.15); }
+
+  /* Colored text on those tints → lighter shade so it reads on dark */
+  .text-green-700, .text-green-800, .text-green-600 { color: #6ee7b7; }
+  .text-blue-700,  .text-blue-800,  .text-blue-600  { color: #93c5fd; }
+  .text-amber-700, .text-amber-800, .text-yellow-700, .text-yellow-800 { color: #fcd34d; }
+  .text-red-700,   .text-red-800,   .text-red-600,   .text-red-500 { color: #fca5a5; }
+  .text-purple-700, .text-purple-800 { color: #c4b5fd; }
+  .text-cyan-700,  .text-cyan-800  { color: #67e8f9; }
+
+  /* Colored borders on tints */
+  .border-green-100, .border-green-200 { border-color: rgba(16, 185, 129, 0.3); }
+  .border-blue-100,  .border-blue-200  { border-color: rgba(59, 130, 246, 0.3); }
+  .border-amber-100, .border-amber-200, .border-yellow-200 { border-color: rgba(245, 158, 11, 0.3); }
+  .border-red-100,   .border-red-200   { border-color: rgba(239, 68, 68, 0.3); }
 }
 
-/* Custom Theme Colors */
+/* The app's light surface color (#F3F6FF, used inline and as bg-[#F3F6FF] on the
+   page Hero and callout cards) → a dark panel. Unlayered so it wins. */
+.dark [style*="F3F6FF"],
+.dark [style*="f3f6ff"] { background-color: #0b1220 !important; }
+.dark .bg-\[\#F3F6FF\] { background-color: #0b1220; }
+
+/* ── Inline-hex dark overrides for Row.jsx / BriefInfo.jsx ─────────────────
+   The applicant row + expanded profile set light backgrounds via inline
+   style objects (background:'#E6F1FB', 'white', '#EAF3DE', …). Inline styles
+   beat class rules, so these are the only offenders the utility reversals
+   above can't reach. Attribute-selector overrides with !important catch each
+   exact light hex and remap it to a dark, hue-preserving tint. Text hexes are
+   handled the same way so labels stay legible. */
+.dark [style*="background: white"],
+.dark [style*="background:white"] { background-color: #111827 !important; }
+.dark [style*="EAF3DE"] { background-color: rgba(16,185,129,0.15) !important; }  /* green tint */
+.dark [style*="E6F1FB"],
+.dark [style*="E8F4FF"] { background-color: rgba(59,130,246,0.15) !important; }  /* blue tint */
+.dark [style*="EEEDFE"] { background-color: rgba(139,92,246,0.15) !important; }  /* purple tint */
+.dark [style*="EDF2F7"],
+.dark [style*="F7FAFC"] { background-color: #1f2937 !important; }                /* neutral */
+/* Inline text colors that are too dark for a dark bg → lighten while keeping hue */
+.dark [style*="color: #1A202C"],
+.dark [style*="color:#1A202C"],
+.dark [style*="color: #2D3748"],
+.dark [style*="color: #4A5568"] { color: #e5e7eb !important; }   /* near-black/gray → light */
+.dark [style*="color: #27500A"] { color: #6ee7b7 !important; }   /* dark green → light green */
+.dark [style*="color: #0C447C"],
+.dark [style*="color: #185FA5"] { color: #93c5fd !important; }   /* dark blue → light blue */
+.dark [style*="color: #3C3489"] { color: #c4b5fd !important; }   /* dark purple → light purple */
+.dark [style*="color: #A32D2D"] { color: #fca5a5 !important; }   /* dark red → light red */
+
+/* ── Custom Theme Colors — TWO-TIER (light + dark) ──────────────────────────
+   Dark mode is a DESIGNED palette, not a flat inversion. Every color that
+   carries meaning has BOTH a light-mode and a dark-mode value. The @theme block
+   below defines the LIGHT tier (and registers the tokens as Tailwind utilities:
+   bg-primary, text-primary, bg-surface, border-line, …). The `.dark { … }`
+   override further down re-points those same CSS variables to the DARK tier, so
+   any `bg-primary` / `text-primary` / `bg-surface` call site shifts to its dark
+   value automatically when `.dark` is on <html> — no per-call-site dark: needed
+   for these semantic tokens. Raw Tailwind color utilities (bg-green-600, …) still
+   need an explicit dark: twin; prefer these semantic tokens for new/updated code.
+
+   Brand green tiers: light #0E7F41 (rich on white) → dark #34C775 (brighter, so
+   it doesn't read muddy/over-saturated on a dark canvas). */
 @theme {
-  /* Primary - Green */
+  /* Primary — Green (LIGHT tier) */
   --color-primary: #0E7F41;
+  --color-primary-hover: #0a5f31;
   --color-primary-light: #E5FFE5;
   --color-primary-dark: #0a5f31;
+  --color-primary-contrast: #ffffff; /* text/icon that sits ON the primary fill */
+  --color-primary-soft: #E5FFE5;     /* badge/pill/callout background */
+  --color-primary-soft-text: #146c39; /* text on the soft background */
 
-  /* Secondary - Blue */
+  /* Secondary — Blue (LIGHT tier) */
   --color-secondary: #2959A6;
   --color-secondary-light: #E5F0FF;
   --color-secondary-dark: #0066CC;
 
-  /* Background */
-  --color-surface: #F3F6FF;
+  /* Surfaces (LIGHT tier): page canvas · card · raised/subtle panel */
+  --color-surface: #F3F6FF;       /* app/page background */
+  --color-surface-card: #ffffff;  /* cards, rows, modals */
+  --color-surface-raised: #f8fafc; /* subtle raised/hover panel */
 
-  /* Status Colors */
+  /* Lines (LIGHT tier): subtle · default border */
+  --color-line-subtle: #eef1f6;
+  --color-line: #e5e7eb;
+
+  /* Foreground text (LIGHT tier): strong · body · muted */
+  --color-fg: #111827;
+  --color-fg-muted: #4b5563;
+  --color-fg-subtle: #6b7280;
+
+  /* Status Colors (LIGHT tier) */
   --color-success: #0E7F41;
   --color-success-light: #E5FFE5;
   --color-warning: #EBC600;
@@ -95,7 +181,7 @@
   --color-info: #0066CC;
   --color-info-light: #E5F0FF;
 
-  /* Chart Colors */
+  /* Chart Colors (LIGHT tier) */
   --color-chart-green-1: #0E7F41;
   --color-chart-green-2: #22A05B;
   --color-chart-green-3: #34C775;
@@ -105,6 +191,62 @@
   --color-chart-blue-2: #3388DD;
   --color-chart-blue-3: #66AAEE;
   --color-chart-blue-4: #99CCFF;
+}
+
+/* ── DARK tier: re-point the semantic tokens above ─────────────────────────
+   Only the semantic (meaning-carrying) tokens are overridden here. Because
+   these are the SAME CSS custom properties Tailwind generated the utilities
+   from, `bg-primary` / `text-primary` / `bg-surface-card` / `border-line` /
+   `text-fg` etc. automatically pick up the dark value under `.dark`. */
+.dark {
+  /* Primary — Green (DARK tier): brighter so it reads on a dark canvas */
+  --color-primary: #34C775;
+  --color-primary-hover: #22A05B;
+  --color-primary-light: rgba(52, 199, 117, 0.15);
+  --color-primary-dark: #22A05B;
+  --color-primary-contrast: #06210f; /* dark text on the brighter fill */
+  --color-primary-soft: rgba(52, 199, 117, 0.15);
+  --color-primary-soft-text: #6ee7b7;
+
+  /* Secondary — Blue (DARK tier) */
+  --color-secondary: #6BA5F0;
+  --color-secondary-light: rgba(59, 130, 246, 0.15);
+  --color-secondary-dark: #93c5fd;
+
+  /* Surfaces (DARK tier) */
+  --color-surface: #0b1220;
+  --color-surface-card: #111827;
+  --color-surface-raised: #1a2234;
+
+  /* Lines (DARK tier) */
+  --color-line-subtle: #1f2937;
+  --color-line: #374151;
+
+  /* Foreground text (DARK tier) */
+  --color-fg: #e5e7eb;
+  --color-fg-muted: #cbd5e1;
+  --color-fg-subtle: #9ca3af;
+
+  /* Status Colors (DARK tier): lighter fills/text so they read on dark */
+  --color-success: #34C775;
+  --color-success-light: rgba(52, 199, 117, 0.15);
+  --color-warning: #fbbf24;
+  --color-warning-light: rgba(245, 158, 11, 0.15);
+  --color-error: #f87171;
+  --color-error-light: rgba(239, 68, 68, 0.15);
+  --color-info: #93c5fd;
+  --color-info-light: rgba(59, 130, 246, 0.15);
+
+  /* Chart Colors (DARK tier): shift the green ramp brighter for dark bg */
+  --color-chart-green-1: #34C775;
+  --color-chart-green-2: #5DD993;
+  --color-chart-green-3: #8FE7B5;
+  --color-chart-green-4: #b6f0d1;
+  --color-chart-green-5: #d7f7e6;
+  --color-chart-blue-1: #66AAEE;
+  --color-chart-blue-2: #99CCFF;
+  --color-chart-blue-3: #bfe0ff;
+  --color-chart-blue-4: #e0f0ff;
 }
 
 @font-face {
@@ -184,6 +326,53 @@
 
 html {
     font-size: var(--user-font-size);
+}
+
+/* ── Arabic typography & RTL ────────────────────────────────────────────────
+   Arabic glyphs render visually smaller than Latin at the same size and need
+   more vertical breathing room, so under lang="ar" we switch to the bundled
+   29LT Bukra face, nudge the line-height up, and disable hyphenation. */
+html[lang="ar"] body,
+html[lang="ar"] {
+    font-family: '29LTBukra', 'Segoe UI', Tahoma, system-ui, sans-serif;
+    line-height: 1.7;
+}
+html[lang="ar"] {
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+/* Underlines cross the dots below Arabic letters (ب ت ث …) and clip them —
+   push the underline below the baseline dots. */
+html[lang="ar"] a[class*="underline"],
+html[lang="ar"] .hover\:underline:hover {
+    text-underline-offset: 4px;
+}
+
+/* Directional icons (nav arrows, chevrons, back/forward, send, external-link)
+   must mirror in RTL; tag them with `icon-directional`. Non-directional icons
+   (media controls, checkmarks, X, search, edit, logos, warning/info) must NOT
+   be tagged. */
+[dir="rtl"] .icon-directional {
+    transform: scaleX(-1);
+}
+
+/* Data that is always LTR even inside Arabic UI — phone/email/URL/code — is
+   isolated so the bidi algorithm doesn't reorder it. Tag with `bidi-ltr`. */
+.bidi-ltr {
+    direction: ltr;
+    unicode-bidi: isolate;
+    text-align: start;
+}
+
+/* Never let the whole document scroll sideways. The app manages its own
+   internal horizontal scroll regions (tables in overflow-x-auto containers);
+   a stray overflow — common when dir=rtl mirrors a physical-property layout —
+   must not push the entire page off-screen. Individual scroll containers still
+   work because this only clamps the root. */
+html, body, #root {
+    overflow-x: hidden;
+    max-width: 100%;
 }
 
 

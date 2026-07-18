@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
@@ -6,20 +7,45 @@ import { useAuthContext } from "../hooks/useAuthContext";
 import { useEventOps, formatWhen } from "../context/EventOpsContext";
 import { useNotifications } from "../context/NotificationsContext";
 import { useToast } from "../components/Toast";
+import { useTheme } from "../context/ThemeContext";
 import CompactSelect from "../components/CompactSelect";
 import Modal from "../components/Modal";
 import { API_URL } from "../config/api";
 import { Badge, statusColor, StatCard, LastEdited, CheckIcon, ChevronIcon, inputCls, SubTabBar, PillTabs, TabIcon, Highlight } from "../components/EventSettingsShared";
+import { translateEnum } from "../i18n/translateEnum";
+
+// Translate a fixed-option badge/status value that may belong to any of the
+// enum groups used across the operational modules. DB value stays English; only
+// the label shown is localized. Falls back to the raw value if unknown.
+const tBadge = (value) => {
+  if (value == null || value === "") return value;
+  for (const group of ["boothStatus", "bannerStatus", "requestStatus", "attendanceState", "eventState", "priority"]) {
+    const t = translateEnum(group, value);
+    if (t !== value) return t;
+  }
+  return value;
+};
 
 // ─── Booth floor map (circular hall, center island, hover info, hide toggle) ──
 
-const RING_STYLES = {
-  Assigned: { fill: "#0E7F41", text: "#ffffff", stroke: "#0a5f31" },
-  Reserved: { fill: "#fbbf24", text: "#7c5300", stroke: "#d97706" },
-  Available: { fill: "#eef1f6", text: "#6b7280", stroke: "#d1d5db" },
-};
+// Theme-aware ring palette for the booth map — the map renders on a dark canvas
+// in dark mode, so the fills/strokes/text switch to lighter, legible values.
+const ringStyles = (isDark) => ({
+  Assigned: isDark
+    ? { fill: "#34C775", text: "#06281a", stroke: "#15803d" }
+    : { fill: "#0E7F41", text: "#ffffff", stroke: "#0a5f31" },
+  Reserved: isDark
+    ? { fill: "#fbbf24", text: "#3a2800", stroke: "#b45309" }
+    : { fill: "#fbbf24", text: "#7c5300", stroke: "#d97706" },
+  Available: isDark
+    ? { fill: "#334155", text: "#cbd5e1", stroke: "#475569" }
+    : { fill: "#eef1f6", text: "#6b7280", stroke: "#d1d5db" },
+});
 
 const BoothMap = ({ booths, onSelect }) => {
+  const { t } = useTranslation();
+  const { isDark } = useTheme();
+  const RING_STYLES = ringStyles(isDark);
   const [hover, setHover] = useState(null); // { booth, x, y }
   const wrapRef = useRef(null);
 
@@ -38,17 +64,18 @@ const BoothMap = ({ booths, onSelect }) => {
     setHover({ booth, x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
+  const brand = isDark ? "#34C775" : "#0E7F41";
   return (
-    <div ref={wrapRef} className="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-2 md:p-4 flex justify-center">
+    <div ref={wrapRef} className="relative bg-surface-card rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-2 md:p-4 flex justify-center">
       <svg viewBox="0 0 460 460" className="w-full max-w-[440px]">
         {/* hall wall */}
-        <circle cx={C} cy={C} r={208} fill="#fafbfe" stroke="#d8dee9" strokeWidth="2" strokeDasharray="6 5" />
+        <circle cx={C} cy={C} r={208} fill={isDark ? "#1e293b" : "#fafbfe"} stroke={isDark ? "#334155" : "#d8dee9"} strokeWidth="2" strokeDasharray="6 5" />
         {/* center island platform */}
-        <circle cx={C} cy={C} r={96} fill="#f1f5f9" stroke="#e2e8f0" strokeWidth="1.5" />
-        <text x={C} y={C + (center.length ? 118 : 4)} textAnchor="middle" fontSize="9" fill="#94a3b8" fontWeight="600" letterSpacing="1.5">CENTER ISLAND</text>
+        <circle cx={C} cy={C} r={96} fill={isDark ? "#273449" : "#f1f5f9"} stroke={isDark ? "#3b4a63" : "#e2e8f0"} strokeWidth="1.5" />
+        <text x={C} y={C + (center.length ? 118 : 4)} textAnchor="middle" fontSize="9" fill={isDark ? "#64748b" : "#94a3b8"} fontWeight="600" letterSpacing="1.5">{t("eventOps.map.centerIsland")}</text>
         {/* entrance marker */}
-        <rect x={C - 26} y={434} width={52} height={10} rx={4} fill="#0E7F41" opacity="0.85" />
-        <text x={C} y={456} textAnchor="middle" fontSize="10" fill="#0E7F41" fontWeight="700" letterSpacing="2">ENTRANCE</text>
+        <rect x={C - 26} y={434} width={52} height={10} rx={4} fill={brand} opacity="0.85" />
+        <text x={C} y={456} textAnchor="middle" fontSize="10" fill={brand} fontWeight="700" letterSpacing="2">{t("eventOps.map.entrance")}</text>
 
         {nodes.map((b) => {
           const st = RING_STYLES[b.status] || RING_STYLES.Available;
@@ -64,7 +91,7 @@ const BoothMap = ({ booths, onSelect }) => {
               <circle r={25} fill={st.fill} stroke={st.stroke} strokeWidth="1.5" opacity={hover?.booth?.id === b.id ? 0.85 : 1} />
               <text textAnchor="middle" dy="-1" fontSize="11" fontWeight="700" fill={st.text}>{b.number}</text>
               <text textAnchor="middle" dy="11" fontSize="7" fill={st.text} opacity="0.85">
-                {b.company ? (b.company.length > 11 ? b.company.slice(0, 10) + "…" : b.company) : "Free"}
+                {b.company ? (b.company.length > 11 ? b.company.slice(0, 10) + "…" : b.company) : t("eventOps.map.free")}
               </text>
             </g>
           );
@@ -73,7 +100,7 @@ const BoothMap = ({ booths, onSelect }) => {
 
       {hover && (
         <div
-          className="absolute z-20 pointer-events-none bg-white rounded-xl shadow-xl border border-gray-100 p-3 w-56"
+          className="absolute z-20 pointer-events-none bg-surface-card rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 p-3 w-56"
           style={(() => {
             // Keep the card fully inside the map on every edge: flip to the left
             // of the cursor when it would overflow right, and clamp top/bottom so
@@ -89,15 +116,15 @@ const BoothMap = ({ booths, onSelect }) => {
           })()}
         >
           <div className="flex items-center justify-between mb-1.5">
-            <span className="font-bold text-sm text-gray-800">{hover.booth.number} · Zone {hover.booth.zone}</span>
-            <Badge label={hover.booth.status} color={statusColor(hover.booth.status)} />
+            <span className="font-bold text-sm text-gray-800 dark:text-gray-100">{hover.booth.number} · {t("eventOps.venue.zone", { zone: hover.booth.zone })}</span>
+            <Badge label={tBadge(hover.booth.status)} color={statusColor(hover.booth.status)} />
           </div>
-          <p className="text-xs text-gray-700 font-semibold">{hover.booth.company || "Not assigned yet"}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">{hover.booth.type} booth · {hover.booth.ring === "center" ? "Center island" : "Outer ring"}</p>
-          <div className="mt-1.5 pt-1.5 border-t border-gray-100">
+          <p className="text-xs text-gray-700 dark:text-gray-300 font-semibold">{hover.booth.company || t("eventOps.venue.notAssignedYet")}</p>
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">{t("eventOps.venue.boothTypeRing", { type: hover.booth.type, ring: hover.booth.ring === "center" ? t("eventOps.venue.centerIsland") : t("eventOps.venue.outerRing") })}</p>
+          <div className="mt-1.5 pt-1.5 border-t border-gray-100 dark:border-gray-700">
             <LastEdited row={hover.booth} />
           </div>
-          <p className="text-[10px] text-gray-400 mt-1">Click to manage this booth</p>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{t("eventOps.venue.clickToManageBooth")}</p>
         </div>
       )}
     </div>
@@ -107,6 +134,7 @@ const BoothMap = ({ booths, onSelect }) => {
 // ─── Tab: Venue & Booths ──────────────────────────────────────────────────────
 
 const VenueMapping = () => {
+  const { t } = useTranslation();
   const { data, update, companies } = useEventOps();
   const toast = useToast();
   const booths = data.booths;
@@ -124,7 +152,7 @@ const VenueMapping = () => {
       rows.map((b) => b.id === booth.id
         ? { ...b, company: label, type: formType, status: label ? "Assigned" : "Available", ...who }
         : b));
-    toast(label ? `Booth ${booth.number} assigned to ${label}` : `Booth ${booth.number} cleared`, { type: "success" });
+    toast(label ? t("eventOps.venue.toastAssigned", { number: booth.number, company: label }) : t("eventOps.venue.toastCleared", { number: booth.number }), { type: "success" });
     cancelAssign();
   };
 
@@ -146,26 +174,26 @@ const VenueMapping = () => {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex gap-3 flex-wrap">
           {[["Assigned", "bg-green-500"], ["Reserved", "bg-amber-400"], ["Available", "bg-gray-300"]].map(([l, c]) => (
-            <div key={l} className="flex items-center gap-1.5 text-xs text-gray-600">
-              <span className={`w-2 h-2 rounded-full ${c}`} />{l}
+            <div key={l} className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-300">
+              <span className={`w-2 h-2 rounded-full ${c}`} />{translateEnum("boothStatus", l)}
             </div>
           ))}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-semibold text-gray-500">{assigned} / {booths.length} assigned</span>
-          <button onClick={() => setShowMap(true)} className="text-xs font-medium border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-            Show floor map
+          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{t("eventOps.venue.assignedCount", { assigned, total: booths.length })}</span>
+          <button onClick={() => setShowMap(true)} className="text-xs font-medium border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary transition-colors">
+            {t("eventOps.venue.showFloorMap")}
           </button>
         </div>
       </div>
 
       <Modal visible={showMap} onClose={() => setShowMap(false)} maxWidth="max-w-3xl" contentClassName="max-h-[85vh]">
-        <div className="bg-[#0E7F41] text-white px-5 py-4 flex items-center justify-between shrink-0">
+        <div className="bg-primary text-primary-contrast px-5 py-4 flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-lg font-bold">Floor Map</h2>
-            <p className="text-xs text-white/80 mt-0.5">Click a booth to manage its assignment</p>
+            <h2 className="text-lg font-bold">{t("eventOps.venue.floorMap")}</h2>
+            <p className="text-xs text-white/80 mt-0.5">{t("eventOps.venue.floorMapSubtitle")}</p>
           </div>
-          <button onClick={() => setShowMap(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label="Close">
+          <button onClick={() => setShowMap(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors" aria-label={t("common.close")}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -173,37 +201,37 @@ const VenueMapping = () => {
         </div>
         <div className="p-4 md:p-5 overflow-y-auto flex flex-col gap-1.5">
           <BoothMap booths={booths} onSelect={selectFromMap} />
-          <p className="text-[11px] text-gray-400 text-center">
-            Schematic layout — will be replaced by the real venue map. Hover a booth for details, click to manage it.
+          <p className="text-[11px] text-gray-400 dark:text-gray-500 text-center">
+            {t("eventOps.venue.floorMapNote")}
           </p>
         </div>
       </Modal>
 
       {["A", "B", "C"].map((zone) => (
         <div key={zone}>
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Zone {zone}</p>
+          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3">{t("eventOps.venue.zone", { zone })}</p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {booths.filter((b) => b.zone === zone).map((booth) => (
               <div key={booth.id} ref={(el) => (cardRefs.current[booth.id] = el)} className={`rounded-xl border p-3 flex flex-col gap-2.5 ${
-                booth.status === "Assigned" ? "border-green-200 bg-green-50"
-                : booth.status === "Reserved" ? "border-amber-200 bg-amber-50"
-                : "border-gray-200 bg-white"}`}>
+                booth.status === "Assigned" ? "border-green-200 bg-green-50 dark:border-green-500/30 dark:bg-green-500/10"
+                : booth.status === "Reserved" ? "border-amber-200 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-500/10"
+                : "border-gray-200 dark:border-gray-700 bg-surface-card"}`}>
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-sm text-gray-800">{booth.number}</span>
-                  <Badge label={booth.status} color={statusColor(booth.status)} />
+                  <span className="font-bold text-sm text-gray-800 dark:text-gray-100">{booth.number}</span>
+                  <Badge label={tBadge(booth.status)} color={statusColor(booth.status)} />
                 </div>
-                <div className="text-xs text-gray-500 flex flex-col gap-0.5">
-                  <span className="text-gray-400">{booth.type} · {booth.ring === "center" ? "Center island" : "Outer ring"}</span>
-                  <span className="font-semibold text-gray-700 truncate">{booth.company || "Unassigned"}</span>
+                <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-col gap-0.5">
+                  <span className="text-gray-400 dark:text-gray-500">{t("eventOps.venue.typeRing", { type: booth.type, ring: booth.ring === "center" ? t("eventOps.venue.centerIsland") : t("eventOps.venue.outerRing") })}</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 truncate">{booth.company || t("eventOps.venue.unassigned")}</span>
                 </div>
                 {assigningId === booth.id ? (
-                  <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+                  <div className="flex flex-col gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                     <CompactSelect
                       className="text-xs"
                       value={formCompany}
                       onChange={(e) => setFormCompany(e.target.value)}
-                      placeholder="— Unassigned —"
-                      options={[{ value: "", label: "— Unassigned —" }, ...companies.map((c) => ({ value: c, label: c }))]}
+                      placeholder={t("eventOps.venue.unassignedOption")}
+                      options={[{ value: "", label: t("eventOps.venue.unassignedOption") }, ...companies.map((c) => ({ value: c, label: c }))]}
                     />
                     <CompactSelect
                       className="text-xs"
@@ -212,13 +240,13 @@ const VenueMapping = () => {
                       options={["Standard", "Premium", "Corner"]}
                     />
                     <div className="flex gap-1.5">
-                      <button onClick={() => saveAssign(booth)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-white" style={{ background: "#0E7F41" }}>Save</button>
-                      <button onClick={cancelAssign} className="flex-1 text-xs rounded-lg py-1.5 font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
+                      <button onClick={() => saveAssign(booth)} className="flex-1 text-xs rounded-lg py-1.5 font-semibold text-primary-contrast bg-primary hover:bg-primary-hover transition-colors">{t("common.save")}</button>
+                      <button onClick={cancelAssign} className="flex-1 text-xs rounded-lg py-1.5 font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{t("common.cancel")}</button>
                     </div>
                   </div>
                 ) : (
-                  <button onClick={() => startAssign(booth)} className="text-xs rounded-lg py-1.5 font-medium border border-gray-200 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors">
-                    {booth.company ? "Reassign" : "Assign"}
+                  <button onClick={() => startAssign(booth)} className="text-xs rounded-lg py-1.5 font-medium border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary transition-colors">
+                    {booth.company ? t("eventOps.venue.reassign") : t("eventOps.venue.assign")}
                   </button>
                 )}
                 <LastEdited row={booth} />

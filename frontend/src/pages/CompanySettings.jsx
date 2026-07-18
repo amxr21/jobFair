@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { API_URL } from "../config/api";
 import TagPill from "../components/TagPill";
@@ -9,6 +10,7 @@ import CustomizeSettings from "../components/CustomizeSettings";
 import { SubTabBar } from "../components/EventSettingsShared";
 import { useToast } from "../components/Toast";
 import { PageContainer } from "../components/index";
+import { tCity, tSector, tStatus } from "../i18n/translateEnum";
 
 // Self-service account settings. Redesigned into a sectioned layout: a company
 // header (avatar · name · attendance badge) plus a left section-nav (Profile ·
@@ -46,14 +48,18 @@ const Field = ({ label, value, mono = false }) => (
 
 const inputCls = "border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-green-500 w-full";
 
-// Section tabs — same order the SubTabBar renders. Using the shared SubTabBar
-// (with its sliding-pill animation) keeps this page's tab motion identical to
-// the company Status tabs instead of a bespoke, differently-animated bar.
-const SECTIONS = ["Profile", "Attendance", "Login Access", "Appearance"];
-
 const CompanySettings = () => {
+    const { t } = useTranslation();
     const { user } = useAuthContext();
     const toast = useToast();
+    // Section tabs — same order the SubTabBar renders. Built from translations
+    // so the labels follow the active language.
+    const SECTIONS = [
+        t("settings.tabs.profile"),
+        t("settings.tabs.attendance"),
+        t("settings.tabs.loginAccess"),
+        t("settings.tabs.appearance"),
+    ];
     const [companyData, setCompanyData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -116,7 +122,7 @@ const CompanySettings = () => {
                 const stored = JSON.parse(localStorage.getItem("user") || "{}");
                 localStorage.setItem("user", JSON.stringify({ ...stored, email: form.email }));
             }
-            toast("Account settings saved", { type: "success" });
+            toast(t("settings.toasts.saved"), { type: "success" });
             setEditing(false);
         } catch (err) {
             toast(err.response?.data?.error || "Failed to save changes", { type: "error" });
@@ -134,7 +140,7 @@ const CompanySettings = () => {
             });
             setLoginEmails((prev) => [...prev, res.data]);
             setNewEmail("");
-            toast("Login email added", { type: "success" });
+            toast(t("settings.toasts.emailAdded"), { type: "success" });
         } catch (err) {
             toast(err.response?.data?.error || "Failed to add email", { type: "error" });
         } finally {
@@ -148,7 +154,7 @@ const CompanySettings = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setLoginEmails((prev) => prev.filter((e) => e.id !== emailRow.id));
-            toast("Login email removed", { type: "success" });
+            toast(t("settings.toasts.emailRemoved"), { type: "success" });
         } catch (err) {
             toast(err.response?.data?.error || "Failed to remove email", { type: "error" });
         }
@@ -162,7 +168,7 @@ const CompanySettings = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setCompanyData((prev) => ({ ...prev, ...res.data.company }));
-            toast(`Attendance status set to ${status}`, { type: "success" });
+            toast(t("settings.toasts.statusSet", { status: tStatus(status) }), { type: "success" });
         } catch (err) {
             toast(err.response?.data?.error || "Failed to update status", { type: "error" });
         } finally {
@@ -171,7 +177,7 @@ const CompanySettings = () => {
     };
 
     if (loading) return (
-        <PageContainer user={user} title="Company Settings">
+        <PageContainer user={user} title={t("settings.title")}>
             <div className="flex-1 flex items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0E7F41]" />
             </div>
@@ -179,7 +185,7 @@ const CompanySettings = () => {
     );
 
     if (error) return (
-        <PageContainer user={user} title="Company Settings">
+        <PageContainer user={user} title={t("settings.title")}>
             <div className="flex-1 flex items-center justify-center py-16">
                 <p className="text-sm font-medium text-gray-700">{error}</p>
             </div>
@@ -190,7 +196,7 @@ const CompanySettings = () => {
     const st = STATUS_STYLES[status] || STATUS_STYLES.Pending;
 
     return (
-        <PageContainer user={user} title="Company Settings">
+        <PageContainer user={user} title={t("settings.title")}>
             <div className="flex flex-col gap-4 overflow-y-auto min-h-0 pb-4">
                 {/* Header */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 md:p-5 flex items-center gap-4">
@@ -199,10 +205,10 @@ const CompanySettings = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                         <h1 className="text-base md:text-lg font-bold text-gray-800 truncate">{companyData?.companyName}</h1>
-                        <p className="text-xs text-gray-500 truncate">{[companyData?.sector, companyData?.city].filter(Boolean).join(" · ") || "Manage your account"}</p>
+                        <p className="text-xs text-gray-500 truncate">{[tSector(companyData?.sector), tCity(companyData?.city)].filter(Boolean).join(" · ") || t("settings.title")}</p>
                     </div>
                     <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold shrink-0 ${st.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />{status}
+                        <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`} />{tStatus(status)}
                     </span>
                 </div>
 
@@ -217,11 +223,11 @@ const CompanySettings = () => {
                         {section === 0 && (
                             <Card>
                                 <CardHead
-                                    title="Company profile"
-                                    desc="Your public details, shown to CASTO and used to match applicants."
+                                    title={t("settings.profile.title")}
+                                    desc={t("settings.profile.subtitle")}
                                     action={!editing && (
                                         <button onClick={startEdit} className="text-xs font-semibold border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 hover:border-green-400 hover:text-green-700 transition-colors shrink-0">
-                                            Edit
+                                            {t("common.edit")}
                                         </button>
                                     )}
                                 />
@@ -229,41 +235,41 @@ const CompanySettings = () => {
                                     {!editing ? (
                                         <div className="flex flex-col gap-5">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                <Field label="Login email" value={companyData?.email} />
-                                                <Field label="Phone" value={companyData?.phone} />
-                                                <Field label="City" value={companyData?.city} />
-                                                <Field label="Sector" value={companyData?.sector} />
-                                                <Field label="Open positions" value={companyData?.noOfPositions} />
+                                                <Field label={t("settings.profile.loginEmail")} value={companyData?.email} />
+                                                <Field label={t("settings.profile.phone")} value={companyData?.phone} />
+                                                <Field label={t("settings.profile.city")} value={tCity(companyData?.city)} />
+                                                <Field label={t("settings.profile.sector")} value={tSector(companyData?.sector)} />
+                                                <Field label={t("settings.profile.openPositions")} value={companyData?.noOfPositions} />
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Representatives</span>
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{t("settings.profile.representatives")}</span>
                                                 <div className="flex flex-wrap gap-1.5 mt-0.5">
                                                     {reps.length ? reps.map((rep, i) => <TagPill key={i} label={rep.trim()} variant="blue" />) : <span className="text-sm text-gray-300">—</span>}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Industry fields</span>
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{t("settings.profile.industryFields")}</span>
                                                 <div className="flex flex-wrap gap-1.5 mt-0.5">
                                                     {fields.length ? fields.map((f, i) => <TagPill key={i} label={f} variant="cyan" />) : <span className="text-sm text-gray-300">—</span>}
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Opportunity types</span>
+                                                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{t("settings.profile.opportunityTypes")}</span>
                                                 <div className="flex flex-wrap gap-1.5 mt-0.5">
                                                     {companyData?.opportunityTypes?.length > 0
-                                                        ? companyData.opportunityTypes.map((t, i) => <TagPill key={i} label={t} variant="purple" />)
-                                                        : <span className="text-sm text-gray-300">Not specified</span>}
+                                                        ? companyData.opportunityTypes.map((ot, i) => <TagPill key={i} label={ot} variant="purple" />)
+                                                        : <span className="text-sm text-gray-300">{t("common.notSpecified")}</span>}
                                                 </div>
                                             </div>
                                             {companyData?.preferredMajors?.length > 0 && (
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Preferred majors</span>
+                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{t("settings.profile.preferredMajors")}</span>
                                                     <div className="flex flex-wrap gap-1.5 mt-0.5">{companyData.preferredMajors.map((m, i) => <TagPill key={i} label={m} variant="green" />)}</div>
                                                 </div>
                                             )}
                                             {companyData?.preferredQualities && (
                                                 <div className="flex flex-col gap-1">
-                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Ideal candidate qualities</span>
+                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">{t("settings.profile.idealQualities")}</span>
                                                     <p className="text-sm text-gray-700 leading-relaxed mt-0.5">{companyData.preferredQualities}</p>
                                                 </div>
                                             )}
@@ -272,26 +278,26 @@ const CompanySettings = () => {
                                         <div className="flex flex-col gap-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 <div className="flex flex-col gap-1">
-                                                    <label className="text-xs text-gray-500 font-medium">Login email</label>
+                                                    <label className="text-xs text-gray-500 font-medium">{t("settings.profile.loginEmail")}</label>
                                                     <input type="email" className={inputCls} value={form.email} onChange={F("email")} />
                                                 </div>
                                                 <div className="flex flex-col gap-1">
-                                                    <label className="text-xs text-gray-500 font-medium">Phone number</label>
-                                                    <input type="tel" className={inputCls} value={form.phone} onChange={F("phone")} placeholder="+971 5X XXX XXXX" />
+                                                    <label className="text-xs text-gray-500 font-medium">{t("settings.profile.phone")}</label>
+                                                    <input type="tel" className={inputCls} value={form.phone} onChange={F("phone")} placeholder={t("settings.profile.phonePlaceholder")} />
                                                 </div>
-                                                <SelectInput Id="csCity" Name="City" options={["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Umm Al-Quwain", "AlFujairah"]} value={form.city} handleChange={F("city")} />
-                                                <SelectInput Id="csSector" Name="Sector" options={["Local", "Private", "Semi", "Federal"]} value={form.sector} handleChange={F("sector")} />
-                                                <SelectInput Id="csPositions" Name="Available Positions" options={["1-5", "5-10", "10-15", "15-20", ">20"]} value={form.noOfPositions} handleChange={F("noOfPositions")} />
+                                                <SelectInput Id="csCity" Name={t("settings.profile.city")} options={["Sharjah", "Dubai", "Abu Dhabi", "Ajman", "Al-Ain", "Ras Al-Khaima", "Umm Al-Quwain", "AlFujairah"]} value={form.city} handleChange={F("city")} />
+                                                <SelectInput Id="csSector" Name={t("settings.profile.sector")} options={["Local", "Private", "Semi", "Federal"]} value={form.sector} handleChange={F("sector")} />
+                                                <SelectInput Id="csPositions" Name={t("settings.profile.openPositions")} options={["1-5", "5-10", "10-15", "15-20", ">20"]} value={form.noOfPositions} handleChange={F("noOfPositions")} />
                                             </div>
                                             <MultiSelectInput Id="csFields" Name="Industry Fields" options={INDUSTRY_FIELDS} value={form.fields ? form.fields.split(",").map((f) => f.trim()).filter(Boolean) : []} handleChange={(vals) => setForm((f) => ({ ...f, fields: vals.join(", ") }))} />
                                             <div className="flex flex-col gap-1">
-                                                <label className="text-xs text-gray-500 font-medium">Ideal candidate qualities</label>
+                                                <label className="text-xs text-gray-500 font-medium">{t("settings.profile.idealQualities")}</label>
                                                 <textarea className={`${inputCls} resize-none`} rows={2} value={form.preferredQualities} onChange={F("preferredQualities")} />
                                             </div>
                                             <div className="flex justify-end gap-2 pt-1">
-                                                <button onClick={() => setEditing(false)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">Cancel</button>
+                                                <button onClick={() => setEditing(false)} className="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">{t("common.cancel")}</button>
                                                 <button onClick={saveProfile} disabled={saving} className="text-xs font-semibold text-white rounded-lg px-4 py-1.5 disabled:opacity-50" style={{ background: "#0E7F41" }}>
-                                                    {saving ? "Saving…" : "Save changes"}
+                                                    {saving ? t("common.saving") : t("common.saveChanges")}
                                                 </button>
                                             </div>
                                         </div>
@@ -303,7 +309,7 @@ const CompanySettings = () => {
                         {/* ── Attendance ── */}
                         {section === 1 && (
                             <Card>
-                                <CardHead title="Attendance status" desc="Let CASTO know whether your company is attending this year's fair." />
+                                <CardHead title={t("settings.attendance.title")} desc={t("settings.attendance.subtitle")} />
                                 <div className="p-4 md:p-5 flex flex-col gap-3">
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                                         {["Confirmed", "Pending", "Canceled"].map((s) => {
@@ -319,12 +325,12 @@ const CompanySettings = () => {
                                                     }`}
                                                 >
                                                     {active && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
-                                                    {s}
+                                                    {tStatus(s)}
                                                 </button>
                                             );
                                         })}
                                     </div>
-                                    <p className="text-[11px] text-gray-400">Changing this notifies CASTO. You can update it any time before the event.</p>
+                                    <p className="text-[11px] text-gray-400">{t("settings.attendance.hint")}</p>
                                 </div>
                             </Card>
                         )}
@@ -332,21 +338,21 @@ const CompanySettings = () => {
                         {/* ── Login Access ── */}
                         {section === 2 && (
                             <Card>
-                                <CardHead title="Manage login access" desc="Anyone with an approved email can log in with your company's shared password." />
+                                <CardHead title={t("settings.access.title")} desc={t("settings.access.subtitle")} />
                                 <div className="p-4 md:p-5 flex flex-col gap-3">
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
                                             <span className="font-medium text-gray-700 truncate">{companyData?.email}</span>
-                                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide shrink-0 ml-2">Primary</span>
+                                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide shrink-0 ms-2">{t("settings.access.primary")}</span>
                                         </div>
                                         {loginEmails.map((e) => (
                                             <div key={e.id} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2.5">
                                                 <span className="text-gray-700 truncate">{e.email}</span>
-                                                <button onClick={() => removeEmail(e)} className="text-red-500 hover:text-red-700 font-semibold text-xs shrink-0 ml-2">Remove</button>
+                                                <button onClick={() => removeEmail(e)} className="text-red-500 hover:text-red-700 font-semibold text-xs shrink-0 ms-2">{t("common.remove")}</button>
                                             </div>
                                         ))}
                                         {loginEmails.length === 0 && (
-                                            <p className="text-xs text-gray-400 px-1 py-1">No additional emails yet. Add colleagues who need access below.</p>
+                                            <p className="text-xs text-gray-400 px-1 py-1">{t("settings.access.emptyHint")}</p>
                                         )}
                                     </div>
                                     <div className="flex gap-2 pt-1">
@@ -355,11 +361,11 @@ const CompanySettings = () => {
                                             value={newEmail}
                                             onChange={(ev) => setNewEmail(ev.target.value)}
                                             onKeyDown={(ev) => ev.key === "Enter" && addEmail()}
-                                            placeholder="colleague@company.com"
+                                            placeholder={t("settings.access.emailPlaceholder")}
                                             className={`flex-1 ${inputCls}`}
                                         />
                                         <button onClick={addEmail} disabled={addingEmail || !newEmail.trim()} className="text-xs font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-50 shrink-0" style={{ background: "#0E7F41" }}>
-                                            + Add email
+                                            {t("settings.access.addEmail")}
                                         </button>
                                     </div>
                                 </div>
@@ -369,7 +375,7 @@ const CompanySettings = () => {
                         {/* ── Appearance ── */}
                         {section === 3 && (
                             <Card>
-                                <CardHead title="Appearance" desc="Font and text-size preferences, applied across your dashboard." />
+                                <CardHead title={t("settings.appearance.title")} desc={t("settings.appearance.subtitle")} />
                                 <div className="p-4 md:p-5">
                                     <CustomizeSettings />
                                 </div>

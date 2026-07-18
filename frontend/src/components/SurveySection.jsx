@@ -8,6 +8,7 @@ import SubmittingCover from "./SubmittingCover"
 import { BarChart } from '@mui/x-charts/BarChart';
 import { SurveyContext } from "../context/SurveyContext"
 import { NoAnswer, OpenEndedResponse } from "./index"
+import { tSurveyPart, tSurveySection } from "../i18n/surveyContent"
 
 
 const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey', surveyResponsesData, surveyResponsesDataForCompany }) => {
@@ -94,13 +95,13 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
 
     return (
         // <div className="section bg-red-500 min-h-[100%]">
-        <div className={`${page == 'results' ? ' ' : 'min-w-[100%] h-[100%] overflow-y-auto'} relative section py-2 pr-4 flex flex-col ${section == 0 ? 'items-end' : 'items-start'} gap-6`}>
-            <h3 className="w-full text-xl font-semibold">{sectionHeader}</h3>
+        <div className={`${page == 'results' ? ' ' : 'min-w-[100%] h-[100%] overflow-y-auto'} relative section py-2 pe-4 flex flex-col ${section == 0 ? 'items-end' : 'items-start'} gap-6`}>
+            <h3 className="w-full text-xl font-semibold text-fg">{tSurveyPart(sectionHeader)}</h3>
             <div className="w-full questions flex flex-col gap-y-8">
                 {
                     subsectionData.map((subsection, index) => (
                         <div key={index } className="flex flex-col gap-y-4">
-                            <h2 className="text-lg underline">{subsection.title}</h2>
+                            <h2 className="text-lg underline text-fg">{tSurveySection(subsection.title)}</h2>
                             {
                                 subsection.questions?.map((question) => {
                                     // console.log(surveyResponsesDataForCompany[0].filter((q) => q.text == question.text)[0].responses);
@@ -117,6 +118,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                     key={question.id}
                                                     section={index}
                                                     Id={counter}
+                                                    QuestionId={question.id}
                                                     QuestionText={question.text}
                                                     QuestionType={question.type}
                                                     QuestionOptions={question.options || ''}
@@ -148,6 +150,7 @@ const SurveySection = ({ section, sectionHeader, subsectionData, page = 'survey'
                                                     key={question.id}
                                                     section={index}
                                                     Id={counter}
+                                                    QuestionId={question.id}
                                                     QuestionText={question.text}
                                                     QuestionType={question.type}
                                                     pageType={page}

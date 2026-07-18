@@ -50,8 +50,8 @@ const SlidingPill = ({ containerRef }) => {
     return (
         <div
             ref={pillRef}
-            className="absolute rounded-xl pointer-events-none"
-            style={{ background: '#0E7F41', boxShadow: '0 2px 10px rgba(14,127,65,0.4)', opacity: 0 }}
+            className="absolute rounded-xl pointer-events-none bg-primary shadow-[0_2px_10px_rgba(14,127,65,0.4)] dark:shadow-[0_2px_10px_rgba(52,199,117,0.35)]"
+            style={{ opacity: 0 }}
         />
     );
 };

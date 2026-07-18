@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useNotifications, formatNotifTime } from "../context/NotificationsContext";
 
 // Per-type accent + glyph. Kept small and inline so the bell has no external
@@ -14,6 +15,7 @@ const TYPE_META = {
 };
 
 const NotificationBell = () => {
+    const { t } = useTranslation();
     const { items, unreadCount, markAllRead, markRead, remove, clearAll } = useNotifications();
     const [open, setOpen] = useState(false);
     const wrapRef = useRef(null);
@@ -63,12 +65,12 @@ const NotificationBell = () => {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-[320px] max-w-[86vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden animate-[fadeIn_0.12s_ease]">
+                <div className="absolute end-0 mt-2 w-[320px] max-w-[86vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden animate-[fadeIn_0.12s_ease]">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-bold text-gray-800">Notifications</p>
+                        <p className="text-sm font-bold text-gray-800">{t("notifications.title")}</p>
                         {items.length > 0 && (
                             <button onClick={clearAll} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">
-                                Clear all
+                                {t("notifications.clearAll")}
                             </button>
                         )}
                     </div>
@@ -76,8 +78,8 @@ const NotificationBell = () => {
                     <div className="max-h-[60vh] overflow-y-auto">
                         {items.length === 0 ? (
                             <div className="px-4 py-10 text-center">
-                                <p className="text-sm text-gray-400">You're all caught up</p>
-                                <p className="text-[11px] text-gray-300 mt-1">New activity will show up here.</p>
+                                <p className="text-sm text-gray-400">{t("notifications.allCaughtUp")}</p>
+                                <p className="text-[11px] text-gray-300 mt-1">{t("notifications.newActivity")}</p>
                             </div>
                         ) : (
                             items.map((n) => {

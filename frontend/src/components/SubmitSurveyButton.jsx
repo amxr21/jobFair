@@ -1,12 +1,14 @@
 import { SubmitSurveyIcon } from "./Icons"
 
 import { useRef, useContext } from "react"
+import { useTranslation } from "react-i18next"
 import { SurveyContext } from "../context/SurveyContext"
 import axios from "axios"
 import { API_URL as link } from "../config/api";
 
 
 const SubmitSurveyButton = () => {
+    const { t } = useTranslation()
     const storedUser = JSON.parse(localStorage.getItem('user'))
     const userId = storedUser.user_id
 
@@ -63,8 +65,8 @@ const SubmitSurveyButton = () => {
     }
 
     return (
-        <button ref={surveyButtonRef} onClick={handleSubmit} className="button flex items-center justify-center gap-2 h-10 p-2.5 bg-[#0E7F41] rounded-xl">
-            <p className="text-white font-medium">Submit</p>
+        <button ref={surveyButtonRef} onClick={handleSubmit} className="button flex items-center justify-center gap-2 h-10 p-2.5 bg-primary hover:bg-primary-hover transition-colors rounded-xl">
+            <p className="text-primary-contrast font-medium">{t("survey.submit")}</p>
             <SubmitSurveyIcon />
         </button>
     )

@@ -69,10 +69,10 @@ const ICONS = {
 };
 
 const STYLES = {
-    success: 'bg-[#0E7F41] text-white',
-    error:   'bg-red-500 text-white',
-    info:    'bg-gray-800 text-white',
-    warning: 'bg-amber-500 text-white',
+    success: 'bg-primary text-primary-contrast',
+    error:   'bg-red-500 dark:bg-red-600 text-white',
+    info:    'bg-gray-800 dark:bg-gray-700 text-white',
+    warning: 'bg-amber-500 dark:bg-amber-600 text-white',
 };
 
 function ToastItem({ message, type, leaving, entering, onDismiss }) {

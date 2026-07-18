@@ -1,22 +1,24 @@
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next";
 
 const NoAccount = ({process, dark = false}) => {
-    const textClass = dark ? "text-white/80" : "text-gray-600";
-    const linkClass = dark ? "text-white font-medium underline hover:text-white/90" : "text-[#0E7F41] font-medium hover:underline";
+    const { t } = useTranslation();
+    const textClass = dark ? "text-white/80" : "text-gray-600 dark:text-gray-300";
+    const linkClass = dark ? "text-white font-medium underline hover:text-white/90" : "text-primary font-medium hover:underline";
 
     return process == 'signup'
     ?
     <div className={`text-sm ${textClass}`}>
-        <span>Don't have an account? </span>
+        <span>{t("auth.noAccount")} </span>
         <Link to={"/signup"} className={linkClass}>
-            Sign Up here
+            {t("auth.signUpHere")}
         </Link>
     </div>
     :
     <div className={`text-sm ${textClass}`}>
-        <span>Already have an account? </span>
+        <span>{t("auth.haveAccount")} </span>
         <Link to={"/login"} className={linkClass}>
-            Login here
+            {t("auth.logInHere")}
         </Link>
     </div>
 }
