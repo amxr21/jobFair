@@ -149,7 +149,9 @@ export const EventOpsProvider = ({ children }) => {
         // Skip any section that was dirty at request time OR at response time.
         const dirtyAtRequest = new Set(dirtySectionsRef.current);
         try {
-            const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
+            // Long timeout to ride out a cold start (see flushPatch) rather than
+            // erroring out mid-wake and leaving sections on stale local data.
+            const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders(), timeout: 60000 });
             if (res?.data) setData((prev) => {
                 const merged = { ...prev };
                 for (const [key, value] of Object.entries(res.data)) {
@@ -212,11 +214,21 @@ export const EventOpsProvider = ({ children }) => {
     const onPersistError = useCallback((fn) => { persistErrorRef.current = fn; }, []);
 
     const pendingPatchRef = useRef({});
+    // Counts consecutive failed flush attempts for the current pending patch, so
+    // the UI can tell a transient "backend still waking up" retry apart from a
+    // genuinely stuck save. Reset to 0 on any success.
+    const saveRetryRef = useRef(0);
     const flushPatch = useCallback(() => {
         const body = pendingPatchRef.current;
         if (Object.keys(body).length === 0) return;
         pendingPatchRef.current = {};
-        axios.put(`${API_URL}/event-ops`, body, { headers: authHeaders() })
+        // Generous timeout: the backend runs on a free tier that spins down when
+        // idle, so the FIRST save after a lull hits a ~30-40s cold start. Without
+        // an explicit, long timeout the PUT would be abandoned before the server
+        // finishes waking — the edit then never persists and "reverts" on the
+        // next reload/poll. 60s comfortably covers a cold start; a warm backend
+        // answers in a few seconds so this never actually waits that long.
+        axios.put(`${API_URL}/event-ops`, body, { headers: authHeaders(), timeout: 60000 })
             .then(() => {
                 // Once this tab's own edit has actually reached the server,
                 // it's safe to accept server copies of these sections again —
@@ -224,6 +236,7 @@ export const EventOpsProvider = ({ children }) => {
                 // and this tab would never see anyone else's later changes to
                 // a section it once touched.
                 for (const key of Object.keys(body)) dirtySectionsRef.current.delete(key);
+                saveRetryRef.current = 0;
             })
             .catch((err) => {
                 // Put the patch back so it isn't lost, and re-arm a retry —
@@ -235,9 +248,27 @@ export const EventOpsProvider = ({ children }) => {
                 // the server, and reloading or the next poll from another tab
                 // would revert it.
                 pendingPatchRef.current = { ...body, ...pendingPatchRef.current };
+                saveRetryRef.current += 1;
+
+                // A cold start / timeout / network blip is transient and benign —
+                // the retry is what warms the backend and lands the save. Retry
+                // it faster (2s) and, for the first couple of attempts, treat it
+                // as "still saving" rather than a hard error, so the user isn't
+                // alarmed by a backend that's merely waking up. A real rejection
+                // (401/403/500 with a response) is surfaced immediately.
+                const status = err?.response?.status;
+                const isTransient = !status || err?.code === "ECONNABORTED" || status === 502 || status === 503 || status === 504;
+                const delay = isTransient ? 2000 : 4000;
                 clearTimeout(saveTimer.current);
-                saveTimer.current = setTimeout(flushPatch, 4000);
-                persistErrorRef.current?.(err, Object.keys(body));
+                saveTimer.current = setTimeout(flushPatch, delay);
+
+                // Suppress the error toast for the first two transient retries
+                // (the backend is very likely just waking up and the next attempt
+                // will succeed); surface it after that, or immediately for a real
+                // rejection, so a genuinely stuck save is still visible.
+                if (!isTransient || saveRetryRef.current > 2) {
+                    persistErrorRef.current?.(err, Object.keys(body), { transient: isTransient, attempt: saveRetryRef.current });
+                }
             });
     }, []);
     const persist = useCallback((next, patch) => {

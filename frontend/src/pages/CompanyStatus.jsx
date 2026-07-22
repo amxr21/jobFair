@@ -169,7 +169,13 @@ const EventDaySection = ({ companyName, readOnly = false }) => {
     // the last-registered-wins single handler is fine here.
     useEffect(() => {
         if (readOnly) return;
-        onPersistError((err) => {
+        onPersistError((err, _sections, meta = {}) => {
+            // Cold start / timeout / 5xx is transient — the save auto-retries as
+            // the backend wakes. Show a calm "still saving" note, not an error.
+            if (meta.transient) {
+                toast(t("companyStatus.saveError.waking"), { type: "info" });
+                return;
+            }
             const status = err?.response?.status;
             const reason = status === 401 || status === 403 ? t("companyStatus.saveError.signIn") : t("companyStatus.saveError.retry");
             toast(t("companyStatus.saveError.message", { reason }), { type: "error" });

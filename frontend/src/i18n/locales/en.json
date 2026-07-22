@@ -902,7 +902,8 @@
       "assignedTo": "Assigned to {{name}}",
       "reasonSignIn": "you may need to sign back in",
       "reasonRetrying": "retrying…",
-      "toastSaveFailed": "Couldn't save changes to {{sections}} — {{reason}}"
+      "toastSaveFailed": "Couldn't save changes to {{sections}} — {{reason}}",
+      "toastSaveWaking": "Server is waking up — still saving your change…"
     }
   },
   "advancedAnalytics": {
@@ -1283,7 +1284,8 @@
     "saveError": {
       "message": "Couldn't save your last change — {{reason}}.",
       "signIn": "please sign in again",
-      "retry": "we'll keep retrying"
+      "retry": "we'll keep retrying",
+      "waking": "Server is waking up — still saving your change…"
     },
     "notSetUpYet": "The CASTO office hasn't set up your booth, branding, or passes yet. Each section below shows what's coming — it'll fill in automatically once CASTO assigns it. You can already view the schedule, and use the <b>Requests</b> tab to ask for equipment, raise a requirement, or send a parking note.",
     "entryPasses": "Entry Passes",
