@@ -42,6 +42,16 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Public, auth-free, DB-free liveness probe. Mounted BEFORE the routers so it
+// never reaches the requireAuth gate the applicant router installs. Used by the
+// keep-alive workflow (.github/workflows/keep-alive.yml) to ping the service on
+// a schedule so Render's free tier doesn't spin it down after idle — a cold
+// start otherwise takes ~30s+, long enough for a booth-assign PUT to time out
+// and appear to "revert". Intentionally does no work beyond replying 200.
+app.get("/healthz", (req, res) => {
+    res.status(200).json({ status: "ok", ts: Date.now() });
+});
+
 const routers = require("./routers/applicantRouter");
 const userRoutes = require("./routers/userRoutes");
 

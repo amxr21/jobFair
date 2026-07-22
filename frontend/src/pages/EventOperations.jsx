@@ -1887,8 +1887,16 @@ const EventOperations = () => {
   // another tab. EventOpsContext retries automatically; this only surfaces
   // it if a save is still failing after that retry.
   useEffect(() => {
-    onPersistError((err, sections) => {
+    onPersistError((err, sections, meta = {}) => {
       const status = err?.response?.status;
+      // A transient failure (cold start / timeout / 5xx) isn't a real error —
+      // the backend is likely just waking up and the save auto-retries. Show a
+      // calm "still saving" toast instead of a scary failure so the user knows
+      // their change isn't lost. A real rejection (auth/validation) stays an error.
+      if (meta.transient) {
+        toast(t("eventOps.main.toastSaveWaking"), { type: "info" });
+        return;
+      }
       const reason = status === 401 || status === 403 ? t("eventOps.main.reasonSignIn") : t("eventOps.main.reasonRetrying");
       toast(t("eventOps.main.toastSaveFailed", { sections: sections.join(", "), reason }), { type: "error" });
     });

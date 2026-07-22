@@ -1,0 +1,50 @@
+name: Keep backend awake
+
+# Render's free tier spins the backend down after ~15 min of inactivity. The
+# first request after that is a cold start (~30s+), long enough for a booth
+# assign / event-ops PUT to time out and appear to "revert". Pinging the public
+# /healthz endpoint on a schedule keeps the service warm so real users rarely
+# hit a cold start.
+#
+# Notes:
+# - GitHub cron is best-effort and can be delayed several minutes under load, so
+#   */10 is chosen (not */14) to stay comfortably under the ~15 min idle window
+#   even when a tick slips.
+# - Override the target by setting a repo variable BACKEND_URL (Settings →
+#   Secrets and variables → Actions → Variables). Falls back to the known prod
+#   URL otherwise.
+# - Can also be run on demand from the Actions tab (workflow_dispatch).
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /healthz (with retries for a cold start)
+        env:
+          BACKEND_URL: ${{ vars.BACKEND_URL || 'https://jobfair-7zaa.onrender.com' }}
+        run: |
+          set -e
+          url="${BACKEND_URL%/}/healthz"
+          echo "Pinging $url"
+          # Up to 6 attempts, 20s apart — enough to cover a full cold start
+          # (~30-40s) so the ping itself is what warms the service.
+          for i in $(seq 1 6); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$url" || echo "000")
+            echo "attempt $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "backend is awake"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "backend did not return 200 after retries"
+          exit 1
