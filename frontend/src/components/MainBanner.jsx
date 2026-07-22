@@ -273,10 +273,10 @@ const MainBanner = ({link}) => {
                 } else {
                     // For company users, separate into "my" and "other" applicants
                     const myApplicants = fetchedApplicants.filter((applicant) =>
-                        applicant.user_id.includes(user.companyName)
+                        applicant.user_id?.includes(user.companyName)
                     );
                     const others = fetchedApplicants.filter(
-                        (applicant) => !applicant.user_id.includes(user.companyName)
+                        (applicant) => !applicant.user_id?.includes(user.companyName)
                     );
                     setApplicants(myApplicants);
                     setOtherApplicants(others);

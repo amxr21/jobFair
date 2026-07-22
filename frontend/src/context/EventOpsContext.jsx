@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import { API_URL } from "../config/api";
+import { useNotifications } from "./NotificationsContext";
+import { translateAuditEntry, translateAuditSection, AUDIT_SECTION_NOTIF_TYPE } from "../i18n/auditFormat";
 
 // ─── CASTO office team ─────────────────────────────────────────────────────────
 // One CASTO account, several employees: each gets their own view (focus modules),
@@ -75,6 +78,11 @@ const ACTING_KEY = "event_ops_acting";
 const EventOpsContext = createContext(null);
 
 export const EventOpsProvider = ({ children }) => {
+    const { t } = useTranslation();
+    // EventOpsProvider is nested inside NotificationsProvider (see App.jsx), so
+    // it can push notifications for every event-ops change — see the audit
+    // watcher effect below.
+    const { notify } = useNotifications();
     const [data, setData] = useState(() => {
         try {
             const cached = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -109,6 +117,10 @@ export const EventOpsProvider = ({ children }) => {
     // safe to read-modify-write locally after this — see the comment on
     // `update` for the bug this was closing.
     const hydratedRef = useRef(false);
+    // State mirror of hydratedRef, used to gate the audit → notification watcher
+    // effect (a ref change wouldn't re-run it). True once the first server
+    // /event-ops fetch has resolved.
+    const [hydrated, setHydrated] = useState(false);
     // Sections this tab has edited locally. The initial GET /event-ops can
     // resolve *after* the user's first edit — merging it blindly would
     // overwrite that edit with the server's pre-edit copy (booth assignments
@@ -126,12 +138,22 @@ export const EventOpsProvider = ({ children }) => {
     // switching into it always shows what CASTO has entered instead of
     // waiting for the next poll tick or a hard reload).
     const refetchEventOps = useCallback(async () => {
+        // Snapshot which sections are dirty *before* the GET is issued. A
+        // section can flip from dirty→clean while this request is in flight:
+        // a poll fired while a booth edit was still pending would snapshot the
+        // DB's pre-edit rows, then flushPatch succeeds and clears the dirty
+        // flag, and by the time this response lands the section reads as
+        // "clean" — so the stale snapshot overwrites the just-saved edit,
+        // silently reverting it seconds after the save (no error, and a manual
+        // refresh looks fine because its GET starts *after* the write landed).
+        // Skip any section that was dirty at request time OR at response time.
+        const dirtyAtRequest = new Set(dirtySectionsRef.current);
         try {
             const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders() });
             if (res?.data) setData((prev) => {
                 const merged = { ...prev };
                 for (const [key, value] of Object.entries(res.data)) {
-                    if (!dirtySectionsRef.current.has(key)) merged[key] = value;
+                    if (!dirtyAtRequest.has(key) && !dirtySectionsRef.current.has(key)) merged[key] = value;
                 }
                 return merged;
             });
@@ -143,6 +165,11 @@ export const EventOpsProvider = ({ children }) => {
         (async () => {
             await refetchEventOps();
             hydratedRef.current = true;
+            // Flip the state flag too, so the audit → notification watcher only
+            // starts *after* the first server audit has landed — otherwise it
+            // would seed its "already seen" baseline from the pre-hydration
+            // empty audit and then treat the real history as brand-new.
+            setHydrated(true);
             try {
                 const res = await axios.get(`${API_URL}/companies`);
                 if (Array.isArray(res?.data)) {
@@ -371,6 +398,75 @@ export const EventOpsProvider = ({ children }) => {
                 ? { ...s, tasks: (s.tasks || []).filter((t) => t.id !== taskId) }
                 : s)));
     }, [update]);
+
+    // ─── Audit → notifications watcher ─────────────────────────────────────────
+    // Every event-ops change (booth assign/clear, banner/equipment/requirement
+    // status, passes, staff, schedule, …) flows through update(), which appends
+    // one entry to `data.audit` with { id, by, section, messageKey, ... }. That
+    // audit is ALSO synced to other tabs/users via the 15s poll, so watching it
+    // gives us a single choke point that fires a notification for BOTH this
+    // user's own actions and changes another CASTO member just made.
+    //
+    // A per-account "seen ids" set (persisted) prevents re-notifying the same
+    // entry across reloads/poll ticks. On the very first observation for an
+    // account we seed the set from the current audit WITHOUT notifying, so
+    // opening the app doesn't replay the whole history as fresh notifications.
+    const auditSeenRef = useRef(null);       // Set<string|number> of notified ids
+    const auditSeenKeyRef = useRef(null);    // which account the set belongs to
+    useEffect(() => {
+        // Wait for the first server audit to land before establishing the
+        // "already seen" baseline — see setHydrated() in the hydration effect.
+        if (!hydrated) return;
+        const audit = data.audit;
+        if (!Array.isArray(audit)) return;
+
+        const who = (() => {
+            try {
+                const u = JSON.parse(localStorage.getItem("user") || "null");
+                return u?.companyName || u?.email || null;
+            } catch { return null; }
+        })();
+        // No notifications for logged-out visitors (the bell isn't shown either).
+        if (!who) return;
+        const seenKey = `eventops_audit_seen:${who}`;
+
+        // (Re)load the seen-set when the account changes (login/logout/switch).
+        if (auditSeenKeyRef.current !== who) {
+            auditSeenKeyRef.current = who;
+            let stored = null;
+            try { stored = JSON.parse(localStorage.getItem(seenKey)); } catch { /* ignore */ }
+            if (Array.isArray(stored)) {
+                auditSeenRef.current = new Set(stored);
+            } else {
+                // First time for this account: adopt everything currently in the
+                // audit as already-seen so we only notify on changes from here on.
+                auditSeenRef.current = new Set(audit.map((a) => a.id));
+                try { localStorage.setItem(seenKey, JSON.stringify([...auditSeenRef.current])); } catch { /* quota */ }
+                return;
+            }
+        }
+
+        const seen = auditSeenRef.current;
+        // Oldest-first so multiple new entries arrive in chronological order.
+        const fresh = audit.filter((a) => a && a.id != null && !seen.has(a.id)).reverse();
+        if (fresh.length === 0) return;
+
+        for (const a of fresh) {
+            seen.add(a.id);
+            notify(translateAuditEntry(t, a), {
+                type: AUDIT_SECTION_NOTIF_TYPE[a.section] || "info",
+                detail: a.by
+                    ? t("notifications.auditDetail", { section: translateAuditSection(t, a.section), by: a.by })
+                    : translateAuditSection(t, a.section),
+            });
+        }
+
+        // Keep the persisted set bounded to the audit window (audit itself is
+        // capped at 120 in update()), so it can't grow without limit.
+        const bounded = [...seen].slice(-200);
+        auditSeenRef.current = new Set(bounded);
+        try { localStorage.setItem(seenKey, JSON.stringify(bounded)); } catch { /* quota */ }
+    }, [data.audit, hydrated, notify, t]);
 
     // Refresh the whole document periodically. This is the only re-fetch
     // after the initial mount — EventOpsProvider lives above the router, so

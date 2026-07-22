@@ -684,7 +684,7 @@ const Managers = ({link}) => {
                     // Build a map of applicants per company
                     const updatedCompanies = companiesData.map((company) => {
                         const num = applicants.filter((app) =>
-                            app.user_id.includes(company.companyName)
+                            app.user_id?.includes(company.companyName)
                         ).length;
 
                         return {
@@ -697,7 +697,7 @@ const Managers = ({link}) => {
                     setCompanies(updatedCompanies.filter((c) => c.companyName !== "CASTO Office"));
                 } else {
                     const filtered = companiesData.filter((applicant) =>
-                        applicant.user_id.includes(user.email)
+                        applicant.user_id?.includes(user.email)
                     );
                     setCompanies(filtered);
                 }

@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useNotifications, formatNotifTime } from "../context/NotificationsContext";
@@ -18,7 +19,9 @@ const NotificationBell = () => {
     const { t } = useTranslation();
     const { items, unreadCount, markAllRead, markRead, remove, clearAll } = useNotifications();
     const [open, setOpen] = useState(false);
+    const [pos, setPos] = useState(null); // { top, right } in viewport coords
     const wrapRef = useRef(null);
+    const panelRef = useRef(null);
     const navigate = useNavigate();
 
     // Clicking a notification marks it read and, if it carries a link, navigates
@@ -28,14 +31,45 @@ const NotificationBell = () => {
         if (n.link) { setOpen(false); navigate(n.link); }
     };
 
+    // The panel renders in a portal on <body> (see below), so it must be
+    // positioned manually against the bell button's viewport rect. Anchoring to
+    // the button's inline-end edge keeps it flush under the bell in both LTR
+    // (right-aligned) and RTL (left-aligned) — we store a viewport-relative
+    // `right` so it tracks correctly regardless of direction.
+    const reposition = useCallback(() => {
+        const btn = wrapRef.current;
+        if (!btn) return;
+        const r = btn.getBoundingClientRect();
+        setPos({ top: r.bottom + 8, right: Math.max(8, window.innerWidth - r.right) });
+    }, []);
+
+    useLayoutEffect(() => {
+        if (!open) return;
+        reposition();
+    }, [open, reposition]);
+
     useEffect(() => {
         if (!open) return;
-        const onDoc = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+        // A click outside BOTH the trigger and the (portaled) panel closes it.
+        const onDoc = (e) => {
+            if (wrapRef.current?.contains(e.target)) return;
+            if (panelRef.current?.contains(e.target)) return;
+            setOpen(false);
+        };
         const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+        // Keep the panel glued to the bell while the page scrolls or resizes.
+        const onReflow = () => reposition();
         document.addEventListener("mousedown", onDoc);
         document.addEventListener("keydown", onKey);
-        return () => { document.removeEventListener("mousedown", onDoc); document.removeEventListener("keydown", onKey); };
-    }, [open]);
+        window.addEventListener("resize", onReflow);
+        window.addEventListener("scroll", onReflow, true); // capture: catch inner scrollers
+        return () => {
+            document.removeEventListener("mousedown", onDoc);
+            document.removeEventListener("keydown", onKey);
+            window.removeEventListener("resize", onReflow);
+            window.removeEventListener("scroll", onReflow, true);
+        };
+    }, [open, reposition]);
 
     const toggle = () => {
         const willOpen = !open;
@@ -64,10 +98,18 @@ const NotificationBell = () => {
                 )}
             </button>
 
-            {open && (
-                <div className="absolute end-0 mt-2 w-[320px] max-w-[86vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden animate-[fadeIn_0.12s_ease]">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-bold text-gray-800">{t("notifications.title")}</p>
+            {open && pos && createPortal(
+                // Rendered on <body> so no page-level `overflow: hidden` / stacking
+                // context can clip it — this is what kept the panel trapped under
+                // the page content before. `fixed` + computed viewport coords keep
+                // it under the bell; z-index is above everything else in the app.
+                <div
+                    ref={panelRef}
+                    style={{ position: "fixed", top: pos.top, right: pos.right, zIndex: 2147483000 }}
+                    className="w-[320px] max-w-[86vw] bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-[fadeIn_0.12s_ease]"
+                >
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                        <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t("notifications.title")}</p>
                         {items.length > 0 && (
                             <button onClick={clearAll} className="text-[11px] font-medium text-gray-400 hover:text-red-500 transition-colors">
                                 {t("notifications.clearAll")}
@@ -78,8 +120,8 @@ const NotificationBell = () => {
                     <div className="max-h-[60vh] overflow-y-auto">
                         {items.length === 0 ? (
                             <div className="px-4 py-10 text-center">
-                                <p className="text-sm text-gray-400">{t("notifications.allCaughtUp")}</p>
-                                <p className="text-[11px] text-gray-300 mt-1">{t("notifications.newActivity")}</p>
+                                <p className="text-sm text-gray-400 dark:text-gray-500">{t("notifications.allCaughtUp")}</p>
+                                <p className="text-[11px] text-gray-300 dark:text-gray-600 mt-1">{t("notifications.newActivity")}</p>
                             </div>
                         ) : (
                             items.map((n) => {
@@ -88,7 +130,7 @@ const NotificationBell = () => {
                                     <div
                                         key={n.id}
                                         onClick={() => openNotif(n)}
-                                        className={`group flex items-start gap-3 px-4 py-3 border-b border-gray-50 last:border-0 transition-colors ${n.link ? "cursor-pointer" : "cursor-default"} ${n.read ? "bg-white" : "bg-blue-50/40"} hover:bg-gray-50`}
+                                        className={`group flex items-start gap-3 px-4 py-3 border-b border-gray-50 dark:border-gray-800 last:border-0 transition-colors ${n.link ? "cursor-pointer" : "cursor-default"} ${n.read ? "bg-white dark:bg-gray-900" : "bg-blue-50/40 dark:bg-blue-500/10"} hover:bg-gray-50 dark:hover:bg-gray-800`}
                                     >
                                         <span className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5" style={{ background: meta.bg, color: meta.tint }}>
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,13 +138,13 @@ const NotificationBell = () => {
                                             </svg>
                                         </span>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-[13px] text-gray-800 leading-snug">{n.message}</p>
-                                            {n.detail && <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">{n.detail}</p>}
-                                            <p className="text-[10px] text-gray-400 mt-1">{formatNotifTime(n.at)}</p>
+                                            <p className="text-[13px] text-gray-800 dark:text-gray-100 leading-snug">{n.message}</p>
+                                            {n.detail && <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">{n.detail}</p>}
+                                            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">{formatNotifTime(n.at)}</p>
                                         </div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); remove(n.id); }}
-                                            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 transition-opacity shrink-0"
+                                            className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 transition-opacity shrink-0"
                                             aria-label="Dismiss"
                                         >
                                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -112,7 +154,8 @@ const NotificationBell = () => {
                             })
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

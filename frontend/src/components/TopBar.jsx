@@ -69,7 +69,7 @@ const TopBar = ({user}) => {
             <div className="user flex flex-row gap-2 items-center">
                 <div className="avatar flex items-center justify-center w-8 h-8 rounded-md shrink-0">
                     {
-                        user?.email.split('@')[0] == 'casto'
+                        user?.email?.split('@')[0] === 'casto'
                         ? <CastoIcon />
                         : user
                             ? <ManagerIcon />
@@ -77,7 +77,7 @@ const TopBar = ({user}) => {
                     }
                 </div>
                 <div className="name min-w-0">
-                    <h2 className="text-sm md:text-base font-bold truncate dark:text-gray-100">{user ? user.email.split('@')[0] == 'casto' ? t("topbar.castoOffice") : user?.companyName : t("topbar.visitor")}</h2>
+                    <h2 className="text-sm md:text-base font-bold truncate dark:text-gray-100">{user ? (user.email?.split('@')[0] === 'casto' ? t("topbar.castoOffice") : user?.companyName) : t("topbar.visitor")}</h2>
                     <h6 className="text-[9px] md:text-[10px] font-extralight text-gray-400 dark:text-gray-500">{user ? t("topbar.managerMode") : t("topbar.guestMode")}</h6>
                 </div>
             </div>
