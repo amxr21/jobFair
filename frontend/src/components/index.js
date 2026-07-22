@@ -61,7 +61,7 @@ export {default as ModeButton} from "./ModeButton";
 export {default as NextPrevCompanyButton} from "./NextPrevCompanyButton";
 export {default as CurrentCompanyBar} from "./CurrentCompanyBar";
 export {default as NoAnswer} from "./NoAnswer";
-export {default as PageContainer} from "./PageContainer";
+export {default as PageContainer, CollapsibleTopBarWrapper} from "./PageContainer";
 export {default as FilterDropdown} from "./FilterDropdown";
 export {default as AdvancedAnalytics} from "./AdvancedAnalytics";
 export {default as StepTimeline} from "./StepTimeline";

@@ -9,7 +9,7 @@ const TOP_BAR_HIDDEN_KEY = "topbar_hidden";
 // it easy to lose — the trigger strip was a tiny 16px target). A small
 // persistent toggle lets the user collapse it back for extra vertical space;
 // the choice is remembered across visits via localStorage.
-const CollapsibleTopBarWrapper = ({ user }) => {
+export const CollapsibleTopBarWrapper = ({ user }) => {
     const { t } = useTranslation();
     const [hidden, setHidden] = useState(() => {
         try { return localStorage.getItem(TOP_BAR_HIDDEN_KEY) === "1"; } catch { return false; }

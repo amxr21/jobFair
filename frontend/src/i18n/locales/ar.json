@@ -669,7 +669,8 @@
       "unassigned": "غير مخصَّص",
       "unassignedOption": "غير مخصَّص",
       "reassign": "إعادة التخصيص",
-      "assign": "تخصيص"
+      "assign": "تخصيص",
+      "companyAlreadyAt": "{{company}} · مخصَّصة بالفعل في {{booth}}"
     },
     "banners": {
       "mark": "وضع علامة {{status}}",
