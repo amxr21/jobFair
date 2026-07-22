@@ -169,6 +169,29 @@ const VenueMapping = () => {
 
   const assigned = booths.filter((b) => b.status === "Assigned").length;
 
+  // company name -> the booth number it's already assigned to, so the assign
+  // picker can flag companies that already have a booth (and to which one).
+  // Prevents accidentally placing one company at two booths.
+  const companyToBooth = useMemo(() => {
+    const map = {};
+    for (const b of booths) {
+      if (b.company && b.status === "Assigned") map[b.company.trim().toLowerCase()] = b.number;
+    }
+    return map;
+  }, [booths]);
+
+  // Build the company options for a given booth's picker. A company already
+  // placed elsewhere is labelled "Name · at B03"; the one already on THIS booth
+  // is left plain (re-selecting it is a no-op, not a double-assign).
+  const companyOptions = (currentBooth) => [
+    { value: "", label: t("eventOps.venue.unassignedOption") },
+    ...companies.map((c) => {
+      const at = companyToBooth[c.trim().toLowerCase()];
+      const elsewhere = at && at !== currentBooth.number;
+      return { value: c, label: elsewhere ? t("eventOps.venue.companyAlreadyAt", { company: c, booth: at }) : c };
+    }),
+  ];
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -231,7 +254,7 @@ const VenueMapping = () => {
                       value={formCompany}
                       onChange={(e) => setFormCompany(e.target.value)}
                       placeholder={t("eventOps.venue.unassignedOption")}
-                      options={[{ value: "", label: t("eventOps.venue.unassignedOption") }, ...companies.map((c) => ({ value: c, label: c }))]}
+                      options={companyOptions(booth)}
                     />
                     <CompactSelect
                       className="text-xs"

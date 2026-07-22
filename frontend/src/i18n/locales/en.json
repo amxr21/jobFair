@@ -653,7 +653,8 @@
       "unassigned": "Unassigned",
       "unassignedOption": "Unassigned",
       "reassign": "Reassign",
-      "assign": "Assign"
+      "assign": "Assign",
+      "companyAlreadyAt": "{{company}} · already at {{booth}}"
     },
     "banners": {
       "mark": "Mark {{status}}",
