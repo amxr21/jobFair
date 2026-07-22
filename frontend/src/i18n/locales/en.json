@@ -84,7 +84,8 @@
     "title": "Notifications",
     "clearAll": "Clear all",
     "allCaughtUp": "You're all caught up",
-    "newActivity": "New activity will show up here."
+    "newActivity": "New activity will show up here.",
+    "auditDetail": "{{section}} · by {{by}}"
   },
   "applicants": {
     "title": "Applicants list",

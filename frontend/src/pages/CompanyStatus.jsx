@@ -10,6 +10,7 @@ import StatCard from "../components/StatCard";
 import CompanyRequestForm from "../components/CompanyRequestForm";
 import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsContext";
 import { SubTabBar } from "../components/EventSettingsShared";
+import { TopBar } from "../components/index";
 import { useToast } from "../components/Toast";
 import { tCity, tSector, translateEnum } from "../i18n/translateEnum";
 import i18n from "../i18n";
@@ -607,6 +608,9 @@ const CompanyStatus = ({ viewCompanyId, readOnly = false }) => {
 
     return (
         <div className="flex-1 flex flex-col gap-3 md:gap-4 overflow-y-auto min-h-0 p-3 md:p-4 animate-fadeIn">
+            {/* Top bar (with the live clock) on the real page only — not when this
+                view is embedded read-only as a preview inside ViewAs/EventAdmin. */}
+            {!readOnly && <TopBar user={user} />}
             {readOnly && (
                 <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/25 rounded-lg px-3 py-2 text-xs text-blue-700 dark:text-blue-300 font-medium">
                     <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>

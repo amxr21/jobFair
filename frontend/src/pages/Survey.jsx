@@ -1,7 +1,8 @@
-import { SubmittingCover, SuccessCover } from "../components/index";
+import { SubmittingCover, SuccessCover, TopBar } from "../components/index";
 import SurveyHeader from "../components/SurveyHeader";
 import SurveySection from "../components/SurveySection";
 import { SurveyContextProvider } from "../context/SurveyContext";
+import { useAuthContext } from "../hooks/useAuthContext";
 
 
 const surveyData = [
@@ -174,9 +175,11 @@ const surveyData = [
 
 
 const Survey = () => {
+    const { user } = useAuthContext();
     return (
-        <div id="Survey" className="gap-y-8 py-8 flex flex-col col-span-10 gap-y-2  w-full mx-auto max-h-[92vh] ease-in-out duration-300">
+        <div id="Survey" className="gap-y-4 py-8 flex flex-col col-span-10  w-full mx-auto max-h-[92vh] ease-in-out duration-300">
             <SurveyContextProvider>
+              <TopBar user={user} />
               <SurveyHeader />
               <div className="sections relative bg-surface flex rounded-xl p-8 gap-16 grow overflow-x-hidden">
                   {

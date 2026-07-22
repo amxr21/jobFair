@@ -225,7 +225,7 @@ const Statistics = ({ link }) => {
 
   return (
     <div className="flex flex-col gap-y-2 flex-1 min-w-0 h-full max-h-[100vh] overflow-hidden p-2 md:p-0">
-      {user?.email?.toLowerCase() !== "casto@sharjah.ac.ae" && <TopBar user={user} />}
+      <TopBar user={user} />
 
       {/* View Mode Toggle — sliding pill over two equal-width cells */}
       <div className="flex justify-end px-0.5 shrink-0">

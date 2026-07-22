@@ -84,7 +84,8 @@
     "title": "الإشعارات",
     "clearAll": "مسح الكل",
     "allCaughtUp": "لقد اطّلعت على كل شيء",
-    "newActivity": "ستظهر الأنشطة الجديدة هنا."
+    "newActivity": "ستظهر الأنشطة الجديدة هنا.",
+    "auditDetail": "{{section}} · بواسطة {{by}}"
   },
   "applicants": {
     "title": "قائمة المتقدمين",
@@ -404,7 +405,7 @@
       "tabStudent": "تسجيل وصول الطلاب",
       "chooseCompany": "اختر شركة…",
       "selectCompanyHint": "اختر شركة لمعاينة صفحة حالتها الكاملة.",
-      "noBackendRecord": "لم تُسجّل {{company}} حسابًا حقيقيًا بعد — الشركات التجريبية فقط بدون سجل في الخادم لا يمكن معاينتها بهذه الطريقة.",
+      "noBackendRecord": "لم تُسجّل {{company}} حسابًا حقيقيًا بعد — لا يمكن معاينة الشركات التجريبية التي لا سجل لها في الخادم بهذه الطريقة.",
       "chooseStaffAccount": "اختر حساب طاقم…",
       "noStaffAccountsYet": "لا توجد حسابات طاقم بعد — أنشئ واحدًا في علامة تبويب إدارة الطاقم.",
       "whatTheySee": "هذا ما يراه {{name}} في /student-checkin:",
@@ -805,7 +806,7 @@
       "manualOverrideHint": "تجاوز يدوي — استخدمه فقط إذا تعذّر على الشركة مسح رمز جناحها",
       "checkInManually": "تسجيل الحضور يدويًا",
       "checkIn": "تسجيل الحضور",
-      "noBoothsYet": "لم تُخصَّص أجنحة بعد. خصّص الأجنحة للشركات في علامة تبويب الجناح والأجنحة وستظهر هنا لتسجيل الحضور.",
+      "noBoothsYet": "لم تُخصَّص أجنحة بعد. خصّص الأجنحة للشركات في علامة تبويب القاعة والأجنحة وستظهر هنا لتسجيل الحضور.",
       "qrHint": "يحمل كل جناح مخصَّص رمز QR مطبوعًا على طاولته. عندما يمسحه ممثل الشركة في يوم الفعالية، يُؤكَّد حضوره تلقائيًا. ترى الشركات الرمز ذاته في صفحة إعداداتها.",
       "download": "تنزيل",
       "toastCheckedIn": "تم تسجيل حضور {{company}} عبر {{method}}"
@@ -826,7 +827,7 @@
       "support": "دعم",
       "tasks": "المهام",
       "doneCount": "{{done}}/{{total}} منجَزة",
-      "clickToAdvance": "انقر لتقديم الحالة",
+      "clickToAdvance": "انقر للانتقال إلى الحالة التالية",
       "noTasksYet": "لا توجد مهام مسندة بعد.",
       "assignTask": "أسند مهمة…",
       "noStaffYet": "لم يُضَف طاقم دعم بعد."
@@ -922,7 +923,7 @@
       "companyViewNote": "هذا بالضبط ما تراه {{company}} في صفحة إعداداتها."
     },
     "tabs": {
-      "venue": "الجناح والأجنحة",
+      "venue": "القاعة والأجنحة",
       "banners": "اللافتات والهوية البصرية",
       "requirements": "المتطلبات الخاصة",
       "equipment": "الخدمات اللوجستية والمعدات",
@@ -933,7 +934,7 @@
       "passes": "تصاريح الدخول"
     },
     "main": {
-      "pageTitle": "إعدادات الفعالية",
+      "pageTitle": "عمليات الفعالية",
       "viewingAs": "العرض بصفة",
       "adminLink": "← الإدارة",
       "recordedUnder": "{{role}} — تُسجَّل التغييرات تحت اسم {{name}}",
@@ -953,15 +954,15 @@
       "profiles": "الملفات الشخصية"
     },
     "genderDistribution": "التوزيع حسب الجنس",
-    "top10Nationalities": "أفضل 10 جنسيات",
+    "top10Nationalities": "أبرز 10 جنسيات",
     "attended": "حضر",
     "applicantsByCity": "المتقدمون حسب المدينة",
     "studyLevelDistribution": "التوزيع حسب المستوى الدراسي",
     "gpaDistribution": "توزيع المعدل التراكمي",
     "applicantsByCollege": "المتقدمون حسب الكلية",
-    "top10Majors": "أفضل 10 تخصصات",
+    "top10Majors": "أبرز 10 تخصصات",
     "registered": "مسجَّلة",
-    "ceosAndSeekers": "المدراء التنفيذيون والباحثون عن المواهب",
+    "ceosAndSeekers": "المديرون التنفيذيون والباحثون عن المواهب",
     "availableRoles": "الأدوار المتاحة",
     "ratePercent": "معدّل {{pct}}٪",
     "companiesBySector": "الشركات حسب القطاع",
@@ -972,9 +973,9 @@
     "noFieldsData": "لا تتوفر بيانات عن المجالات",
     "mostSoughtMajors": "التخصصات الأكثر طلبًا",
     "noPreferredMajorsData": "لا تتوفر بيانات عن التخصصات المفضّلة",
-    "topTechSkills": "أفضل المهارات التقنية (المتقدمون)",
+    "topTechSkills": "أبرز المهارات التقنية (المتقدمون)",
     "noTechSkillsData": "لا تتوفر بيانات عن المهارات التقنية",
-    "topNonTechSkills": "أفضل المهارات غير التقنية (المتقدمون)",
+    "topNonTechSkills": "أبرز المهارات غير التقنية (المتقدمون)",
     "noNonTechSkillsData": "لا تتوفر بيانات عن المهارات غير التقنية",
     "languagesSpokenByApplicants": "اللغات التي يتحدثها المتقدمون",
     "noLanguageData": "لا تتوفر بيانات عن اللغات",
@@ -985,7 +986,7 @@
     "totalShortlisted": "إجمالي المُرشَّحين",
     "byAnyCompany": "من قِبل أي شركة",
     "totalFlagged": "إجمالي المُعلَّمين",
-    "interestingCandidates": "مرشحون مثيرون للاهتمام",
+    "interestingCandidates": "مرشحون جديرون بالاهتمام",
     "totalRejected": "إجمالي المرفوضين",
     "conversionRate": "معدّل التحويل",
     "shortlistRate": "معدّل الترشيح",
@@ -993,7 +994,7 @@
     "noApplicationData": "لا تتوفر بيانات عن الطلبات",
     "shortlistsByCompany": "الترشيحات حسب الشركة",
     "noShortlistData": "لا تتوفر بيانات عن الترشيح",
-    "mostFlaggedApplicants": "المتقدمون الأكثر تمييزًا بعلامة",
+    "mostFlaggedApplicants": "المتقدمون الأكثر حصولًا على علامات",
     "flagsCount_zero": "لا توجد علامات",
     "flagsCount_one": "علامة واحدة",
     "flagsCount_two": "علامتان",
@@ -1022,7 +1023,7 @@
   "statisticsElement": {
     "registeredStudents": "الطلاب المسجَّلون",
     "companies": "الشركات",
-    "ceosAndSeekers": "المدراء التنفيذيون والباحثون عن المواهب",
+    "ceosAndSeekers": "المديرون التنفيذيون والباحثون عن المواهب",
     "techFields": "المجالات التقنية"
   },
   "statistics": {
@@ -1036,17 +1037,17 @@
     "numberOf": "عدد",
     "companiesBy": "الشركات حسب",
     "applicantsByGender": "المتقدمون حسب الجنس",
-    "topCompany": "أفضل شركة",
+    "topCompany": "الشركة الأبرز",
     "applications": "الطلبات",
-    "topField": "أفضل مجال",
-    "topMajor": "أفضل تخصص",
+    "topField": "المجال الأبرز",
+    "topMajor": "التخصص الأبرز",
     "students": "الطلاب",
     "avgGpa": "متوسط المعدل",
     "gpa": "المعدل",
     "capacity": "السعة",
     "max": "الحد الأقصى",
     "companiesByIndustryField": "الشركات حسب مجال الصناعة",
-    "topN": "أفضل {{count}}",
+    "topN": "أبرز {{count}}",
     "companyCount_zero": "لا توجد شركات",
     "companyCount_one": "شركة واحدة",
     "companyCount_two": "شركتان",
@@ -1163,7 +1164,7 @@
     "fields": { "email": "البريد الإلكتروني", "password": "كلمة المرور" },
     "hero": {
       "title": "معرض التوظيف",
-      "descriptionLogin": "استخدم بيانات الاعتماد التي شُورِكت معك عبر البريد الإلكتروني للوصول إلى المشاركين في الفعالية",
+      "descriptionLogin": "استخدم بيانات الاعتماد التي تمت مشاركتها معك عبر البريد الإلكتروني للوصول إلى المشاركين في الفعالية",
       "descriptionSignup": "سجّل شركتك للوصول إلى كامل الميزات والتواصل مع المرشحين المحتملين."
     },
     "login": {
@@ -1445,7 +1446,7 @@
     "notifyShortlisted": "قام {{who}} بترشيح {{applicant}}",
     "notifyShortlistedDetail": "أُضيف إلى قائمة {{who}} المختصرة",
     "notifyRejected": "قام {{who}} برفض {{applicant}}",
-    "notifyRejectedDetail": "أُزيل من قائمة اعتبار {{who}}",
+    "notifyRejectedDetail": "أُزيل من قائمة {{who}} للاعتبار",
     "notifyFlagged": "وضع {{who}} علامة على {{applicant}}",
     "notifyFlaggedDetail": "وُضِعت علامة للمتابعة بواسطة {{who}}",
     "graduatesYear": "يتخرّج {{year}}",
