@@ -1518,6 +1518,13 @@ const SECTION_WRITERS = {
     booths: async (tx, rows) => {
         await tx.booth.deleteMany({});
         for (const b of rows) {
+            // `number` is NOT NULL in the schema. A row without one (e.g. a
+            // corrupted client payload after a stuck retry, or a stale merge)
+            // would make the whole create() throw, rolling back the entire
+            // event-ops PUT and returning a 500 — which then retries forever
+            // with the same poisoned payload. Skip such rows instead so one bad
+            // booth can't block every save; the good rows still persist.
+            if (b.number == null || String(b.number).trim() === "") continue;
             await tx.booth.create({ data: {
                 legacyId: b.id ?? null, number: b.number, zone: b.zone ?? null, ring: b.ring ?? null,
                 companyName: b.company ?? null, boothType: b.type ?? null, status: b.status ?? "Available",

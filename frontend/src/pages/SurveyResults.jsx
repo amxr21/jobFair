@@ -1,4 +1,4 @@
-import { QuestionsContainer, TopBar } from "../components"
+import { QuestionsContainer, CollapsibleTopBarWrapper } from "../components"
 import { SurveyContextProvider } from "../context/SurveyContext"
 import { useAuthContext } from "../hooks/useAuthContext"
 import { AnswersContextProvider, AnswersContext } from "../context/AnswersContext"
@@ -16,7 +16,7 @@ const SurveyResults = () => {
         <AnswersContextProvider>
             <SurveyContextProvider>
                 <div id="SurveyResults" className="flex-1 flex flex-col gap-4 overflow-hidden min-w-0 h-full">
-                    <TopBar user={user} />
+                    <CollapsibleTopBarWrapper user={user} />
                     <QuestionsContainer />
                 </div>
             </SurveyContextProvider>
