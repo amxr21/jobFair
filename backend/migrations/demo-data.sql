@@ -11,6 +11,11 @@
 -- All 40 company accounts share the password: Demo@1234
 --   e.g. careers@falconridgeenergy.example.com
 --
+-- The CASTO admin account uses the same password:
+--   casto@sharjah.ac.ae
+-- It is the organiser login (admin screens, event settings) and is deliberately
+-- excluded from booths, surveys, attendance and statistics.
+--
 -- Load AFTER schema.sql, into a database that already has the tables:
 --   mysql -u <user> -p <dbname> < demo-data.sql
 --
@@ -497,6 +502,17 @@ INSERT INTO companies (
     NULL,
     NULL,
     '2026-10-13 08:00:00'
+),
+(
+    '67f998024358c6515d4d859c', 'CASTO Office', 'casto@sharjah.ac.ae', '$2b$10$rCFqQI.Kh45UVYAE96i44uS5ugg00gDvfIUC.WoaE/lliLBUzBeSe',
+    '+97165050000', 'CASTO Office',
+    '"University Careers Office"', 'Federal', 'Sharjah', '0',
+    '[]', '[]',
+    'Organiser account — not an exhibitor.',
+    'Confirmed',
+    NULL,
+    NULL,
+    NULL
 );
 
 INSERT INTO company_login_emails (
