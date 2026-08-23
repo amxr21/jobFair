@@ -4,12 +4,19 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 
-// Fixed origins (localhost dev + production)
+// Fixed origins (localhost dev + production). Origins are compared as exact
+// strings against the browser's Origin header, so no trailing slashes.
 const allowedOrigins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",
     "https://job-fair-control.vercel.app",
+    // Coolify deployment: frontend origins the dashboard is served from.
+    "https://job-fair.amxr.site",
+    "https://www.job-fair.amxr.site",
+    // The API's own origin, for requests made directly from a browser tab
+    // opened on the backend host (e.g. hitting /healthz by hand).
+    "https://api.jobfair.amxr.site",
 ];
 
 // Allow any Vercel preview/branch URL for this project, plus any
