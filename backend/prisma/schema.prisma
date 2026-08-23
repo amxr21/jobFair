@@ -11,6 +11,9 @@ generator client {
 
 datasource db {
   provider = "mysql"
+  // No `url` here on purpose: Prisma 7 removed datasource urls from the schema
+  // (P1012 if present). Connection URLs live in prisma.config.cjs for the CLI,
+  // and the PrismaMariaDb driver adapter supplies the runtime connection.
 }
 
 // ─── Companies (formerly the "User" Mongoose model) ────────────────────────
