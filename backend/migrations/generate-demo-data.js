@@ -156,6 +156,28 @@ const LAST = [
 // ─── Companies ──────────────────────────────────────────────────────────────
 // Status spread is deliberate: mostly Confirmed (the state most screens care
 // about), a band of Pending (drives confirmation-token UI), a few Canceled.
+// The CASTO admin account. Not a real exhibitor — it is the organiser login the
+// dashboard treats as admin, gated throughout the app on this exact email and
+// on company_name === "CASTO Office" (see App.jsx / NavBar.jsx). Without it the
+// demo database has 40 exhibitors and no way to reach any admin screen.
+//
+// Kept out of COMPANY_NAMES so it never appears in exhibitor lists, booth
+// assignments, survey responses, or statistics — it is appended to the INSERT
+// only, exactly as seed.sql does it.
+const CASTO_ADMIN = {
+    id: "67f998024358c6515d4d859c",
+    name: "CASTO Office",
+    email: "casto@sharjah.ac.ae",
+    rep: "CASTO Office",
+    sector: "Federal",
+    city: "Sharjah",
+    industry: "University Careers Office",
+    positions: "0",
+    majors: [],
+    oppTypes: [],
+    status: "Confirmed",
+};
+
 const companies = COMPANY_NAMES.map((name, i) => {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "");
     const status = i < 26 ? "Confirmed" : i < 35 ? "Pending" : "Canceled";
@@ -193,6 +215,21 @@ const companyRows = companies.map((c, i) => {
     ${chance(0.4) ? dt(daysFrom(EVENT_DAY, -30)) : "NULL"}
 )`;
 });
+
+// Appended after the exhibitors so the admin row exists in `companies` (login
+// reads from there) without being part of `companies`/`confirmed`, which drive
+// booths, surveys, attendance and statistics.
+companyRows.push(`(
+    ${S(CASTO_ADMIN.id)}, ${S(CASTO_ADMIN.name)}, ${S(CASTO_ADMIN.email)}, ${S(DEMO_HASH)},
+    ${S("+97165050000")}, ${S(CASTO_ADMIN.rep)},
+    ${J(CASTO_ADMIN.industry)}, ${S(CASTO_ADMIN.sector)}, ${S(CASTO_ADMIN.city)}, ${S(CASTO_ADMIN.positions)},
+    ${J(CASTO_ADMIN.majors)}, ${J(CASTO_ADMIN.oppTypes)},
+    ${S("Organiser account — not an exhibitor.")},
+    ${S(CASTO_ADMIN.status)},
+    NULL,
+    NULL,
+    NULL
+)`);
 
 // ─── Company login emails (shared-login feature) ─────────────────────────────
 const loginEmailRows = [];
@@ -605,6 +642,11 @@ out.push(`-- ===================================================================
 --
 -- All ${companies.length} company accounts share the password: ${DEMO_PASSWORD}
 --   e.g. ${companies[0].email}
+--
+-- The CASTO admin account uses the same password:
+--   ${CASTO_ADMIN.email}
+-- It is the organiser login (admin screens, event settings) and is deliberately
+-- excluded from booths, surveys, attendance and statistics.
 --
 -- Load AFTER schema.sql, into a database that already has the tables:
 --   mysql -u <user> -p <dbname> < demo-data.sql
