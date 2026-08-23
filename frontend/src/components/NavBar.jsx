@@ -103,7 +103,10 @@ const NavBar = ({ link }) => {
 
     }, [])
 
-    const isCASTOAdmin = user?.email == "casto@sharjah.ac.ae";
+    // Matches the route guards in App.jsx, which treat either signal as CASTO.
+    // Checking only companyName here let "My Status"/"Settings" render for an
+    // admin whose company_name differed, and clicking them bounced back to "/".
+    const isCASTOAdmin = user?.companyName === "CASTO Office" || user?.email === "casto@sharjah.ac.ae";
 
     return (
         <nav className="w-0 md:w-[15%] lg:w-[12%] xl:w-[11%] shrink-0 hidden md:flex flex-col py-3 justify-between gap-y-8 h-full overflow-hidden">
@@ -118,8 +121,8 @@ const NavBar = ({ link }) => {
                     <div ref={mainGroupRef} className="relative flex flex-col gap-y-3">
                         <SlidingPill containerRef={mainGroupRef} />
                         <PageLink link='' title={t('nav.applicants')} icon={'applicants'} />
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-status' title={t('nav.myStatus')} icon={'status'} />}
-                        {user && user.companyName !== "CASTO Office" && <PageLink link='company-settings' title={t('nav.settings')} icon={'settings'} />}
+                        {user && !isCASTOAdmin && <PageLink link='company-status' title={t('nav.myStatus')} icon={'status'} />}
+                        {user && !isCASTOAdmin && <PageLink link='company-settings' title={t('nav.settings')} icon={'settings'} />}
                         {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" &&
                             <PageLink link='survey' title={t('nav.survey')} icon={'surveyStatstics'} />}
                         {isCASTOAdmin && <PageLink link='managers' title={t('nav.managers')} icon={'managers'} />}
