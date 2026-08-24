@@ -34,6 +34,16 @@ const DEFAULT_TEAM = [
 
 const TEAM_STORAGE_KEY = "event_ops_team_v1";
 
+// The Event Lead is the "final point of contact" and sees/manages every module,
+// not just their own focus list — every other member is scoped to their focus.
+//
+// Matching on the role as well as the seed id means the permission survives
+// renaming the lead, inviting a different person as Event Lead, or removing the
+// original seed member; the bare `id === "rana"` checks this replaces would all
+// silently lose full access in those cases.
+export const isEventLead = (member) =>
+    member?.id === "rana" || member?.role === "Event Lead";
+
 // ─── Empty initial state ────────────────────────────────────────────────────────
 // Every section starts EMPTY. Real data is loaded from the backend
 // (GET /event-ops) on mount and by the periodic poll; the company dropdowns
@@ -607,7 +617,7 @@ export const EventOpsProvider = ({ children }) => {
     // consumed — regardless of DB insertion order. Match by her stable id, with
     // an Event Lead role fallback in case the id ever differs.
     const orderedTeam = [...team].sort((a, b) => {
-        const rank = (m) => (m.id === "rana" || m.role === "Event Lead" ? 0 : 1);
+        const rank = (m) => (isEventLead(m) ? 0 : 1);
         return rank(a) - rank(b);
     });
 

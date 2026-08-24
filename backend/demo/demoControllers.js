@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { APPLICANTS, USERS, SETTINGS, EVENT_OPS: DEMO_EVENT_OPS, makeId } = require("./demoStore");
+const { APPLICANTS, USERS, SETTINGS, EVENT_OPS: DEMO_EVENT_OPS, CASTO_TEAM, makeId } = require("./demoStore");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -386,6 +386,35 @@ const updateEventOps = (req, res) => {
     res.status(200).json(EVENT_OPS);
 };
 
+// CASTO team — in-memory in demo mode. Real mode persists these to the
+// casto_team_members table; without these handlers the routes never mounted
+// and GET /casto-team 404'd, leaving the frontend on its local fallback list.
+let TEAM = CASTO_TEAM.map((m) => ({ ...m }));
+
+const getCastoTeam = (req, res) => res.status(200).json(TEAM);
+
+const inviteCastoTeamMember = (req, res) => {
+    const { name, email, role, focus, responsibilities } = req.body || {};
+    if (!name || !email) return res.status(400).json({ error: "name and email are required" });
+    const member = { id: makeId(), name, email, role: role || "Team Member", focus: Array.isArray(focus) ? focus : [], responsibilities: responsibilities || "" };
+    TEAM.push(member);
+    res.status(201).json(member);
+};
+
+const updateCastoTeamMember = (req, res) => {
+    const member = TEAM.find((m) => m.id === req.params.id);
+    if (!member) return res.status(404).json({ error: "No such team member" });
+    Object.assign(member, req.body || {});
+    res.status(200).json(member);
+};
+
+const removeCastoTeamMember = (req, res) => {
+    const before = TEAM.length;
+    TEAM = TEAM.filter((m) => m.id !== req.params.id);
+    if (TEAM.length === before) return res.status(404).json({ error: "No such team member" });
+    res.status(200).json({ message: "Removed" });
+};
+
 // Attendance staff check-in — mirrors the real-mode controllers, reading/
 // writing the same in-memory EVENT_OPS document
 const findStaffer = (code) =>
@@ -616,6 +645,7 @@ module.exports = {
     confirmCompanyAttendance, updateCompanyStatus, deleteCompany,
     // settings
     getSettings, updateSettings, getEventOps, updateEventOps,
+    getCastoTeam, inviteCastoTeamMember, updateCastoTeamMember, removeCastoTeamMember,
     verifyAttendanceStaff, checkinByStaff, updateAttendanceStaffProfile, getMyCheckins,
     // user auth
     loginUser, signupUser, checkSimilarCompanyName, reinitializeCompany,

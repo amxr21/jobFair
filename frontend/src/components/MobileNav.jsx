@@ -53,7 +53,9 @@ const MobileNav = () => {
 
     if (shouldHideNavBar || !user) return null;
 
-    const isCASTO = user?.companyName === "CASTO Office";
+    // Same combined check as App.jsx's route guards and NavBar — matching on
+    // companyName alone hid the admin links whenever company_name differed.
+    const isCASTO = user?.companyName === "CASTO Office" || user?.email === "casto@sharjah.ac.ae";
 
     // Build navigation items based on user type
     const navItems = [
