@@ -243,11 +243,36 @@ const EVENT_OPS = {
     studentAttendance: [],
     schedule: demoSchedule,
     supportStaff: [],
-    audit: [],
+    // Seeded so the Activity panel and the notification watcher have real
+    // history to render instead of "No activity yet". Attributed across the
+    // team so each member's name appears somewhere in the trail.
+    audit: [
+        { id: 9001, at: new Date(Date.now() - 1 * 36e5).toISOString(), by: "Rana", section: "booths", messageKey: "booths.assigned", messageParams: { number: "A01", label: pickCompany(0) } },
+        { id: 9002, at: new Date(Date.now() - 3 * 36e5).toISOString(), by: "Aseel", section: "banners", messageKey: "banners.status", messageParams: { company: pickCompany(1), status: "Approved" } },
+        { id: 9003, at: new Date(Date.now() - 6 * 36e5).toISOString(), by: "Prithba", section: "equipment", messageKey: "equipment.status", messageParams: { company: pickCompany(2), status: "Delivered" } },
+        { id: 9004, at: new Date(Date.now() - 9 * 36e5).toISOString(), by: "Maha", section: "delegates", messageKey: "delegates.added", messageParams: { company: pickCompany(3) } },
+        { id: 9005, at: new Date(Date.now() - 12 * 36e5).toISOString(), by: "Yousef", section: "passes", messageKey: "passes.issued", messageParams: { company: pickCompany(4) } },
+        { id: 9006, at: new Date(Date.now() - 24 * 36e5).toISOString(), by: "Rana", section: "schedule", messageKey: "schedule.updated", messageParams: { title: "Opening remarks" } },
+    ],
 };
+
+// The CASTO office team. Mirrors DEFAULT_TEAM in the frontend's
+// EventOpsContext so demo mode serves the same five members the real backend
+// would, rather than 404ing and leaving the frontend on its local fallback.
+//
+// Rana is the Event Lead: isEventLead() gives that role every operations
+// module and the right to reassign other members' focus, while everyone else
+// is scoped to their own focus list.
+const CASTO_TEAM = [
+    { id: "rana", name: "Rana", email: "rana@sharjah.ac.ae", role: "Event Lead", focus: ["venue", "schedule", "report"], responsibilities: "Owns the venue floor plan and booth assignments, builds the event-day schedule, and compiles the post-event report. Final point of contact for anything not covered by another module." },
+    { id: "prithba", name: "Prithba", email: "prithba@sharjah.ac.ae", role: "Logistics & Equipment", focus: ["equipment", "requirements"], responsibilities: "Handles all equipment requests (tables, chairs, power, screens) and special requirements raised by companies (accessibility, AV, custom setups)." },
+    { id: "aseel", name: "Aseel", email: "aseel@sharjah.ac.ae", role: "Branding & Media", focus: ["banners"], responsibilities: "Tracks every company's banner and branding assets from submission through printing to placement on-site." },
+    { id: "maha", name: "Maha", email: "maha@sharjah.ac.ae", role: "Attendance & Check-in", focus: ["attendance", "delegates"], responsibilities: "Runs check-in on event day (booth QR scans and student check-in) and manages the company delegate list and badge printing." },
+    { id: "yousef", name: "Yousef", email: "yousef@sharjah.ac.ae", role: "Access & Passes", focus: ["passes"], responsibilities: "Issues and manages entry and parking access passes for every company delegate, including parking slot assignments." },
+];
 
 // ---------------------------------------------------------------------------
 // Exported store (mutate these arrays directly for in-memory persistence)
 // ---------------------------------------------------------------------------
 
-module.exports = { APPLICANTS, USERS, SETTINGS, EVENT_OPS, makeId };
+module.exports = { APPLICANTS, USERS, SETTINGS, EVENT_OPS, CASTO_TEAM, makeId };

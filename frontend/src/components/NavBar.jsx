@@ -115,7 +115,7 @@ const NavBar = ({ link }) => {
 
             <div className="links flex flex-col justify-between w-full grow">
                 <div className="flex flex-col gap-y-5">
-                    {user?.companyName == "CASTO Office" && <ApplicationFormButton />}
+                    {isCASTOAdmin && <ApplicationFormButton />}
 
                     {/* Main navigation group — one shared sliding pill glides between these */}
                     <div ref={mainGroupRef} className="relative flex flex-col gap-y-3">
@@ -123,11 +123,11 @@ const NavBar = ({ link }) => {
                         <PageLink link='' title={t('nav.applicants')} icon={'applicants'} />
                         {user && !isCASTOAdmin && <PageLink link='company-status' title={t('nav.myStatus')} icon={'status'} />}
                         {user && !isCASTOAdmin && <PageLink link='company-settings' title={t('nav.settings')} icon={'settings'} />}
-                        {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && user?.companyName !== "CASTO Office" &&
+                        {surveyPublic && (userData === undefined || userData?.surveyResult?.length === 0) && !isCASTOAdmin &&
                             <PageLink link='survey' title={t('nav.survey')} icon={'surveyStatstics'} />}
                         {isCASTOAdmin && <PageLink link='managers' title={t('nav.managers')} icon={'managers'} />}
                         {isCASTOAdmin && <PageLink link='statistics' title={t('nav.statistics')} icon={'statistics'} />}
-                        {user && user.companyName == "CASTO Office" && <PageLink link='surveyResults' title={t('nav.surveyResults')} icon={'surveyResults'} />}
+                        {user && isCASTOAdmin && <PageLink link='surveyResults' title={t('nav.surveyResults')} icon={'surveyResults'} />}
                     </div>
                 </div>
 

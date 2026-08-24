@@ -4,7 +4,7 @@ import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useEventOps, formatWhen } from "../context/EventOpsContext";
+import { useEventOps, formatWhen, isEventLead } from "../context/EventOpsContext";
 import { useNotifications } from "../context/NotificationsContext";
 import { useToast } from "../components/Toast";
 import { useTheme } from "../context/ThemeContext";
@@ -1906,13 +1906,13 @@ const EventOperations = () => {
     });
   }, [onPersistError, toast, t]);
 
-  // Rana (Event Lead) sees every module, matching her "final point of
-  // contact" responsibility and the same employee.id === "rana" check the
-  // Team & Roles panel (EventAdmin.jsx) uses for reassignment permission.
-  // Everyone else sees only their own assigned modules.
+  // The Event Lead sees every module, matching the "final point of contact"
+  // responsibility and the same isEventLead() check the Team & Roles panel
+  // (EventAdmin.jsx) uses for reassignment permission. Everyone else sees only
+  // their own assigned modules.
   const orderedTabs = useMemo(() => {
     const focus = employee.focus || [];
-    const visible = employee.id === "rana" ? OPERATIONS_TABS : OPERATIONS_TABS.filter((t) => focus.includes(t.id));
+    const visible = isEventLead(employee) ? OPERATIONS_TABS : OPERATIONS_TABS.filter((t) => focus.includes(t.id));
     return [...visible].sort((a, b) => {
       const ai = focus.indexOf(a.id), bi = focus.indexOf(b.id);
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);

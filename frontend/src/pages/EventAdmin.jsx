@@ -4,7 +4,7 @@ import axios from "axios";
 import { useTranslation } from "react-i18next";
 import { PageContainer } from "../components/index";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useEventOps, formatWhen, MODULE_LABELS } from "../context/EventOpsContext";
+import { useEventOps, formatWhen, MODULE_LABELS, isEventLead } from "../context/EventOpsContext";
 import { useToast } from "../components/Toast";
 import { useNotifications } from "../context/NotificationsContext";
 import CompactSelect from "../components/CompactSelect";
@@ -322,7 +322,7 @@ const TeamPanel = ({ open, onClose }) => {
   const { team, employee, updateTeamFocus, inviteTeamMember, removeTeamMember } = useEventOps();
   const toast = useToast();
   const { notify } = useNotifications();
-  const canReassign = employee.id === "rana";
+  const canReassign = isEventLead(employee);
 
   const [reassigning, setReassigning] = useState(null); // member id being edited
   const [draftFocus, setDraftFocus] = useState([]);
