@@ -274,3 +274,72 @@ describe('EventOpsContext audit → notification watcher', () => {
         await waitFor(() => expect(probe.items.length).toBe(2));
     });
 });
+
+// Regression test for a real production crash:
+//
+//   TypeError: (le.audit || []) is not iterable
+//
+// A section arriving as a non-array (an object persisted into the event-ops
+// settings row, or a partial payload) slips past the `x || []` guard used at
+// ~37 call sites, then throws when spread inside a setState updater. That
+// unmounts the whole tree and renders a blank page — which is what "reassigning
+// a booth turns everything white" actually was.
+describe('EventOpsContext non-array section hardening', () => {
+    beforeEach(() => { vi.clearAllMocks(); });
+    afterEach(() => { localStorage.clear(); });
+
+    function UpdateProbe({ onReady }) {
+        const ctx = useEventOps();
+        onReady(ctx);
+        return null;
+    }
+
+    it('survives a server payload whose sections are objects, not arrays', async () => {
+        // The exact shape that crashed: audit (and others) as {} rather than [].
+        axios.get.mockImplementation((url) => {
+            if (url.includes('/event-ops')) {
+                return Promise.resolve({ data: { booths: [{ id: 1, number: 'A01' }], audit: {}, banners: {} } });
+            }
+            return Promise.resolve({ data: [] });
+        });
+        axios.put.mockResolvedValue({ data: {} });
+
+        let probe;
+        renderWithProviders(
+            <EventOpsProvider>
+                <UpdateProbe onReady={(p) => { probe = p; }} />
+            </EventOpsProvider>
+        );
+
+        await waitFor(() => expect(probe.data.booths.length).toBe(1));
+        // Normalised at the boundary rather than passed through.
+        expect(Array.isArray(probe.data.audit)).toBe(true);
+        expect(Array.isArray(probe.data.banners)).toBe(true);
+
+        // The booth reassign that used to throw must now complete.
+        await act(async () => {
+            await probe.update('booths', 'booths.assigned', { number: 'A01', label: 'NewCo' }, (rows, who) =>
+                rows.map((b) => (b.id === 1 ? { ...b, company: 'NewCo', status: 'Assigned', ...who } : b)));
+        });
+
+        expect(probe.data.booths[0].company).toBe('NewCo');
+        expect(Array.isArray(probe.data.audit)).toBe(true);
+        expect(probe.data.audit.length).toBe(1);
+    });
+
+    it('survives a corrupted localStorage cache holding non-array sections', async () => {
+        localStorage.setItem('event_ops_v3', JSON.stringify({ booths: [{ id: 9, number: 'C09' }], audit: { bad: true } }));
+        axios.get.mockResolvedValue({ data: [] });
+        axios.put.mockResolvedValue({ data: {} });
+
+        let probe;
+        renderWithProviders(
+            <EventOpsProvider>
+                <UpdateProbe onReady={(p) => { probe = p; }} />
+            </EventOpsProvider>
+        );
+
+        await waitFor(() => expect(probe).toBeTruthy());
+        expect(Array.isArray(probe.data.audit)).toBe(true);
+    });
+});

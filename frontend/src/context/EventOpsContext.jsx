@@ -63,6 +63,26 @@ const SEED = {
     audit: [],
 };
 
+// Every section in SEED is an array, and ~37 call sites across the app guard
+// with `x || []` before spreading or mapping. That guard only catches null and
+// undefined: a section arriving as an OBJECT (a `{}` persisted into the
+// event-ops settings row, or a partial payload) passes the guard and then
+// throws "(x || []) is not iterable" from inside a setState updater — which
+// unmounts the whole tree and renders a blank page.
+//
+// Normalise at the two places server/cached data enters state so no downstream
+// guard is ever handed a non-array.
+const ARRAY_SECTIONS = Object.keys(SEED);
+
+function normalizeSections(doc) {
+    if (!doc || typeof doc !== "object") return { ...SEED };
+    const out = { ...doc };
+    for (const key of ARRAY_SECTIONS) {
+        if (!Array.isArray(out[key])) out[key] = [];
+    }
+    return out;
+}
+
 // Bumped v2 → v3 when the demo seed was removed: browsers that used the app
 // before still hold the old fake companies (Emirates NBD, Etisalat, …) in
 // localStorage["event_ops_v2"], and the init below reads whatever key this is.
@@ -90,7 +110,10 @@ export const EventOpsProvider = ({ children }) => {
             // cache is missing still reads as [] rather than undefined. The
             // backend refetch on mount immediately overwrites non-dirty
             // sections with the real server copy.
-            if (cached && typeof cached === "object") return { ...SEED, ...cached };
+            // normalizeSections guards the spread: a cached section stored as an
+            // object (not an array) would otherwise survive and crash the first
+            // update() that spreads it.
+            if (cached && typeof cached === "object") return normalizeSections({ ...SEED, ...cached });
         } catch { /* corrupted cache — fall back to empty */ }
         return SEED;
     });
@@ -153,9 +176,10 @@ export const EventOpsProvider = ({ children }) => {
             // erroring out mid-wake and leaving sections on stale local data.
             const res = await axios.get(`${API_URL}/event-ops`, { headers: authHeaders(), timeout: 60000 });
             if (res?.data) setData((prev) => {
+                const incoming = normalizeSections(res.data);
                 const merged = { ...prev };
-                for (const [key, value] of Object.entries(res.data)) {
-                    if (!dirtyAtRequest.has(key) && !dirtySectionsRef.current.has(key)) merged[key] = value;
+                for (const key of Object.keys(res.data)) {
+                    if (!dirtyAtRequest.has(key) && !dirtySectionsRef.current.has(key)) merged[key] = incoming[key];
                 }
                 return merged;
             });
@@ -355,7 +379,11 @@ export const EventOpsProvider = ({ children }) => {
             const updatedSection = updater(baseline, { updatedBy: employee.name, updatedAt: now });
             const updatedAudit = [
                 { id: Date.now(), at: now, by: employee.name, section, messageKey, messageParams },
-                ...(prev.audit || []),
+                // Array.isArray, not `|| []`: a non-array audit passes that guard
+                // and throws "is not iterable" from inside this updater, which
+                // unmounts the app. This is the last line of defence behind
+                // normalizeSections at the data-entry points.
+                ...(Array.isArray(prev.audit) ? prev.audit : []),
             ].slice(0, 120);
             const next = { ...prev, [section]: updatedSection, audit: updatedAudit };
             // Only the touched section + audit go to the server — never the

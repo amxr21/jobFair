@@ -53,14 +53,18 @@ const BoothMap = ({ booths, onSelect }) => {
   const center = booths.filter((b) => b.ring === "center");
 
   const C = 230, R_OUT = 168, R_IN = 62;
+  // Guard the divisor: an empty ring makes (i * 360) / 0 produce NaN
+  // coordinates, and React drops the whole <svg> subtree on a NaN transform.
   const place = (list, radius) => list.map((b, i) => {
-    const angle = (-90 + (i * 360) / list.length) * (Math.PI / 180);
+    const angle = (-90 + (i * 360) / (list.length || 1)) * (Math.PI / 180);
     return { ...b, x: C + radius * Math.cos(angle), y: C + radius * Math.sin(angle) };
   });
   const nodes = [...place(outer, R_OUT), ...place(center, center.length === 1 ? 0 : R_IN)];
 
   const move = (e, booth) => {
-    const rect = wrapRef.current.getBoundingClientRect();
+    // The ref is null if a pointer event lands while the modal is unmounting.
+    const rect = wrapRef.current?.getBoundingClientRect();
+    if (!rect) return;
     setHover({ booth, x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
