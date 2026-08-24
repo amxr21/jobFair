@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const { APPLICANTS, USERS, SETTINGS, makeId } = require("./demoStore");
+const { APPLICANTS, USERS, SETTINGS, EVENT_OPS: DEMO_EVENT_OPS, makeId } = require("./demoStore");
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -371,8 +371,12 @@ const updateSettings = (req, res) => {
     res.status(200).json({ message: "Setting updated successfully", setting: { key, value } });
 };
 
-// Event operations state — in-memory in demo mode
-let EVENT_OPS = null;
+// Event operations state — in-memory in demo mode.
+// Seeded from demoStore rather than starting at null: an empty document left
+// every Event Settings tab (venue, banners, equipment, passes, delegates,
+// attendance, schedule) blank with nothing to click, so none of those features
+// could be demonstrated or tested.
+let EVENT_OPS = { ...DEMO_EVENT_OPS };
 const getEventOps = (req, res) => {
     res.status(200).json(EVENT_OPS);
 };

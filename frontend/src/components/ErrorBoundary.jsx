@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { createPortal } from 'react-dom';
+import { classify } from './errorCases';
 
 export default class ErrorBoundary extends Component {
     constructor(props) {
@@ -19,6 +20,7 @@ export default class ErrorBoundary extends Component {
     render() {
         if (this.state.hasError) {
             const msg = this.state.error?.message || 'Unknown error';
+            const kase = classify(this.state.error);
             const component = this.state.errorInfo?.componentStack
                 ?.trim()
                 ?.split('\n')[1]
@@ -39,10 +41,18 @@ export default class ErrorBoundary extends Component {
                         </div>
 
                         <div className="w-full">
-                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">Something went wrong</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 leading-relaxed">
-                                An unexpected error occurred{component ? ` in <${component.replace(/^at /, '')}>` : ''}.
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">{kase.title}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 leading-relaxed">
+                                {kase.body}
                             </p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 mb-3 leading-relaxed">
+                                {kase.hint}
+                            </p>
+                            {component && (
+                                <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-3">
+                                    in &lt;{component.replace(/^at /, '')}&gt;
+                                </p>
+                            )}
 
                             {/* Error detail box */}
                             <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 mb-4 text-left">
@@ -55,12 +65,44 @@ export default class ErrorBoundary extends Component {
                                 {' '}and include the error above.
                             </p>
 
-                            <button
-                                onClick={() => window.location.reload()}
-                                className="text-xs px-4 py-2 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
-                            >
-                                Reload page
-                            </button>
+                            <div className="flex gap-2 justify-center">
+                                {/* The primary action follows the case: a stale
+                                    chunk needs a reload, an expired session needs
+                                    the login page, a transient network blip can be
+                                    retried in place without losing tab state. */}
+                                {kase.retry === 'retry' && (
+                                    <button
+                                        onClick={() => this.setState({ hasError: false, error: null, errorInfo: null })}
+                                        className="text-xs px-4 py-2 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
+                                    >
+                                        Try again
+                                    </button>
+                                )}
+                                {kase.retry === 'login' && (
+                                    <button
+                                        onClick={() => { window.location.href = '/login'; }}
+                                        className="text-xs px-4 py-2 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
+                                    >
+                                        Sign in again
+                                    </button>
+                                )}
+                                {kase.retry === 'home' && (
+                                    <button
+                                        onClick={() => { window.location.href = '/'; }}
+                                        className="text-xs px-4 py-2 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
+                                    >
+                                        Back to applicants
+                                    </button>
+                                )}
+                                {kase.retry === 'reload' && (
+                                    <button
+                                        onClick={() => window.location.reload()}
+                                        className="text-xs px-4 py-2 rounded-lg bg-[#0E7F41] text-white hover:bg-[#0a5f31] transition-colors font-medium"
+                                    >
+                                        Reload page
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>,

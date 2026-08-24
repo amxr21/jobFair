@@ -128,15 +128,20 @@ function App() {
 
     return (
         <PrimeReactProvider>
-            <ToastProvider>
-                <NotificationsProvider>
-                    <EventOpsProvider>
-                        <BrowserRouter>
-                            <AppLayout user={user} isCASTO={isCASTO} />
-                        </BrowserRouter>
-                    </EventOpsProvider>
-                </NotificationsProvider>
-            </ToastProvider>
+            {/* Outer boundary: the one inside AppLayout only wraps <Routes>, so
+                a throw in a provider or in the navbar escaped it entirely and
+                rendered a blank page. This catches those too. */}
+            <ErrorBoundary>
+                <ToastProvider>
+                    <NotificationsProvider>
+                        <EventOpsProvider>
+                            <BrowserRouter>
+                                <AppLayout user={user} isCASTO={isCASTO} />
+                            </BrowserRouter>
+                        </EventOpsProvider>
+                    </NotificationsProvider>
+                </ToastProvider>
+            </ErrorBoundary>
             <LanguageTransitionOverlay />
         </PrimeReactProvider>
     )
