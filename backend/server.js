@@ -9,7 +9,10 @@ if (isDemo) {
     app.listen(process.env.PORT || 2000, () => {
         console.log(`[DEMO MODE] Server running on PORT ${process.env.PORT || 2000}`);
         console.log("[DEMO MODE] Using in-memory data — no MongoDB required");
-        console.log("[DEMO MODE] Demo login: use any credentials from the seed data");
+        console.log("[DEMO MODE] Demo accounts: CASTO office, employer, and check-in staff");
+        // Prints only the credentials that were generated for this boot (i.e.
+        // the ones with no env var set) - nothing is printed for pinned ones.
+        require("./demo/demoStore").printDemoCredentials();
     });
 } else {
     const prisma = require("./config/prisma");
