@@ -1,10 +1,62 @@
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
+// ---------------------------------------------------------------------------
+// Demo account credentials
+// ---------------------------------------------------------------------------
+// No password is ever committed to this repo. Each demo login reads its
+// password from an environment variable; when one isn't set we generate a
+// random password for this boot and print it to the server console, so a
+// fresh clone still has working demo logins without shipping a secret.
+//
+// Pin them in backend/.env (see .env.example) when you need stable
+// credentials to hand to someone for a walkthrough.
+const generatedCredentials = [];
+
+// Memoized per env var: two accounts can share one variable (both CASTO
+// logins do), and without this each call would mint a different password and
+// print two conflicting lines for the same credential.
+const generatedByVar = new Map();
+
+function demoPassword(envVar, label) {
+    const fromEnv = process.env[envVar];
+    if (fromEnv) return fromEnv;
+    // Tests need determinism; a random password per boot would make the
+    // seeded logins unusable from the test suites.
+    if (process.env.NODE_ENV === "test") return "ci-test-password";
+    if (generatedByVar.has(envVar)) return generatedByVar.get(envVar);
+    const generated = crypto.randomBytes(9).toString("base64url");
+    generatedByVar.set(envVar, generated);
+    generatedCredentials.push({ label, envVar, password: generated });
+    return generated;
+}
+
+// Access codes are short and uppercase (the check-in terminal upper-cases
+// whatever is typed before matching), so they can't reuse demoPassword().
+function demoAccessCode(envVar, label) {
+    const fromEnv = process.env[envVar];
+    if (fromEnv) return String(fromEnv).trim().toUpperCase();
+    if (process.env.NODE_ENV === "test") return "DEMO1";
+    const generated = crypto.randomBytes(4).toString("hex").slice(0, 5).toUpperCase();
+    generatedCredentials.push({ label, envVar, password: generated });
+    return generated;
+}
+
+// Called by server.js after boot so the console shows usable demo logins.
+function printDemoCredentials(log = console.log) {
+    if (!generatedCredentials.length) return;
+    log("\n  Demo accounts (generated for this run - set the env vars to pin them):");
+    for (const c of generatedCredentials) {
+        log(`    ${c.label.padEnd(26)} ${c.password}   [${c.envVar}]`);
+    }
+    log("");
+}
+
 // sampleData.json is gitignored (holds realistic demo credentials for local
-// dev) so it won't exist on a fresh clone or in CI. Fall back to a minimal
-// built-in seed in that case, so demo mode always boots.
+// dev) so it won't exist on a fresh clone or in CI. Fall back to a built-in
+// seed in that case, so demo mode always boots with the three demo roles.
 const sampleDataPath = path.join(__dirname, "../../sampleData.json");
 const FALLBACK_SAMPLE_DATA = {
     applicants: [
@@ -17,9 +69,37 @@ const FALLBACK_SAMPLE_DATA = {
         },
     ],
     users: {
-        mainManager: { email: "casto@sharjah.ac.ae", password: "ci-test-password", fields: "", representitives: "" },
+        // The original office address. The test suites log in as this user to
+        // seed fixtures, so the email must not change. On a fresh clone this is
+        // also the CASTO login; where a local sampleData.json defines its own
+        // account at this address, that one wins and this is unused.
+        mainManager: {
+            email: "casto@sharjah.ac.ae",
+            password: demoPassword("DEMO_CASTO_PASSWORD", "CASTO office"),
+            fields: "", representitives: "Demo Coordinator",
+        },
+        // The documented CASTO demo login, on its own address so it survives a
+        // sampleData.json that already claims casto@sharjah.ac.ae. Seeded as a
+        // second main_manager, so it carries the same full permissions.
+        demoCasto: {
+            email: "casto.demo@jobfair.demo",
+            password: demoPassword("DEMO_CASTO_PASSWORD", "CASTO office"),
+            fields: "", representitives: "Demo Coordinator",
+        },
         managers: [
-            { companyName: "Test Company", email: "manager@test.local", password: "ci-test-password", fields: "Technology", representitives: "Test Rep", sector: "Private", city: "Sharjah", noOfPositions: "1", surveyResult: [] },
+            // Employer / company representative - scoped to its own company.
+            {
+                companyName: "Northwind Technologies",
+                email: "employer.demo@jobfair.demo",
+                password: demoPassword("DEMO_EMPLOYER_PASSWORD", "Employer / manager"),
+                fields: "Technology", representitives: "Demo Recruiter",
+                sector: "Private", city: "Sharjah", noOfPositions: "6",
+                preferredMajors: ["Computer Science", "Computer Engineering"],
+                opportunityTypes: ["Full-time", "Internship"],
+                preferredQualities: "Problem solving, teamwork, initiative",
+                surveyResult: [],
+            },
+            { companyName: "Test Company", email: "manager@test.local", password: demoPassword("DEMO_TEST_COMPANY_PASSWORD", "Test Company"), fields: "Technology", representitives: "Test Rep", sector: "Private", city: "Sharjah", noOfPositions: "1", surveyResult: [] },
         ],
         viewers: [],
     },
@@ -27,9 +107,44 @@ const FALLBACK_SAMPLE_DATA = {
 
 // Tests force the fallback seed so they're deterministic regardless of
 // whether a developer's local sampleData.json happens to exist
-const sampleData = (process.env.NODE_ENV !== "test" && fs.existsSync(sampleDataPath))
+const baseData = (process.env.NODE_ENV !== "test" && fs.existsSync(sampleDataPath))
     ? require(sampleDataPath)
     : FALLBACK_SAMPLE_DATA;
+
+// A local sampleData.json supplies a richer applicant/company set, so it stays
+// the primary source - but the three documented demo logins must exist either
+// way, or they'd silently disappear on any machine that happens to have that
+// file. Merge them in on top instead of choosing one source or the other.
+//
+// sampleData.json wins on collision: if it already defines an account at the
+// same email, that one is kept rather than being overwritten by the demo seed.
+const demoUsers = FALLBACK_SAMPLE_DATA.users;
+const baseManagers = baseData.users.managers || [];
+const baseEmails = new Set(baseManagers.map((m) => m.email));
+
+const sampleData = {
+    ...baseData,
+    users: {
+        ...baseData.users,
+        // The main manager slot is single - keep whichever source defined it,
+        // preferring sampleData.json, and fall back to the demo CASTO account.
+        mainManager: baseData.users.mainManager || demoUsers.mainManager,
+        managers: [
+            ...baseManagers,
+            ...demoUsers.managers.filter((m) => !baseEmails.has(m.email)),
+        ],
+        viewers: baseData.users.viewers || [],
+    },
+};
+
+// The documented CASTO demo login is always seeded as a second
+// full-permission office account, unless the active data source already
+// defines an account at that address.
+const seededEmails = new Set([
+    sampleData.users.mainManager?.email,
+    ...sampleData.users.managers.map((m) => m.email),
+]);
+const demoCastoIsSeparate = !seededEmails.has(demoUsers.demoCasto.email);
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,6 +211,9 @@ function seedUser(raw, role) {
 
 const USERS = [
     seedUser(sampleData.users.mainManager, "main_manager"),
+    // Second full-permission office account, only when sampleData.json claimed
+    // the main-manager slot with a different email (see demoCastoIsSeparate).
+    ...(demoCastoIsSeparate ? [seedUser(demoUsers.demoCasto, "main_manager")] : []),
     ...sampleData.users.managers.map((m) => seedUser(m, "manager")),
     ...sampleData.users.viewers.map((v) => seedUser(v, "viewer")),
 ];
@@ -232,6 +350,27 @@ const demoSchedule = [
     { id: "sch-6", time: "17:00", title: "Close · teardown", owner: "Yousef", status: "Upcoming" },
 ];
 
+// Code-gated door staff for /student-checkin. Demo mode previously seeded
+// none, so verifyAttendanceStaff() had nothing to match and the check-in
+// terminal was unreachable without first creating a staffer in Event
+// Settings. The access code is a credential, so it follows the same
+// env-var-or-generated rule as the demo passwords.
+//
+// status "active" (not "invited") so the code logs straight into the scanner
+// instead of stopping at the fill-in-your-details step.
+const demoAttendanceStaff = [
+    {
+        id: 7001,
+        name: "Demo Check-in Staff",
+        email: "checkin.demo@jobfair.demo",
+        phone: "+971 50 000 0000",
+        code: demoAccessCode("DEMO_CHECKIN_CODE", "Check-in staff (code)"),
+        status: "active",
+        updatedBy: "Maha",
+        updatedAt: new Date(Date.now() - 2 * 36e5).toISOString(),
+    },
+];
+
 const EVENT_OPS = {
     booths: demoBooths,
     banners: demoBanners,
@@ -240,6 +379,8 @@ const EVENT_OPS = {
     delegates: demoDelegates,
     passes: demoPasses,
     attendanceCompanies: demoAttendanceCompanies,
+    attendanceStaff: demoAttendanceStaff,
+    checkinLog: [],
     studentAttendance: [],
     schedule: demoSchedule,
     supportStaff: [],
@@ -275,4 +416,4 @@ const CASTO_TEAM = [
 // Exported store (mutate these arrays directly for in-memory persistence)
 // ---------------------------------------------------------------------------
 
-module.exports = { APPLICANTS, USERS, SETTINGS, EVENT_OPS, CASTO_TEAM, makeId };
+module.exports = { APPLICANTS, USERS, SETTINGS, EVENT_OPS, CASTO_TEAM, makeId, printDemoCredentials };
